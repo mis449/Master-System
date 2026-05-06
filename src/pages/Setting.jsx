@@ -58,6 +58,12 @@ const Setting = () => {
   const endBtnRef = useRef(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [profileFile, setProfileFile] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [userToDeleteData, setUserToDeleteData] = useState({ id: null, name: "" });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { userData, department, departmentsOnly, givenBy, customDropdowns, loading, error } = useSelector((state) => state.setting);
   const dispatch = useDispatch();

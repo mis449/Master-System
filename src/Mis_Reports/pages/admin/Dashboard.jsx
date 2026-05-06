@@ -588,69 +588,69 @@ const AdminDashboard = () => {
           }
         }
       `}} />
-      <div className="min-h-screen bg-[#F8FAFC] pb-10">
-        {/* Header Section */}
-        <div className="bg-white border-b border-gray-100 px-8 py-6 sticky top-0 z-30 shadow-sm no-print">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-black text-[#1e293b] tracking-tight">Admin Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-3 pr-4">
-              <button 
-                onClick={handleDownload}
-                className="flex items-center gap-2 bg-[#2563eb] text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                Download Report
-              </button>
-            </div>
+      <div className="bg-[#F8FAFC] w-full max-w-full overflow-x-hidden">
+        {/* Top Controls */}
+        <div className="p-4 sm:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Admin Dashboard</h1>
+            <button 
+              onClick={handleDownload}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 sm:py-2.5 rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 no-print"
+            >
+              <Download className="w-4 h-4" /> 
+              <span className="sm:inline">Download Report</span>
+            </button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="Search by name..."
-                  value={filterName}
-                  onChange={(e) => setFilterName(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold w-64 focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all"
-                />
-              </div>
-              <div className="relative">
-                <Filter className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select 
-                  className="pl-9 pr-8 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold appearance-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
-                  value={filterDepartment}
-                  onChange={(e) => setFilterDepartment(e.target.value)}
-                >
-                  <option value="all">All Designations</option>
-                  {uniqueDesignations.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 no-print">
+            <div className="col-span-2 relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-blue-600 transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Search by name..." 
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-xl text-[10px] sm:text-[11px] font-black shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              />
             </div>
             
+            <div className="relative group">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select 
+                value={filterDepartment}
+                onChange={(e) => setFilterDepartment(e.target.value)}
+                className="w-full pl-10 pr-8 py-3 bg-white border border-gray-100 rounded-xl text-[10px] sm:text-[11px] font-black shadow-sm appearance-none focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
+              >
+                <option value="all">Designations</option>
+                {uniqueDesignations.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            </div>
+
             <div className="relative">
               <button 
                 onClick={() => setShowColumnFilter(!showColumnFilter)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-xl text-xs font-black text-gray-600 hover:bg-gray-100 transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-100 rounded-xl text-[10px] sm:text-[11px] font-black shadow-sm hover:bg-gray-50 transition-all"
               >
-                <BarChart3 className="w-4 h-4" />
-                Columns
-                <ChevronDown className={`w-3 h-3 transition-transform ${showColumnFilter ? 'rotate-180' : ''}`} />
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  <span className="hidden xs:inline">Columns</span>
+                  <span className="xs:hidden">Cols</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showColumnFilter ? 'rotate-180' : ''}`} />
               </button>
-              
+
               <AnimatePresence>
                 {showColumnFilter && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50"
+                    className="absolute right-0 mt-2 w-full min-w-[200px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50"
                   >
-                    <div className="max-h-80 overflow-y-auto space-y-2 custom-scrollbar pr-2">
+                    <div className="max-h-60 overflow-y-auto space-y-2 custom-scrollbar pr-2">
                       {ALL_COLUMNS.map(col => (
                         <label key={col.key} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
                           <input 
@@ -671,32 +671,33 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content Section */}
-        <div className="px-8 mt-8 space-y-8">
+        <div className="px-4 pb-10 space-y-6 sm:space-y-8">
           {/* Main Table Card */}
-          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100 overflow-hidden">
-            <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-white">
-              <h2 className="text-sm font-black text-gray-800 uppercase tracking-[0.15em]">List of People</h2>
+          <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-50 flex flex-row items-center justify-between bg-white gap-4">
+              <h2 className="text-[10px] sm:text-xs font-black text-gray-800 uppercase tracking-wider">Employee Performance</h2>
               <AnimatePresence>
                 {selectedEmployees.length > 0 && (
                   <motion.button
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     onClick={handleSubmitSelection}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 bg-[#2563eb] text-white px-6 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 bg-[#2563eb] text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                     )}
-                    Submit Selection ({selectedEmployees.length})
+                    Submit ({selectedEmployees.length})
                   </motion.button>
                 )}
               </AnimatePresence>
             </div>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/50">
@@ -765,7 +766,6 @@ const AdminDashboard = () => {
                       )}
                       {visibleColumns.allPending && <td className="px-4 py-4 text-xs font-bold text-gray-900 text-center">{emp.allPendingTillDate}</td>}
                       
-                      {/* Placeholder cells for extended columns to match screenshot colors */}
                       {visibleColumns.lastWeekPlannedNotDone && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.plannedWorkNotDone}</td>}
                       {visibleColumns.lastWeekPlannedNotDoneOnTime && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.plannedWorkNotDoneOnTime}</td>}
                       {visibleColumns.lastWeekCommitment && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.commitment}</td>}
@@ -820,16 +820,130 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-100">
+              {filteredEmployees.map((emp) => (
+                <div 
+                  key={emp.id} 
+                  className={`p-5 transition-all space-y-4 ${selectedEmployees.includes(emp.id) ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}
+                  onClick={() => handleRowClick(emp)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div onClick={e => e.stopPropagation()} className="p-1">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedEmployees.includes(emp.id)}
+                          onChange={() => handleSelectEmployee(emp.id)}
+                          className="w-5 h-5 rounded-lg border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-all" 
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <img src={emp.image} alt={emp.name} className="w-11 h-11 rounded-2xl shadow-sm border-2 border-white" />
+                        <div>
+                          <p className="text-[13px] font-black text-gray-900 leading-tight tracking-tight">{emp.name}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{emp.designation}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black shadow-sm ${parseFloat(emp.weeklyWorkDone) < 50 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                        {emp.weeklyWorkDone}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="bg-white/50 border border-gray-100 p-2 rounded-2xl">
+                      <p className="text-[8px] font-black text-gray-400 uppercase mb-1">Target</p>
+                      <p className="text-xs font-black text-gray-900">{emp.target}</p>
+                    </div>
+                    <div className="bg-white/50 border border-gray-100 p-2 rounded-2xl">
+                      <p className="text-[8px] font-black text-gray-400 uppercase mb-1">Actual</p>
+                      <p className="text-xs font-black text-gray-900">{emp.actualWorkDone}</p>
+                    </div>
+                    <div className="bg-white/50 border border-gray-100 p-2 rounded-2xl">
+                      <p className="text-[8px] font-black text-gray-400 uppercase mb-1">Total</p>
+                      <p className="text-xs font-black text-gray-900">{emp.totalWorkDone}</p>
+                    </div>
+                    <div className="bg-blue-50/50 border border-blue-100 p-2 rounded-2xl">
+                      <p className="text-[8px] font-black text-blue-600 uppercase mb-1">On Time</p>
+                      <p className="text-xs font-black text-blue-700">{emp.weeklyWorkDoneOnTime}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-amber-50/40 rounded-2xl border border-amber-100/60 shadow-sm">
+                      <span className="text-[9px] font-black text-amber-600 uppercase tracking-wider">Week Pending</span>
+                      <span className="text-xs font-black text-amber-700">{emp.weekPending}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-red-50/40 rounded-2xl border border-red-100/60 shadow-sm">
+                      <span className="text-[9px] font-black text-red-600 uppercase tracking-wider">All Pending</span>
+                      <span className="text-xs font-black text-red-700">{emp.allPendingTillDate}</span>
+                    </div>
+                  </div>
+
+                  {selectedEmployees.includes(emp.id) && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="pt-4 space-y-4 border-t border-gray-100"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Next Week Commitment</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Planned Not Done</label>
+                          <input 
+                            type="text"
+                            value={editableData[emp.id]?.nextWeekPlannedNotDone || ""}
+                            onChange={(e) => handleInputChange(emp.id, "nextWeekPlannedNotDone", e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Not Done On Time</label>
+                          <input 
+                            type="text"
+                            value={editableData[emp.id]?.nextWeekPlannedNotDoneOnTime || ""}
+                            onChange={(e) => handleInputChange(emp.id, "nextWeekPlannedNotDoneOnTime", e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1.5 pb-2">
+                        <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Commitment Comment</label>
+                        <input 
+                          type="text"
+                          value={editableData[emp.id]?.nextWeekCommitment || ""}
+                          onChange={(e) => handleInputChange(emp.id, "nextWeekCommitment", e.target.value)}
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm"
+                          placeholder="Enter your comment here..."
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Charts Grid */}
-          <div className="grid grid-cols-12 gap-8">
+          <div className="grid grid-cols-12 gap-4 sm:gap-8">
             {/* Top Performers Card */}
-            <div className="col-span-12 lg:col-span-4 bg-white rounded-[2rem] border border-gray-100 p-8 shadow-xl shadow-gray-100">
-               <div className="flex items-center justify-between mb-8">
+            <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 p-6 sm:p-8 shadow-xl shadow-gray-100">
+               <div className="flex items-center justify-between mb-6 sm:mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Top 5 Best Performers</h3>
+                    <h3 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Top 5 Best Performers</h3>
                   </div>
                </div>
                <div className="h-[250px]">
@@ -842,25 +956,25 @@ const AdminDashboard = () => {
             </div>
 
             {/* Pending Tasks Card */}
-            <div className="col-span-12 lg:col-span-4 bg-white rounded-[2rem] border border-gray-100 p-8 shadow-xl shadow-gray-100">
-               <div className="flex items-center justify-between mb-8">
+            <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 p-6 sm:p-8 shadow-xl shadow-gray-100">
+               <div className="flex items-center justify-between mb-6 sm:mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-red-500 rounded-full" />
-                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Pending Tasks by User</h3>
+                    <h3 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Pending Tasks by User</h3>
                   </div>
                </div>
-               <div className="space-y-4">
+               <div className="space-y-3 sm:space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   {sortedPendingList.map((emp, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                    <div key={idx} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-red-100 hover:bg-red-50/30 transition-all cursor-pointer group">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600 text-[10px] font-black">
+                        <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600 text-[10px] font-black group-hover:scale-110 transition-transform">
                           {emp.name.charAt(0)}
                         </div>
-                        <span className="text-xs font-bold text-gray-700">{emp.name}</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-700 group-hover:text-red-700 transition-colors">{emp.name}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] font-black text-gray-400 uppercase">Pending</p>
-                        <p className="text-xs font-black text-red-600">{emp.pending} / {emp.total}</p>
+                        <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase">Pending</p>
+                        <p className="text-[10px] sm:text-xs font-black text-red-600">{emp.pending} / {emp.total}</p>
                       </div>
                     </div>
                   ))}
@@ -868,11 +982,11 @@ const AdminDashboard = () => {
             </div>
 
             {/* Worst Performers Card */}
-            <div className="col-span-12 lg:col-span-4 bg-white rounded-[2rem] border border-gray-100 p-8 shadow-xl shadow-gray-100">
-               <div className="flex items-center justify-between mb-8">
+            <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 p-6 sm:p-8 shadow-xl shadow-gray-100">
+               <div className="flex items-center justify-between mb-6 sm:mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
-                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Top 5 Worst Performers</h3>
+                    <h3 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Top 5 Worst Performers</h3>
                   </div>
                </div>
                <div className="h-[250px] flex items-center justify-center">
@@ -886,12 +1000,12 @@ const AdminDashboard = () => {
           </div>
 
           {/* Department Scores Section */}
-          <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-xl shadow-gray-100">
-             <div className="flex items-center gap-3 mb-10">
+          <div className="bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 p-6 sm:p-8 shadow-xl shadow-gray-100">
+             <div className="flex items-center gap-3 mb-8 sm:mb-10">
                 <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
-                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Department Scores</h3>
+                <h3 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Department Scores</h3>
              </div>
-             <div className="h-[400px]">
+             <div className="h-[300px] sm:h-[400px]">
                 <DepartmentScoreChart 
                   labels={departmentScores.map(d => d.name)}
                   pendingData={departmentScores.map(d => d.pendingWorks)}

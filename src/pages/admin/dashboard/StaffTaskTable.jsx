@@ -142,7 +142,8 @@ export default function StaffTasksTable({
 
       <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
         <div className="staff-table-container overflow-auto" style={{ maxHeight: "600px" }}>
-          <table className="min-w-full border-separate border-spacing-0">
+          {/* Desktop Table View */}
+          <table className="min-w-full border-separate border-spacing-0 hidden lg:table">
             <thead className="sticky top-0 z-20">
               <tr className="bg-gray-50/95 backdrop-blur-md">
                 {["Rank", "Team Member", "Status", "Load", "Done", "On-Time", "Efficiency"].map((header, i) => (
@@ -246,6 +247,79 @@ export default function StaffTasksTable({
               </AnimatePresence>
             </tbody>
           </table>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden divide-y divide-gray-100">
+            <AnimatePresence>
+              {staffMembers.map((staff, index) => {
+                const score = staff.completion_score;
+                const getScoreStyles = (s) => {
+                  if (s >= 80) return { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100", bar: "bg-emerald-500" };
+                  if (s >= 50) return { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100", bar: "bg-amber-500" };
+                  return { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-100", bar: "bg-rose-500" };
+                };
+                const styles = getScoreStyles(score);
+
+                return (
+                  <motion.div 
+                    key={`${staff.name}-${index}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="p-4 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black
+                          ${index === 0 ? 'bg-amber-100 text-amber-700' : 
+                            index === 1 ? 'bg-slate-100 text-slate-700' : 
+                            index === 2 ? 'bg-orange-100 text-orange-700' : 
+                            'text-gray-400'}`}>
+                          {(index + 1).toString().padStart(2, '0')}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white
+                            ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 
+                              index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' : 
+                              index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600' : 
+                              'bg-gray-100 !text-gray-500'}`}>
+                            {staff.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="text-xs font-black text-gray-900 tracking-tight">{staff.name}</div>
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{staff.department}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`px-2 py-0.5 rounded-md text-[10px] font-black border ${styles.bg} ${styles.text} ${styles.border}`}>
+                        {score}%
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="bg-gray-50 p-2 rounded-xl">
+                        <p className="text-[8px] font-black text-gray-400 uppercase mb-0.5">Load</p>
+                        <p className="text-xs font-bold text-gray-700">{staff.total_tasks}</p>
+                      </div>
+                      <div className="bg-emerald-50 p-2 rounded-xl">
+                        <p className="text-[8px] font-black text-emerald-600 uppercase mb-0.5">Done</p>
+                        <p className="text-xs font-bold text-emerald-700">{staff.total_completed_tasks}</p>
+                      </div>
+                      <div className="bg-indigo-50 p-2 rounded-xl">
+                        <p className="text-[8px] font-black text-indigo-600 uppercase mb-0.5">On-Time</p>
+                        <p className="text-xs font-bold text-indigo-700">{staff.total_done_on_time}</p>
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded-xl flex flex-col justify-center overflow-hidden">
+                         <div className="w-full h-1 bg-gray-100 rounded-full mt-1">
+                            <div className={`h-full ${styles.bar} rounded-full`} style={{ width: `${score}%` }} />
+                         </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
 
           {isLoadingMore && (
             <div className="p-10 flex flex-col items-center justify-center">

@@ -356,7 +356,8 @@ export default function AdminDashboard() {
 
   const fetchDepartmentDataWithDateRange = async (startDate, endDate, page = 1, append = false) => {
     try {
-      const data = await fetchDashboardDataApi(dashboardType, dashboardStaffFilter, page, batchSize, 'all', departmentFilter);
+      const targetTable = dashboardType === 'user_status' ? 'checklist' : dashboardType;
+      const data = await fetchDashboardDataApi(targetTable, dashboardStaffFilter, page, batchSize, 'all', departmentFilter);
 
       // Filter data by date range on client side
       const start = new Date(startDate);
@@ -558,8 +559,11 @@ export default function AdminDashboard() {
         // Checklist / Delegation: fetch ALL pages for full accurate count
         let p = 1;
         let hasMore = true;
+        // Use 'checklist' as a default if dashboardType is not a valid table (e.g. 'user_status')
+        const targetTable = dashboardType === 'user_status' ? 'checklist' : dashboardType;
+        
         while (hasMore) {
-          const batch = await fetchDashboardDataApi(dashboardType, dashboardStaffFilter, p, batchSize, 'all', departmentFilter);
+          const batch = await fetchDashboardDataApi(targetTable, dashboardStaffFilter, p, batchSize, 'all', departmentFilter);
           data = [...data, ...(batch || [])];
           if (!batch || batch.length < batchSize) hasMore = false;
           p++;
@@ -939,30 +943,33 @@ export default function AdminDashboard() {
     fetchDepartmentData(1, false)
 
     // Update Redux state counts with staff and department filters
+    // Use 'checklist' as default for statistics if we are in user_status view
+    const statsTable = dashboardType === 'user_status' ? 'checklist' : dashboardType;
+
     dispatch(
       totalTaskInTable({
-        dashboardType,
+        dashboardType: statsTable,
         staffFilter: dashboardStaffFilter,
         departmentFilter,
       }),
     )
     dispatch(
       completeTaskInTable({
-        dashboardType,
+        dashboardType: statsTable,
         staffFilter: dashboardStaffFilter,
         departmentFilter,
       }),
     )
     dispatch(
       pendingTaskInTable({
-        dashboardType,
+        dashboardType: statsTable,
         staffFilter: dashboardStaffFilter,
         departmentFilter,
       }),
     )
     dispatch(
       overdueTaskInTable({
-        dashboardType,
+        dashboardType: statsTable,
         staffFilter: dashboardStaffFilter,
         departmentFilter,
       }),

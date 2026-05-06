@@ -392,85 +392,75 @@ export default function RepairTask() {
 
     return (
         <ERPLayout>
-            <div className="max-w-3xl mx-auto p-4 sm:p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-purple-600 rounded-xl text-white shadow-md">
-                            <Save size={20} />
+            <div className="w-full min-h-screen bg-[#F8FAFC]">
+                <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate(-1)} className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Repair Request Center</h1>
+                                <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Submit & track machine maintenance</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-black text-gray-900">Repair Request Form</h1>
-                            <p className="text-sm text-gray-500 mt-0.5">Submit one or multiple repair requests at once</p>
-                        </div>
-                    </div>
-                    <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Task Cards */}
-                <div className="space-y-4">
-                    {tasks.map((task, index) => (
-                        <RepairTaskCard
-                            key={task.id}
-                            task={task}
-                            index={index}
-                            total={tasks.length}
-                            givenBy={givenBy}
-                            userData={userData}
-                            machineOptions={machineOptions}
-                            onUpdate={updateTask}
-                            onRemove={removeTask}
-                        />
-                    ))}
-                </div>
-
-                {/* Add Another */}
-                <button
-                    type="button"
-                    onClick={addTask}
-                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-purple-300 text-purple-600 font-bold rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 group"
-                >
-                    <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    Add Another Repair Request
-                </button>
-
-                {/* Summary & Submit */}
-                <div className="mt-5 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <p className="text-sm font-bold text-gray-700">{tasks.length} request{tasks.length !== 1 ? 's' : ''} ready to submit</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Admin will fill in additional details after submission</p>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-2xl font-black text-purple-600">{tasks.length}</span>
-                            <p className="text-xs text-gray-400">Total</p>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-xl border border-purple-100 self-start sm:self-center">
+                            <Wrench size={16} className="text-purple-600" />
+                            <span className="text-[10px] font-black text-purple-700 uppercase tracking-wider">{tasks.length} Active Slots</span>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/dashboard/assign-task')}
-                            className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-                        >
-                            <X className="w-4 h-4" /> Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleSubmitAll}
-                            disabled={isSubmitting}
-                            className="flex-grow py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transform transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <><Loader2 size={18} className="animate-spin" /> Submitting...</>
-                            ) : (
-                                <><Save size={18} /> Submit {tasks.length} Request{tasks.length !== 1 ? 's' : ''}</>
-                            )}
-                        </button>
+
+                    <div className="space-y-6">
+                        {tasks.map((task, index) => (
+                            <RepairTaskCard
+                                key={task.id}
+                                index={index}
+                                task={task}
+                                total={tasks.length}
+                                givenBy={givenBy}
+                                userData={userData}
+                                machineOptions={machineOptions}
+                                onUpdate={updateTask}
+                                onRemove={removeTask}
+                            />
+                        ))}
+
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button
+                                type="button"
+                                onClick={addTask}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 border-2 border-dashed border-gray-200 text-gray-500 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50/30 rounded-[2rem] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest group"
+                            >
+                                <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                                <span>Add Another Request Slot</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleSubmitAll}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-[2rem] shadow-xl shadow-purple-100 hover:shadow-purple-200 active:scale-[0.98] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest disabled:opacity-50"
+                            >
+                                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                                <span>{isSubmitting ? "Submitting Records..." : `Submit ${tasks.length} Request${tasks.length !== 1 ? 's' : ''}`}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <AnimatePresence>
+                    {isSubmitting && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-white/60 backdrop-blur-sm z-[200] flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                                <p className="text-sm font-black text-purple-900 uppercase tracking-widest">Processing Uploads...</p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </ERPLayout>
     );
 }
+

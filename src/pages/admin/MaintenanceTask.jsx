@@ -795,162 +795,122 @@ export default function MaintenanceTask() {
 
     return (
         <ERPLayout>
-            <div className="max-w-3xl mx-auto p-4 sm:p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-purple-600 rounded-xl text-white shadow-md">
-                            <Wrench size={20} />
+            <div className="w-full min-h-screen bg-[#F8FAFC]">
+                <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate(-1)} className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Maintenance Protocol</h1>
+                                <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Industrial machine & equipment upkeep</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-black text-gray-900">Maintenance Task Assignment</h1>
-                            <p className="text-sm text-gray-500 mt-0.5">Assign one or multiple maintenance tasks at once</p>
-                        </div>
-                    </div>
-                    <button onClick={() => navigate('/dashboard/assign-task')} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Success Message */}
-                {successMessage && (
-                    <div className="mb-5 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 size={18} />
-                            <span className="font-bold text-sm">{successMessage}</span>
-                        </div>
-                        <button onClick={() => setSuccessMessage("")} className="text-green-600 hover:text-green-800 font-bold text-lg">×</button>
-                    </div>
-                )}
-
-                {/* Task Cards */}
-                <div className="space-y-4">
-                    {tasks.map((task, index) => (
-                        <MaintenanceTaskCard
-                            key={task.id}
-                            task={task}
-                            index={index}
-                            total={tasks.length}
-                            department={department}
-                            doerName={doerName}
-                            givenBy={givenBy}
-                            customDropdowns={customDropdowns}
-                            onUpdate={updateTask}
-                            onRemove={removeTask}
-                            dispatch={dispatch}
-                        />
-                    ))}
-                </div>
-
-                {/* Add Another Task */}
-                <button
-                    type="button"
-                    onClick={addTask}
-                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-purple-300 text-purple-600 font-bold rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 group"
-                >
-                    <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    Add Another Task
-                </button>
-
-                {/* Summary & Submit */}
-                <div className="mt-5 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <p className="text-sm font-bold text-gray-700">{tasks.length} task{tasks.length !== 1 ? 's' : ''} ready to preview</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Preview will show all generated dates before confirming</p>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-2xl font-black text-purple-600">{tasks.length}</span>
-                            <p className="text-xs text-gray-400">Entries</p>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-xl border border-purple-100 self-start sm:self-center">
+                            <Wrench size={16} className="text-purple-600" />
+                            <span className="text-[10px] font-black text-purple-700 uppercase tracking-wider">{tasks.length} Active Slots</span>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button type="button" onClick={() => navigate('/dashboard/assign-task')} className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
-                            <X className="w-4 h-4" /> Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handlePreview}
-                            disabled={isSubmitting}
-                            className="flex-grow py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transform transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <><Loader2 size={18} className="animate-spin" /> Generating...</>
-                            ) : (
-                                <><BellRing size={18} /> Preview Tasks</>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            {/* Preview Modal */}
-            {showPreviewModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                            <h3 className="text-lg font-bold text-gray-800">Confirm Task Assignment</h3>
-                            <button onClick={() => setShowPreviewModal(false)} className="p-2 hover:bg-gray-200 rounded-full transition-all">
-                                <X className="h-5 w-5 text-gray-500" />
+                    <div className="space-y-6">
+                        {tasks.map((task, index) => (
+                            <MaintenanceTaskCard
+                                key={task.id}
+                                index={index}
+                                task={task}
+                                total={tasks.length}
+                                department={department}
+                                doerName={doerName}
+                                givenBy={givenBy}
+                                customDropdowns={customDropdowns}
+                                onUpdate={updateTask}
+                                onRemove={removeTask}
+                                dispatch={dispatch}
+                            />
+                        ))}
+
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button
+                                type="button"
+                                onClick={addTask}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 border-2 border-dashed border-gray-200 text-gray-500 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50/30 rounded-[2rem] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest group"
+                            >
+                                <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                                <span>Add Another Entry Slot</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handlePreview}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-[2rem] shadow-xl shadow-purple-100 hover:shadow-purple-200 active:scale-[0.98] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest disabled:opacity-50"
+                            >
+                                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <FileCheck size={18} />}
+                                <span>{isSubmitting ? "Generating Analysis..." : "Verify & Generate Tasks"}</span>
                             </button>
                         </div>
-                        <div className="p-5 overflow-y-auto flex-1">
-                            <div className="mb-4 bg-purple-50 text-purple-800 p-4 rounded-xl flex items-start gap-3">
-                                <FileCheck className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-bold">Summary</p>
-                                    <p className="text-sm">You are about to assign <span className="font-bold">{allGeneratedTasks.length}</span> task(s) across {tasks.length} entry/entries.</p>
-                                    <p className="text-xs mt-1 opacity-80">Recurring tasks are filtered based on holidays and working day calendar.</p>
-                                </div>
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {successMessage && (
+                        <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md">
+                            <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><CheckCircle2 size={20} /></div>
+                                <div><p className="font-black text-sm uppercase tracking-wider">Success!</p><p className="text-xs font-medium text-emerald-50">{successMessage}</p></div>
                             </div>
-                            <div className="space-y-2">
-                                {allGeneratedTasks.slice(0, 20).map((task, index) => (
-                                    <div key={index} className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 text-sm">
-                                        <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                        <span className="font-medium text-gray-700">
-                                            {new Date(task.task_start_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-                                        </span>
-                                        <span className="text-gray-400">—</span>
-                                        <div className="flex flex-col flex-1">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-gray-600 text-xs font-bold">{task.name}</span>
-                                                {task.machine_name && <span className="text-[10px] text-purple-600 font-black uppercase tracking-wider">{task.machine_name}</span>}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {showPreviewModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                <div>
+                                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Maintenance Audit</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Final check before machine deployment</p>
+                                </div>
+                                <button onClick={() => setShowPreviewModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all"><X className="h-5 w-5 text-gray-400" /></button>
+                            </div>
+                            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                                <div className="bg-purple-50/50 border border-purple-100 p-5 rounded-2xl flex items-start gap-4">
+                                    <div className="p-2 bg-purple-600 rounded-xl text-white shadow-md"><FileCheck size={20} /></div>
+                                    <div>
+                                        <p className="text-sm font-black text-purple-900 uppercase tracking-tight">Deployment Summary</p>
+                                        <p className="text-xs font-medium text-purple-700/80 mt-1">You are initiating <span className="font-black text-purple-900">{allGeneratedTasks.length}</span> instances across {tasks.length} workflows. All non-working days have been automatically excluded.</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    {allGeneratedTasks.slice(0, 15).map((task, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl hover:border-purple-200 transition-all group">
+                                            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">{i + 1}</div>
+                                            <div className="flex-1">
+                                                <p className="text-xs font-black text-gray-900 tracking-tight">{new Date(task.planned_date).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{task.name} • {task.machine_name}</p>
                                             </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                {task.task_description && (
-                                                    <span className="text-[10px] text-gray-400 truncate max-w-[150px]">
-                                                        {task.task_description}
-                                                    </span>
-                                                )}
-                                                {task.recordedAudio && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded">
-                                                        <Mic className="w-2 h-2" /> Voice
-                                                    </span>
-                                                )}
+                                            <div className="flex items-center gap-2">
+                                                {task.audio_url && <Mic size={14} className="text-purple-400" />}
+                                                {task.part_name && <Wrench size={14} className="text-blue-400" />}
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                                {allGeneratedTasks.length > 20 && (
-                                    <p className="text-center text-sm text-gray-400 py-2">...and {allGeneratedTasks.length - 20} more tasks</p>
-                                )}
+                                    ))}
+                                    {allGeneratedTasks.length > 15 && <p className="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest py-4">+ {allGeneratedTasks.length - 15} more instances scheduled</p>}
+                                </div>
                             </div>
-                        </div>
-                        <div className="p-5 border-t border-gray-100 flex gap-3 rounded-b-2xl bg-gray-50">
-                            <button onClick={() => setShowPreviewModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition-colors">
-                                Edit Details
-                            </button>
-                            <button
-                                onClick={confirmSubmission}
-                                disabled={isSubmitting}
-                                className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Assigning...</> : <><Save size={16} /> Confirm & Assign</>}
-                            </button>
-                        </div>
+                            <div className="p-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3 bg-gray-50/50">
+                                <button onClick={() => setShowPreviewModal(false)} className="flex-1 py-4 px-6 rounded-2xl border border-gray-200 bg-white text-xs font-black text-gray-600 uppercase tracking-widest hover:bg-gray-100 transition-all">Revise Draft</button>
+                                <button onClick={confirmSubmission} disabled={isSubmitting} className="flex-1 py-4 px-6 rounded-2xl bg-purple-600 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-purple-100 hover:bg-purple-700 transition-all flex items-center justify-center gap-3">
+                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    <span>{isSubmitting ? "Deploying..." : "Confirm & Deploy"}</span>
+                                </button>
+                            </div>
+                        </motion.div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </ERPLayout>
     );
 }

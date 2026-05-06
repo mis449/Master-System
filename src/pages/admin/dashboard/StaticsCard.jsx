@@ -26,10 +26,10 @@ export default function StatisticsCards({
   ];
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 mb-8">
+    <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 mb-6 sm:mb-8">
       {/* Left side - Statistics Cards */}
       <div className="xl:w-3/5 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 h-full">
           {cards.map((card, idx) => (
             <motion.div
               key={idx}
@@ -37,31 +37,31 @@ export default function StatisticsCards({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="relative group bg-white rounded-3xl p-5 shadow-sm border border-gray-100 overflow-hidden"
+              className="relative group bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-gray-100 overflow-hidden"
             >
               {/* Decorative Background Element */}
-              <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${card.color}-50 rounded-full blur-2xl group-hover:bg-${card.color}-100 transition-colors duration-500`} />
+              <div className={`absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-${card.color}-50 rounded-full blur-2xl group-hover:bg-${card.color}-100 transition-colors duration-500`} />
               
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex justify-between items-start">
-                  <div className={`p-3 rounded-2xl bg-${card.color}-50 text-${card.color}-600 group-hover:scale-110 transition-transform duration-500`}>
-                    <card.icon className="w-6 h-6" />
+                  <div className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-${card.color}-50 text-${card.color}-600 group-hover:scale-110 transition-transform duration-500`}>
+                    <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{card.label}</span>
-                    <div className={`flex items-center gap-1 text-${card.color}-600 bg-${card.color}-50 px-2 py-0.5 rounded-full text-[9px] font-black`}>
+                    <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{card.label}</span>
+                    <div className={`flex items-center gap-1 text-${card.color}-600 bg-${card.color}-50 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black`}>
                       <Activity className="w-3 h-3" />
                       LIVE
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-6">
-                  <div className={`text-4xl font-black bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent leading-none`}>
+                <div className="mt-4 sm:mt-6">
+                  <div className={`text-3xl sm:text-4xl font-black bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent leading-none`}>
                     {card.value}
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-bold text-gray-500">{card.sub}</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-gray-500">{card.sub}</span>
                     <ArrowUpRight className="w-3 h-3 text-gray-300" />
                   </div>
                 </div>
@@ -77,20 +77,20 @@ export default function StatisticsCards({
         animate={{ opacity: 1, x: 0 }}
         className="xl:w-2/5 w-full"
       >
-        <div className="rounded-3xl bg-white shadow-sm border border-gray-100 h-full flex flex-col overflow-hidden">
-          <div className="p-6 pb-0 flex items-center justify-between">
+        <div className="rounded-2xl sm:rounded-3xl bg-white shadow-sm border border-gray-100 h-full flex flex-col overflow-hidden">
+          <div className="p-4 sm:p-6 pb-0 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-black text-gray-900 tracking-tight">Compliance Analytics</h3>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Operational Performance</p>
+              <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">Compliance Analytics</h3>
+              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Operational Performance</p>
             </div>
-            <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm">
-              <Target className="w-5 h-5" />
+            <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
 
-          <div className="p-8 flex-1 flex flex-col justify-center">
-            <div className="flex flex-col md:flex-row items-center gap-10">
-              <div className="relative w-48 h-48 shrink-0">
+          <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
+            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-6 sm:gap-10">
+              <div className="relative w-36 h-36 sm:w-48 sm:h-48 shrink-0">
                 <svg className="w-full h-full transform -rotate-90 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)]" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="42" stroke="#f8fafc" strokeWidth="10" fill="none" />
                   

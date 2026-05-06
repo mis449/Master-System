@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Clock, X } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../context/AuthContext";
 import ERPLayout from "../../../components/layout/ERPLayout";
 
@@ -373,69 +374,47 @@ const AdminPendingTasks = () => {
           </div>
         </div>
         {/* Tasks List */}
-        <div className="bg-white rounded shadow-sm">
-          {/* Section Header */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-700">Pending Tasks</h2>
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100 overflow-hidden border border-gray-100">
+          <div className="px-6 py-5 border-b border-gray-50 bg-white flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-5 bg-orange-500 rounded-full" />
+              <h2 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Active Backlog</h2>
+            </div>
           </div>
 
           {filteredTasks.length > 0 ? (
             <>
               {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Employee ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Link with Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        FMS Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Task Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Due Date
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Pending Tasks
-                      </th>
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/50">
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Assignee</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">FMS Category</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Target Task</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Deadline</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Backlog Count</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-50">
                     {filteredTasks.map(task => (
-                      <tr key={task.id} className="hover:bg-blue-50 cursor-pointer transition-colors" onClick={() => handleRowClick(task)}>
+                      <tr key={task.id} className="hover:bg-orange-50/30 cursor-pointer transition-colors group" onClick={() => handleRowClick(task)}>
+                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400 uppercase">{task.assignedTo}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {task.assignedTo}
+                          <div className="flex items-center gap-3">
+                            <img src={task.personImage} alt={task.personName} className="w-9 h-9 rounded-xl object-cover border-2 border-white shadow-sm" />
+                            <span className="text-sm font-bold text-gray-900 group-hover:text-orange-600 transition-colors">{task.personName}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <img
-                              src={task.personImage}
-                              alt={task.personName}
-                              className="w-8 h-8 rounded-full object-cover mr-3"
-                            />
-                            <span className="text-sm text-gray-900">{task.personName}</span>
-                          </div>
+                          <span className="px-2.5 py-1 bg-orange-50 text-orange-700 text-[10px] font-black rounded-lg border border-orange-100 uppercase tracking-wider">{task.fmsName}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {task.fmsName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {task.taskName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {formatDate(task.dueDate)}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">{task.taskName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 uppercase">{formatDate(task.dueDate)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                            {task.pendingTaskCount}
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black bg-orange-100 text-orange-700 shadow-sm shadow-orange-50">
+                            {task.pendingTaskCount} Tasks
                           </span>
                         </td>
                       </tr>
@@ -444,127 +423,149 @@ const AdminPendingTasks = () => {
                 </table>
               </div>
 
-              {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-gray-200">
+              {/* Premium Mobile Card View */}
+              <div className="lg:hidden divide-y divide-gray-50">
                 {filteredTasks.map(task => (
-                  <div key={task.id} className="p-4 hover:bg-blue-50 cursor-pointer transition-colors" onClick={() => handleRowClick(task)}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center flex-1">
-                        <img
-                          src={task.personImage}
-                          alt={task.personName}
-                          className="w-10 h-10 rounded-full object-cover mr-3"
-                        />
-                        <div className="flex-1">
-                          <div className="text-xs text-gray-500 mb-1">
-                            ID: {task.assignedTo}
-                          </div>
-                          <div className="text-xs text-gray-500 mb-1">Link with Name</div>
-                          <div className="text-sm font-medium text-gray-900">{task.personName}</div>
+                  <div key={task.id} className="p-5 hover:bg-orange-50/50 cursor-pointer transition-all active:scale-[0.98] group" onClick={() => handleRowClick(task)}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-4">
+                        <img src={task.personImage} alt={task.personName} className="w-14 h-14 rounded-[1.25rem] object-cover border-2 border-white shadow-md" />
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assignee</p>
+                          <p className="text-sm font-black text-gray-900 tracking-tight leading-tight group-hover:text-orange-600 transition-colors">{task.personName}</p>
                         </div>
                       </div>
-                      <div className="ml-4 text-right">
-                        <div className="text-xs text-gray-500 mb-1">Pending</div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <div className="text-right">
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1">Backlog</p>
+                        <span className="inline-flex items-center px-4 py-2 rounded-2xl text-[11px] font-black bg-orange-600 text-white shadow-lg shadow-orange-100">
                           {task.pendingTaskCount}
                         </span>
                       </div>
                     </div>
 
-                    <div className="mb-2">
-                      <div className="text-xs text-gray-500 mb-1">FMS Name</div>
-                      <div className="text-sm text-gray-900">{task.fmsName}</div>
-                    </div>
+                    <div className="space-y-3">
+                      <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100/50">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[9px] font-black rounded uppercase tracking-wider">{task.fmsName}</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{task.assignedTo}</span>
+                        </div>
+                        <p className="text-xs font-bold text-gray-900 leading-relaxed">{task.taskName}</p>
+                      </div>
 
-                    <div className="mb-2">
-                      <div className="text-xs text-gray-500 mb-1">Task Name</div>
-                      <div className="text-sm text-gray-900">{task.taskName}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Due Date</div>
-                      <div className="text-sm text-gray-600">{formatDate(task.dueDate)}</div>
+                      <div className="flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock size={12} className="text-gray-400" />
+                          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Deadline</span>
+                        </div>
+                        <span className="text-[10px] font-black text-red-600">{formatDate(task.dueDate)}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="text-center py-12 px-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
-                <Clock className="w-6 h-6 text-gray-400" />
+            <div className="p-20 text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-gray-50 mb-6">
+                <Clock className="w-10 h-10 text-gray-200" />
               </div>
-              <h3 className="text-base font-medium text-gray-900 mb-2">
-                No Pending Tasks Found
-              </h3>
-              <p className="text-sm text-gray-500">
-                Try adjusting your filters or search query
-              </p>
+              <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-2">Queue is Clear</h3>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">No pending tasks found for current filters</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Drill Down Modal */}
-      {activeDrillDown && (
-        <div className="fixed inset-0 bg-black bg-opacity-25 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col animate-fadeIn border-2 border-gray-100">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  {activeDrillDown.title}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {activeDrillDown.taskId}
-                </p>
+      {/* Premium Drill Down Modal */}
+      <AnimatePresence>
+        {activeDrillDown && (
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-6 sm:p-8 border-b border-gray-50 bg-white">
+                <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
+                      <Clock size={24} />
+                   </div>
+                   <div>
+                      <h3 className="text-base sm:text-xl font-black text-gray-900 tracking-tight">{activeDrillDown.title}</h3>
+                      <p className="text-xs sm:text-sm font-bold text-orange-600 uppercase tracking-widest mt-1">{activeDrillDown.taskId}</p>
+                   </div>
+                </div>
+                <button onClick={() => setActiveDrillDown(null)} className="p-3 hover:bg-gray-100 rounded-2xl transition-all">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
               </div>
-              <button
-                onClick={() => setActiveDrillDown(null)}
-                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
 
-            <div className="overflow-y-auto flex-1 p-0">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr>
+              <div className="overflow-y-auto flex-1 bg-white p-4 sm:p-8 custom-scrollbar">
+                <div className="space-y-4">
+                  {/* Desktop Table inside Modal */}
+                  <div className="hidden sm:block overflow-x-auto rounded-[2rem] border border-gray-100">
+                    <table className="min-w-full divide-y divide-gray-50">
+                      <thead className="bg-gray-50/50">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Planned Completion</th>
+                          <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Actual Log</th>
+                          <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">System Delay</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50 bg-white">
+                        {activeDrillDown.rows.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-orange-50/30 transition-colors">
+                            <td className="px-6 py-5 text-[11px] font-black text-gray-500">{row.plannedDate}</td>
+                            <td className="px-6 py-5 text-[11px] font-black text-gray-500">{row.actualDate}</td>
+                            <td className="px-6 py-5">
+                              <span className="inline-flex items-center px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded-lg border border-red-100">
+                                + {row.delayHours} Hours Delayed
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Planned</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay (Hrs)</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {activeDrillDown.rows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-blue-50 transition-colors">
+                  {/* Mobile Cards inside Modal */}
+                  <div className="sm:hidden space-y-4">
+                    {activeDrillDown.rows.map((row, idx) => (
+                      <div key={idx} className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100/50 space-y-4">
+                         <div className="flex justify-between items-center">
+                            <div className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded-lg border border-red-100">
+                              + {row.delayHours}h Delay
+                            </div>
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">#{idx + 1}</span>
+                         </div>
+                         
+                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                               <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Target Date</p>
+                               <p className="text-[11px] font-black text-gray-600">{row.plannedDate}</p>
+                            </div>
+                            <div className="text-right">
+                               <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Current State</p>
+                               <p className="text-[11px] font-black text-orange-600">Pending Log</p>
+                            </div>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{row.plannedDate}</td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{row.actualDate}</td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-red-600 font-medium">
-                        {row.delayHours}h
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-end">
-              <button
-                onClick={() => setActiveDrillDown(null)}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Close
-              </button>
-            </div>
+              <div className="p-6 sm:p-8 border-t border-gray-50 bg-gray-50/50 flex justify-end">
+                <button onClick={() => setActiveDrillDown(null)} className="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white rounded-2xl shadow-xl hover:bg-black font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95">Back to List</button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
     </ERPLayout>
   );
 };
 
-export default AdminPendingTasks;
+export default AdminPendingTasks;

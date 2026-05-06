@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -458,93 +459,102 @@ export default function AssignTask() {
 
   return (
     <ERPLayout>
-      <div className="max-w-3xl mx-auto p-4 sm:p-6">
+      <div className="w-full min-h-screen bg-[#F8FAFC]">
+        <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all">
-              <ArrowLeft size={18} />
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button 
+                onClick={() => navigate(-1)} 
+                className="p-2 sm:p-2.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Task Assignment</h1>
+                <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Create one-time or recurring tasks</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Task Type Selector */}
+          <div className="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl p-1.5 flex flex-col sm:flex-row gap-2 mb-8 shadow-sm shadow-gray-200/50">
+            <button
+              type="button"
+              onClick={() => setTaskType("delegation")}
+              className={`flex-1 flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl sm:rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                taskType === "delegation"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200 scale-[1.02]"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Zap size={16} className={taskType === "delegation" ? "text-white" : "text-gray-300"} />
+              <span className="flex-1 text-center">Delegation</span>
+              <span className={`hidden xs:inline-block text-[8px] font-black px-2 py-0.5 rounded-full ${taskType === "delegation" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-700"}`}>
+                One-Time
+              </span>
             </button>
-            <div>
-              <h1 className="text-xl font-black text-gray-900">Task Assignment</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Create one-time or recurring tasks</p>
+            <button
+              type="button"
+              onClick={() => setTaskType("checklist")}
+              className={`flex-1 flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl sm:rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                taskType === "checklist"
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-200 scale-[1.02]"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <ClipboardList size={16} className={taskType === "checklist" ? "text-white" : "text-gray-300"} />
+              <span className="flex-1 text-center">Checklist</span>
+              <span className={`hidden xs:inline-block text-[8px] font-black px-2 py-0.5 rounded-full ${taskType === "checklist" ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700"}`}>
+                Recurring
+              </span>
+            </button>
+          </div>
+
+          {/* Info Banner */}
+          <div className={`rounded-2xl sm:rounded-3xl border p-4 sm:p-5 mb-8 transition-all duration-500 ${taskType === "delegation" ? "bg-blue-50/50 border-blue-100" : "bg-indigo-50/50 border-indigo-100"}`}>
+            <div className="flex items-start gap-4">
+              <div className={`p-2.5 rounded-xl sm:rounded-2xl shadow-sm ${taskType === "delegation" ? "bg-blue-600" : "bg-indigo-600"} text-white shrink-0 group-hover:scale-110 transition-transform`}>
+                {taskType === "delegation" ? <Zap size={18} /> : <RepeatIcon />}
+              </div>
+              <div>
+                <h3 className={`text-sm sm:text-base font-black tracking-tight ${taskType === "delegation" ? "text-blue-900" : "text-indigo-900"}`}>
+                  {taskType === "delegation" ? "Delegation Protocol" : "Checklist Framework"}
+                </h3>
+                <p className={`text-[10px] sm:text-xs font-medium leading-relaxed mt-1.5 ${taskType === "delegation" ? "text-blue-600/80" : "text-indigo-600/80"}`}>
+                  {taskType === "delegation"
+                    ? "Assign a high-impact, one-off task. These records are prioritized for immediate execution in the Delegation suite."
+                    : "Establish recurring operational workflows. Tasks will be auto-generated for the next 12 months based on your frequency."}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Task Type Selector */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-1.5 flex gap-1.5 mb-6 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setTaskType("delegation")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-200 ${
-              taskType === "delegation"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-200"
-                : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-            }`}
+          {/* Form Container */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white border border-gray-100 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-gray-200/40 p-6 sm:p-10"
           >
-            <Zap size={16} />
-            Delegation Task
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${taskType === "delegation" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-700"}`}>
-              One-Time
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setTaskType("checklist")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-200 ${
-              taskType === "checklist"
-                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-200"
-                : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-            }`}
-          >
-            <ClipboardList size={16} />
-            Checklist Task
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${taskType === "checklist" ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700"}`}>
-              Recurring
-            </span>
-          </button>
-        </div>
-
-        {/* Info Banner */}
-        <div className={`rounded-2xl border p-4 mb-6 ${taskType === "delegation" ? "bg-blue-50 border-blue-200" : "bg-indigo-50 border-indigo-200"}`}>
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-xl ${taskType === "delegation" ? "bg-blue-600" : "bg-indigo-600"} text-white shrink-0`}>
-              {taskType === "delegation" ? <Zap size={16} /> : <RepeatIcon />}
-            </div>
-            <div>
-              <h3 className={`text-sm font-bold ${taskType === "delegation" ? "text-blue-800" : "text-indigo-800"}`}>
-                {taskType === "delegation" ? "Delegation Task — One-Time" : "Checklist Task — Recurring"}
-              </h3>
-              <p className={`text-xs mt-0.5 ${taskType === "delegation" ? "text-blue-600" : "text-indigo-600"}`}>
-                {taskType === "delegation"
-                  ? "Assign a one-off task to a team member. It will appear in the Delegation module."
-                  : "Assign recurring tasks with a frequency. They will appear in the Checklist module and auto-generate for 1 year."}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-          {taskType === "delegation" ? (
-            <DelegationForm
-              departments={department}
-              givenByList={givenBy}
-              doerList={doerName}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
-          ) : (
-            <ChecklistForm
-              departments={department}
-              givenByList={givenBy}
-              doerList={doerName}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
-          )}
+            {taskType === "delegation" ? (
+              <DelegationForm
+                departments={department}
+                givenByList={givenBy}
+                doerList={doerName}
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+              />
+            ) : (
+              <ChecklistForm
+                departments={department}
+                givenByList={givenBy}
+                doerList={doerName}
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+              />
+            )}
+          </motion.div>
         </div>
       </div>
     </ERPLayout>
@@ -552,5 +562,5 @@ export default function AssignTask() {
 }
 
 function RepeatIcon() {
-  return <RefreshCw size={16} />;
+  return <RefreshCw size={18} />;
 }

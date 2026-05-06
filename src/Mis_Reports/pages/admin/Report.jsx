@@ -547,112 +547,104 @@ const Report = () => {
         </div>
       </div>
 
-    {/* Ultra-Simplified Mobile Card View */}
-      <div className="md:hidden">
-        <div className="space-y-3">
-          {filteredData.length > 0 ? (
-            filteredData.map((task) => {
-              const employee = employees.find(
-                (emp) => emp.id === task.assignedTo
-              );
-              const metrics = getTaskMetrics(task);
+    {/* Premium Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {filteredData.length > 0 ? (
+          filteredData.map((task) => {
+            const employee = employees.find(
+              (emp) => emp.id === task.assignedTo
+            );
+            const metrics = getTaskMetrics(task);
 
-              if (!employee || !metrics) return null;
+            if (!employee || !metrics) return null;
 
-              return (
-                <div key={task.id} className="p-3 bg-white border border-gray-200 rounded-lg">
-                  {/* Header - Employee ID, FMS and Task */}
-                  <div className="mb-3">
-                    <div className="text-xs font-medium text-gray-600 mb-1">
-                      ID: {employee.id}
-                    </div>
-                    <div className="text-xs font-medium text-blue-600 mb-1">
-                      {task.fmsName}
-                    </div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {task.taskName}
-                    </div>
-                  </div>
-
-                  {/* Employee */}
-                  <div className="flex items-center mb-3 pb-2 border-b border-gray-100">
+            return (
+              <div key={task.id} className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50 p-5 space-y-4 transition-all active:scale-[0.98]">
+                {/* Header: Employee Info & ID */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
                     <img
-                      className="w-6 h-6 rounded-full mr-2"
+                      className="w-12 h-12 rounded-2xl object-cover border-2 border-purple-50 shadow-sm"
                       src={employee.image}
                       alt={employee.name}
                     />
-                    <span className="text-xs text-gray-600">{employee.name}</span>
-                  </div>
-
-                  {/* Metrics - Simplified Grid */}
-                  <div className="grid grid-cols-5 gap-1 text-center">
                     <div>
-                      <div className="text-xs text-gray-500 mb-1">TGT</div>
-                      <span className="text-sm font-semibold text-blue-600">
-                        {metrics.target}%
-                      </span>
+                      <h3 className="text-sm font-black text-gray-900 tracking-tight leading-tight">{employee.name}</h3>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">ID: {employee.id}</p>
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">ACH</div>
-                      <span className={`text-sm font-semibold ${
-                        metrics.totalAchievement >= metrics.target
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}>
+                  </div>
+                  <div className="text-right">
+                     <span className="inline-flex px-2.5 py-1 bg-purple-50 text-purple-600 text-[10px] font-black rounded-lg border border-purple-100 uppercase tracking-wider">
+                        {task.fmsName}
+                     </span>
+                  </div>
+                </div>
+
+                {/* Task Details */}
+                <div className="bg-gray-50/50 rounded-2xl p-3 border border-gray-100/50">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Task</p>
+                  <p className="text-xs font-bold text-gray-800 leading-relaxed">{task.taskName}</p>
+                  {task.description && (
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium italic line-clamp-1">"{task.description}"</p>
+                  )}
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-blue-50/50 rounded-2xl p-3 border border-blue-100/50">
+                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Target vs Achievement</p>
+                    <div className="flex items-end justify-between">
+                      <span className="text-xs font-black text-blue-900">{metrics.target}%</span>
+                      <span className={`text-sm font-black ${metrics.totalAchievement >= metrics.target ? 'text-green-600' : 'text-red-600'}`}>
                         {metrics.totalAchievement}%
                       </span>
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">WD</div>
-                      <span className={`text-sm font-semibold ${
-                        metrics.workDonePercentage >= 90
-                          ? "text-green-600"
-                          : metrics.workDonePercentage >= 70
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }`}>
-                        {metrics.workDonePercentage}%
-                      </span>
+                    <div className="w-full bg-blue-100 h-1.5 rounded-full mt-2 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${metrics.totalAchievement >= metrics.target ? 'bg-green-500' : 'bg-red-500'}`}
+                        style={{ width: `${Math.min(metrics.totalAchievement, 100)}%` }}
+                      />
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">OT</div>
-                      <span className={`text-sm font-semibold ${
-                        metrics.workDoneOnTimePercentage >= 90
-                          ? "text-green-600"
-                          : metrics.workDoneOnTimePercentage >= 70
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }`}>
-                        {metrics.workDoneOnTimePercentage}%
-                      </span>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">PEN</div>
-                      <span className={`text-sm font-semibold ${
-                        metrics.allPendingTillDate === 0
-                          ? "text-green-600"
-                          : metrics.allPendingTillDate <= 3
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }`}>
-                        {metrics.allPendingTillDate}
-                      </span>
+                  </div>
+
+                  <div className="bg-emerald-50/50 rounded-2xl p-3 border border-emerald-100/50">
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Efficiency & Delay</p>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-gray-500">On Time</span>
+                        <span className="text-[10px] font-black text-emerald-700">{metrics.workDoneOnTimePercentage}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-gray-500">Pending</span>
+                        <span className={`text-[10px] font-black ${metrics.allPendingTillDate > 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                          {metrics.allPendingTillDate}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              <Filter className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm">No tasks found</p>
-            </div>
-          )}
-        </div>
+
+                {/* Detailed % Work Done */}
+                <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 rounded-2xl border border-gray-100">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Work Completion Score</span>
+                  <span className={`text-xs font-black ${metrics.workDonePercentage >= 90 ? 'text-green-600' : metrics.workDonePercentage >= 70 ? 'text-amber-600' : 'text-red-600'}`}>
+                    {metrics.workDonePercentage}%
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center">
+            <Filter className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+            <p className="text-sm font-black text-gray-900 uppercase tracking-widest">No Matches Found</p>
+            <p className="text-xs text-gray-400 mt-2">Try clearing your filters to see more.</p>
+          </div>
+        )}
       </div>
     </div>
-    </ERPLayout>
-  );
+  </ERPLayout>
+);
 };
 
-export default Report;
+export default Report;

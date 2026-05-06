@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, Loader2, History } from "lucide-react";
+import { Search, Loader2, History, ChevronDown } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import ERPLayout from "../../../components/layout/ERPLayout";
 
@@ -117,62 +117,66 @@ const AdminHistoryCommitment = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-5">
-                    <div className="flex flex-col md:flex-row gap-3">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                {/* Filters Section */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 mb-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-blue-600 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search by name or date..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 transition-all"
                             />
                         </div>
-                        <div className="w-full md:w-56">
-                            <select
-                                value={dateFilter}
-                                onChange={(e) => setDateFilter(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white"
-                            >
-                                <option value="all">All Dates</option>
-                                {uniqueDates.map(d => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="w-full md:w-56">
-                            <select
-                                value={nameFilter}
-                                onChange={(e) => setNameFilter(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white"
-                            >
-                                <option value="all">All Names</option>
-                                {uniqueNames.map(n => (
-                                    <option key={n} value={n}>{n}</option>
-                                ))}
-                            </select>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative">
+                                <select
+                                    value={dateFilter}
+                                    onChange={(e) => setDateFilter(e.target.value)}
+                                    className="w-full sm:w-44 pl-4 pr-10 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold appearance-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+                                >
+                                    <option value="all">All Dates</option>
+                                    {uniqueDates.map(d => <option key={d} value={d}>{d}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                            </div>
+                            <div className="relative">
+                                <select
+                                    value={nameFilter}
+                                    onChange={(e) => setNameFilter(e.target.value)}
+                                    className="w-full sm:w-44 pl-4 pr-10 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold appearance-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+                                >
+                                    <option value="all">All Names</option>
+                                    {uniqueNames.map(n => <option key={n} value={n}>{n}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-5">
-                    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium uppercase">Total Records</p>
-                        <p className="text-xl font-bold text-gray-900 mt-1">{records.length}</p>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col justify-between">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Records</p>
+                        <p className="text-2xl font-black text-gray-900 leading-none">{records.length}</p>
                     </div>
-                    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium uppercase">Unique Persons</p>
-                        <p className="text-xl font-bold text-gray-900 mt-1">{uniqueNames.length}</p>
+                    <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col justify-between">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Unique Persons</p>
+                        <p className="text-2xl font-black text-gray-900 leading-none">{uniqueNames.length}</p>
                     </div>
                 </div>
 
-                {/* Table */}
+                {/* Table / Card View */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
+                    <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                         <h2 className="text-base font-bold text-gray-800">Records</h2>
                     </div>
-                    <div className="overflow-auto max-h-[calc(100vh-320px)] relative border border-gray-200 rounded-lg">
+
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block overflow-auto max-h-[calc(100vh-320px)] relative">
                         <table className="w-full text-sm border-separate border-spacing-0">
                             <thead className="bg-gray-50 sticky top-0 z-30 shadow-sm">
                                 <tr>
@@ -190,7 +194,6 @@ const AdminHistoryCommitment = () => {
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-red-100 text-red-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">LW Planned % Not Done</th>
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-red-100 text-red-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">LW % Not Done On Time</th>
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-red-100 text-red-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">LW Commitment</th>
-                                    {/* <th className="px-4 py-3 text-center text-xs font-bold bg-gray-100 text-gray-700 uppercase tracking-wider whitespace-nowrap">Link</th> */}
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-green-100 text-green-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">NW Planned % Not Done</th>
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-green-100 text-green-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">NW % Not Done On Time</th>
                                     <th className="px-4 py-3 text-right text-xs font-bold bg-green-100 text-green-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200">NW Commitment</th>
@@ -264,18 +267,6 @@ const AdminHistoryCommitment = () => {
                                             <td className="px-4 py-3 text-right bg-red-50/30">
                                                 <span className="text-red-700 font-bold">{formatValue(r.lastWeekCommitment)}</span>
                                             </td>
-                                            {/* <td className="px-4 py-3 text-center bg-gray-50/30">
-                                                {r.linkWithName ? (
-                                                    <a
-                                                        href={r.linkWithName.startsWith('http') ? r.linkWithName : `https://${r.linkWithName}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:text-blue-800 underline font-medium"
-                                                    >
-                                                        View
-                                                    </a>
-                                                ) : "-"}
-                                            </td> */}
                                             <td className="px-4 py-3 text-right bg-green-50/30">
                                                 <span className="text-green-700 font-medium">{formatValue(r.nextWeekPlannedNotDone)}</span>
                                             </td>
@@ -289,13 +280,83 @@ const AdminHistoryCommitment = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="11" className="px-6 py-12 text-center text-gray-400">
+                                        <td colSpan="17" className="px-6 py-12 text-center text-gray-400">
                                             No records found.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden divide-y divide-gray-100">
+                        {filteredRecords.length > 0 ? (
+                            filteredRecords.map((r, idx) => (
+                                <div key={r.id} className="p-4 hover:bg-gray-50 transition-colors space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs font-black text-gray-400">#{idx + 1}</span>
+                                            <p className="text-sm font-bold text-gray-900">{formatValue(r.name)}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase">Period</p>
+                                            <p className="text-[10px] font-bold text-gray-600">{formatValue(r.dateStart)} - {formatValue(r.dateEnd)}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2 text-center">
+                                        <div className="bg-gray-50 p-2 rounded-lg">
+                                            <p className="text-[8px] font-black text-gray-400 uppercase mb-1">Target</p>
+                                            <p className="text-xs font-bold text-gray-900">{formatValue(r.target)}</p>
+                                        </div>
+                                        <div className="bg-green-50 p-2 rounded-lg">
+                                            <p className="text-[8px] font-black text-green-600 uppercase mb-1">Achievement</p>
+                                            <p className="text-xs font-bold text-green-700">{formatValue(r.actualWorkDone)}</p>
+                                        </div>
+                                        <div className="bg-blue-50 p-2 rounded-lg">
+                                            <p className="text-[8px] font-black text-blue-600 uppercase mb-1">Total</p>
+                                            <p className="text-xs font-bold text-blue-700">{formatValue(r.totalWorkDone)}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between items-center text-[10px]">
+                                                <span className="font-bold text-gray-500 uppercase">Work Not Done</span>
+                                                <span className={`font-black ${parseFloat(r.workNotDone) > 30 ? 'text-red-600' : 'text-emerald-600'}`}>{formatValue(r.workNotDone)}%</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px]">
+                                                <span className="font-bold text-gray-500 uppercase">Not Done On Time</span>
+                                                <span className={`font-black ${parseFloat(r.workNotDoneOnTime) > 30 ? 'text-red-600' : 'text-emerald-600'}`}>{formatValue(r.workNotDoneOnTime)}%</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between items-center text-[10px]">
+                                                <span className="font-bold text-gray-500 uppercase">Week Pending</span>
+                                                <span className={`font-black ${parseFloat(r.weekPending) > 5 ? 'text-red-600' : 'text-emerald-600'}`}>{formatValue(r.weekPending)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px]">
+                                                <span className="font-bold text-gray-500 uppercase">All Pending</span>
+                                                <span className={`font-black ${parseFloat(r.allPendingTillDate) > 10 ? 'text-red-600' : 'text-emerald-600'}`}>{formatValue(r.allPendingTillDate)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-3 bg-red-50/50 rounded-xl border border-red-100">
+                                        <p className="text-[9px] font-black text-red-600 uppercase mb-2 tracking-widest">Last Week Commitment</p>
+                                        <p className="text-xs font-bold text-red-700 italic">"{formatValue(r.lastWeekCommitment)}"</p>
+                                    </div>
+
+                                    <div className="p-3 bg-green-50/50 rounded-xl border border-green-100">
+                                        <p className="text-[9px] font-black text-green-600 uppercase mb-2 tracking-widest">Next Week Commitment</p>
+                                        <p className="text-xs font-bold text-green-700 italic">"{formatValue(r.nextWeekCommitment)}"</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-10 text-center text-gray-400 text-sm">No records found.</div>
+                        )}
                     </div>
                 </div>
             </div>

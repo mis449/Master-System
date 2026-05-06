@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Search, X, Loader2, Filter, Calendar, Clock, ChevronDown } from "lucide-react";
+import { Search, X, Loader2, Filter, Calendar, Clock, ChevronDown, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../context/AuthContext";
 import ERPLayout from "../../../components/layout/ERPLayout";
 import { getDisplayableImageUrl } from '../../utils/imageUtils';
@@ -361,90 +362,209 @@ const AdminTodayTasks = () => {
           </div>
         </div>
 
-        {/* Unique Employee Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-          <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <h2 className="text-base font-bold text-gray-800">Unique Employees</h2>
-            {fetchingTodayCounts && <span className="text-xs text-blue-600 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Updating counts...</span>}
+        {/* Unique Employee List */}
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100 overflow-hidden border border-gray-100">
+          <div className="px-6 py-5 border-b border-gray-50 bg-white flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-5 bg-blue-600 rounded-full" />
+              <h2 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Team Performance Today</h2>
+            </div>
+            {fetchingTodayCounts && (
+              <div className="px-3 py-1 bg-blue-50 rounded-full flex items-center gap-2">
+                <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Syncing Data</span>
+              </div>
+            )}
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">S.No</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Target</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Today&apos;s Task</th>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50">
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">S.No</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Target Designation</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Today's Load</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {filteredEmployees.length > 0 ? filteredEmployees.map((e, idx) => (
-                  <tr key={idx} className="hover:bg-blue-50/50 cursor-pointer transition-colors" onClick={() => handleRowClick(e)}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{idx + 1}</td>
+                  <tr key={idx} className="hover:bg-blue-50/30 cursor-pointer transition-colors group" onClick={() => handleRowClick(e)}>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400">{idx + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <img src={e.personImage} alt={e.personName} className="w-8 h-8 rounded-full object-cover mr-3 border border-gray-200" />
-                        <span className="text-sm font-semibold text-gray-900">{e.personName}</span>
+                      <div className="flex items-center gap-3">
+                        <img src={e.personImage} alt={e.personName} className="w-9 h-9 rounded-xl object-cover border-2 border-white shadow-sm" />
+                        <span className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{e.personName}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">{e.designation}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500 uppercase tracking-wide">{e.designation}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${e.plannedCount > 0 ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
-                        {e.plannedCount}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-black ${e.plannedCount > 0 ? "bg-blue-100 text-blue-700 shadow-sm shadow-blue-50" : "bg-gray-50 text-gray-400"}`}>
+                        {e.plannedCount} Tasks
                       </span>
                     </td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="4" className="px-6 py-12 text-center text-gray-400 text-sm">No employees found.</td></tr>
+                  <tr><td colSpan="4" className="px-6 py-20 text-center">
+                    <Filter className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                    <p className="text-sm font-black text-gray-900 uppercase tracking-widest">No Employees Found</p>
+                  </td></tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* Premium Mobile Card View */}
+          <div className="lg:hidden divide-y divide-gray-50">
+            {filteredEmployees.length > 0 ? filteredEmployees.map((e, idx) => (
+              <div key={idx} className="p-5 hover:bg-blue-50/50 cursor-pointer transition-all active:scale-[0.98] group" onClick={() => handleRowClick(e)}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <img src={e.personImage} alt={e.personName} className="w-14 h-14 rounded-[1.25rem] object-cover border-2 border-white shadow-md" />
+                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-white border border-gray-100 rounded-lg flex items-center justify-center text-[10px] font-black text-gray-400 shadow-sm">
+                        {idx + 1}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-gray-900 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{e.personName}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{e.designation}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1">Today's Load</p>
+                    <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-[11px] font-black shadow-sm ${e.plannedCount > 0 ? "bg-blue-600 text-white shadow-blue-100" : "bg-gray-100 text-gray-400"}`}>
+                      {e.plannedCount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )) : (
+              <div className="p-16 text-center">
+                <Filter className="w-12 h-12 text-gray-100 mx-auto mb-4" />
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">No Employees Matching Criteria</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Drill Down Modal */}
-      {activeDrillDown && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-hidden">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col animate-fadeIn">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50 rounded-t-xl">
-              <div><h3 className="text-lg font-bold text-gray-900">{activeDrillDown.title}</h3><p className="text-sm text-gray-500">{activeDrillDown.personName}</p></div>
-              <button onClick={() => setActiveDrillDown(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5 text-gray-600" /></button>
-            </div>
-            <div className="overflow-y-auto flex-1 bg-white">
-              {activeDrillDown.loading ? (
-                <div className="flex flex-col items-center justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" /><p className="text-gray-500 font-medium">Compiling all tasks for today...</p></div>
-              ) : activeDrillDown.error ? (
-                <div className="p-10 text-center text-red-500 font-medium"><p>Error: {activeDrillDown.error}</p></div>
-              ) : (
-                <table className="min-w-full divide-y divide-gray-100">
-                  <thead className="bg-gray-50 sticky top-0 font-bold">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">FMS Name</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Sub Task</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Planned</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actual</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {activeDrillDown.rows.length > 0 ? activeDrillDown.rows.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-6 py-4 text-sm text-blue-600 font-semibold">{row.fmsName}</td>
-                        <td className="px-6 py-4 text-sm text-gray-800 font-medium">{row.taskName}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{row.planned}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{row.actual}</td>
-                      </tr>
-                    )) : <tr><td colSpan="4" className="px-6 py-10 text-center text-gray-400">No tasks found for today.</td></tr>}
-                  </tbody>
-                </table>
-              )}
-            </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end">
-              <button onClick={() => setActiveDrillDown(null)} className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 font-bold transition-all">Close</button>
-            </div>
+      {/* Premium Drill Down Modal */}
+      <AnimatePresence>
+        {activeDrillDown && (
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-6 sm:p-8 border-b border-gray-50 bg-white">
+                <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Clock size={24} />
+                   </div>
+                   <div>
+                      <h3 className="text-base sm:text-xl font-black text-gray-900 tracking-tight">{activeDrillDown.title}</h3>
+                      <p className="text-xs sm:text-sm font-bold text-blue-600 uppercase tracking-widest mt-1">{activeDrillDown.personName}</p>
+                   </div>
+                </div>
+                <button onClick={() => setActiveDrillDown(null)} className="p-3 hover:bg-gray-100 rounded-2xl transition-all">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto flex-1 bg-white p-4 sm:p-8 custom-scrollbar">
+                {activeDrillDown.loading ? (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-6" />
+                    <p className="text-xs font-black text-blue-900 uppercase tracking-widest animate-pulse">Compiling Live Data...</p>
+                  </div>
+                ) : activeDrillDown.error ? (
+                  <div className="p-10 text-center bg-red-50 rounded-[2rem] border border-red-100">
+                    <p className="text-sm font-bold text-red-600 uppercase tracking-widest leading-relaxed">System Sync Failed: {activeDrillDown.error}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Desktop Table View inside Modal */}
+                    <div className="hidden sm:block overflow-x-auto rounded-[2rem] border border-gray-100">
+                      <table className="min-w-full divide-y divide-gray-50">
+                        <thead className="bg-gray-50/50">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">FMS Category</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Sub-Task Description</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Planned</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Actual</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50 bg-white">
+                          {activeDrillDown.rows.length > 0 ? activeDrillDown.rows.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
+                              <td className="px-6 py-5">
+                                <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] font-black rounded-lg border border-blue-100 uppercase tracking-wider">{row.fmsName}</span>
+                              </td>
+                              <td className="px-6 py-5 text-sm font-bold text-gray-800 leading-relaxed">{row.taskName}</td>
+                              <td className="px-6 py-5 text-[11px] font-black text-gray-500">{row.planned}</td>
+                              <td className="px-6 py-5">
+                                {row.actual ? (
+                                  <span className="text-[11px] font-black text-emerald-600">{row.actual}</span>
+                                ) : (
+                                  <span className="px-2 py-1 bg-amber-50 text-amber-600 text-[9px] font-black rounded-md uppercase">Pending</span>
+                                )}
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr><td colSpan="4" className="px-6 py-16 text-center text-gray-400 text-sm font-bold uppercase tracking-widest">No active tasks logged for today</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View inside Modal */}
+                    <div className="sm:hidden space-y-4">
+                      {activeDrillDown.rows.length > 0 ? activeDrillDown.rows.map((row, idx) => (
+                        <div key={idx} className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100/50 space-y-3">
+                           <div className="flex justify-between items-start">
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-black rounded uppercase tracking-wider">{row.fmsName}</span>
+                              {row.actual ? (
+                                <span className="text-[10px] font-black text-emerald-600 flex items-center gap-1">
+                                  <CheckCircle2 size={10} /> Completed
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black text-amber-600 flex items-center gap-1">
+                                  <Clock size={10} /> In Queue
+                                </span>
+                              )}
+                           </div>
+                           <p className="text-xs font-bold text-gray-900 leading-relaxed">{row.taskName}</p>
+                           <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                              <div>
+                                 <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Planned At</p>
+                                 <p className="text-[10px] font-bold text-gray-600">{row.planned}</p>
+                              </div>
+                              {row.actual && (
+                                <div className="text-right">
+                                  <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Actual At</p>
+                                  <p className="text-[10px] font-bold text-emerald-600">{row.actual}</p>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                      )) : (
+                        <div className="py-12 text-center text-gray-400 text-xs font-black uppercase tracking-widest">No active tasks logged for today</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="p-6 sm:p-8 border-t border-gray-50 bg-gray-50/50 flex justify-end">
+                <button onClick={() => setActiveDrillDown(null)} className="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white rounded-2xl shadow-xl hover:bg-black font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95">Close View</button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
     </ERPLayout>
   );

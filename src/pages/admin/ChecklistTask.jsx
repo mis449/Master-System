@@ -450,7 +450,6 @@ export default function ChecklistTask() {
         const typeParam = params.get('type');
 
         if (dateParam) {
-            // Use T00:00:00 to ensure date is parsed as local time correctly
             const parsedDate = new Date(dateParam + 'T00:00:00');
             setTasks(prev => {
                 const newTasks = [...prev];
@@ -460,7 +459,7 @@ export default function ChecklistTask() {
                         date: isNaN(parsedDate.getTime()) ? null : parsedDate,
                         frequency: typeParam === 'delegation' ? "One Time (No Recurrence)" : newTasks[0].frequency,
                         dateLocked: true,
-                        frequencyLocked: typeParam === 'delegation' // Lock frequency only for delegation (one-time)
+                        frequencyLocked: typeParam === 'delegation'
                     };
                 }
                 return newTasks;
@@ -505,20 +504,10 @@ export default function ChecklistTask() {
         const dates = [];
         const startDate = task.date;
         const time = task.time;
-
         const endDate = new Date(startDate);
-        if (freqKey === "one-time") {
-            // Just check the start date
-        } else {
-            endDate.setFullYear(endDate.getFullYear() + 1);
-        }
+        if (freqKey !== "one-time") endDate.setFullYear(endDate.getFullYear() + 1);
 
-        const { data: workingData } = await supabase
-            .from('working_day_calender')
-            .select('working_date')
-            .gte('working_date', getLocalDateString(startDate))
-            .lte('working_date', getLocalDateString(endDate));
-
+        const { data: workingData } = await supabase.from('working_day_calender').select('working_date').gte('working_date', getLocalDateString(startDate)).lte('working_date', getLocalDateString(endDate));
         const workingDaySet = new Set(workingData?.map(d => d.working_date) || []);
         const isHoliday = (d) => holidays.includes(getLocalDateString(d));
         const isWorkingDay = (d) => workingDaySet.has(getLocalDateString(d));
@@ -527,20 +516,14 @@ export default function ChecklistTask() {
 
         if (freqKey === "one-time") {
             const d = new Date(startDate);
-            const dateStr = getLocalDateString(d);
-
-            // Check if it's a holiday OR not a working day
-            if (isHoliday(d) || !isWorkingDay(d)) {
-                return []; // Return empty to prevent assignment
-            }
-
+            if (isHoliday(d) || !isWorkingDay(d)) return [];
             dates.push(toLocalISO(d));
             return dates;
         }
 
         if (freqKey === 'daily' || freqKey === 'alternate-day') {
-            const validDays = [];
             let d = new Date(startDate);
+            const validDays = [];
             while (d <= endDate) {
                 if (!isHoliday(d) && isWorkingDay(d)) validDays.push(new Date(d));
                 d.setDate(d.getDate() + 1);
@@ -552,17 +535,9 @@ export default function ChecklistTask() {
             let attempts = 0;
             while (current <= endDate && attempts < 1000) {
                 attempts++;
-
-                // For other frequencies, shift to next working day if current is bad
                 let target = new Date(current);
-                while (target <= endDate && (isHoliday(target) || !isWorkingDay(target))) {
-                    target.setDate(target.getDate() + 1);
-                }
-
-                if (target <= endDate) {
-                    dates.push(toLocalISO(target));
-                }
-
+                while (target <= endDate && (isHoliday(target) || !isWorkingDay(target))) target.setDate(target.getDate() + 1);
+                if (target <= endDate) dates.push(toLocalISO(target));
                 if (freqKey === 'weekly') current = addDays(current, 7);
                 else if (freqKey === 'fortnight') current = addDays(current, 14);
                 else if (freqKey === 'monthly') current.setMonth(current.getMonth() + 1);
@@ -578,454 +553,238 @@ export default function ChecklistTask() {
     const handlePreview = async () => {
         setIsSubmitting(true);
         try {
-            // Parallel Validation
             const validationResults = await Promise.all(tasks.map(async (t, i) => {
-                if (!t.department || !t.givenBy) {
-                    return { success: false, message: `Task ${i + 1}: Please select Department and Assign From.` };
-                }
-                if (!t.doer || !t.date || (!t.description && !t.recordedAudio && (!t.references || t.references.length === 0))) {
-                    return { success: false, message: `Task ${i + 1}: Please fill in Doer, Date, and at least one instructional detail (Desc, Voice Note, or Reference).` };
-                }
-                if (!t.duration) {
-                    return { success: false, message: `Task ${i + 1}: Please specify the task duration.` };
-                }
-                if (t.references && t.references.length > 0) {
-                    for (const ref of t.references) {
-                        if (ref.type === 'image' && !ref.file) {
-                            return { success: false, message: `Task ${i + 1}: Please upload the Image file for the Reference.` };
-                        }
-                        if (['video', 'pdf', 'link'].includes(ref.type) && !ref.link) {
-                            return { success: false, message: `Task ${i + 1}: Please provide a valid web link for the ${ref.type.toUpperCase()} Reference.` };
-                        }
-                    }
-                }
-
+                if (!t.department || !t.givenBy) return { success: false, message: `Task ${i + 1}: Please select Department and Assign From.` };
+                if (!t.doer || !t.date || (!t.description && !t.recordedAudio && (!t.references || t.references.length === 0))) return { success: false, message: `Task ${i + 1}: Please fill in Doer, Date, and at least one instructional detail.` };
+                if (!t.duration) return { success: false, message: `Task ${i + 1}: Please specify duration.` };
                 if (t.frequency === "One Time (No Recurrence)") {
                     const dateStr = formatDateISO(t.date);
                     const isH = holidays.includes(dateStr);
-                    const { data: workingData } = await supabase.from('working_day_calender').select('working_date').eq('working_date', dateStr);
-                    const isW = workingData && workingData.length > 0;
-
-                    if (isH || !isW) {
-                        return { success: false, message: `Task ${i + 1}: The selected date (${dateStr}) is a ${isH ? 'holiday' : 'non-working day'}. Please select a different working day.` };
-                    }
+                    const { data } = await supabase.from('working_day_calender').select('working_date').eq('working_date', dateStr);
+                    if (isH || !(data && data.length > 0)) return { success: false, message: `Task ${i + 1}: ${dateStr} is a holiday or non-working day.` };
                 }
                 return { success: true };
             }));
 
-            const failedValidation = validationResults.find(r => !r.success);
-            if (failedValidation) {
-                showToast(failedValidation.message, 'error');
-                setIsSubmitting(false);
-                return;
-            }
+            const failed = validationResults.find(r => !r.success);
+            if (failed) { showToast(failed.message, 'error'); setIsSubmitting(false); return; }
 
-            // Task Generation in Parallel
-            const generationPromises = tasks.map(async (task) => {
+            const genPromises = tasks.map(async (task) => {
                 const dates = await generateDatesForTask(task);
                 const freqKey = freqMap[task.frequency] || "one-time";
-                return dates.map(dueDate => ({
-                    ...task,
-                    dueDate,
-                    frequency: freqKey
-                }));
+                return dates.map(dueDate => ({ ...task, dueDate, frequency: freqKey }));
             });
-
-            const allResultsArrays = await Promise.all(generationPromises);
-            const allTasks = allResultsArrays.flat();
-
-            if (allTasks.length === 0) {
-                showToast("No valid tasks generated based on calendar and holidays. If assigning for future dates, please ensure the Working Day Calendar is filled for that month.", "error");
-                return;
-            }
+            const results = await Promise.all(genPromises);
+            const allTasks = results.flat();
+            if (allTasks.length === 0) { showToast("No valid tasks generated.", "error"); return; }
             setAllGeneratedTasks(allTasks);
             setShowPreviewModal(true);
-        } catch (err) {
-            console.error(err);
-            alert("Error generating preview: " + err.message);
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (err) { console.error(err); } finally { setIsSubmitting(false); }
     };
 
     const confirmSubmission = async () => {
-        for (let i = 0; i < tasks.length; i++) {
-            const t = tasks[i];
-            if (!t.department || !t.givenBy) {
-                alert(`Task ${i + 1}: Please select Department and Assign From.`);
-                return;
-            }
-            if (!t.doer || !t.date || (!t.description && !t.recordedAudio && (!t.references || t.references.length === 0))) {
-                alert(`Task ${i + 1}: Please fill in Doer, Date, and at least one instructional detail (Desc, Voice Note, or Reference).`);
-                return;
-            }
-            if (!t.duration) {
-                alert(`Task ${i + 1}: Please specify the task duration.`);
-                return;
-            }
-            if (t.references && t.references.length > 0) {
-                for (const ref of t.references) {
-                    if (ref.type === 'image' && !ref.file) {
-                        alert(`Task ${i + 1}: Please upload the Image file for the Reference.`);
-                        return;
-                    }
-                    if (['video', 'pdf', 'link'].includes(ref.type) && !ref.link) {
-                        alert(`Task ${i + 1}: Please provide a valid web link for the ${ref.type.toUpperCase()} Reference.`);
-                        return;
-                    }
-                }
-            }
-
-            // Holiday & Working Day check for one-time tasks (matches handlePreview validation)
-            if (t.frequency === "One Time (No Recurrence)") {
-                const dateStr = formatDateISO(t.date);
-                const isH = holidays.includes(dateStr);
-
-                // Fetch working day status for this specific date
-                const { data: workingData } = await supabase
-                    .from('working_day_calender')
-                    .select('working_date')
-                    .eq('working_date', dateStr);
-                const isW = workingData && workingData.length > 0;
-
-                if (isH || !isW) {
-                    alert(`Task ${i + 1}: The selected date (${dateStr}) is a ${isH ? 'holiday' : 'non-working day'}. Please select a different working day.`);
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-        }
-
         setIsSubmitting(true);
         try {
-            // 1. Parallelize Audio Uploads
-            const audioUploadPromises = tasks.map(async (task) => {
-                if (task.recordedAudio && task.recordedAudio.blob) {
+            const audioUploads = await Promise.all(tasks.map(async (task) => {
+                if (task.recordedAudio?.blob) {
                     const fileName = `voice-notes/${Date.now()}-${Math.random().toString(36).substring(7)}.webm`;
-                    const { error: uploadError } = await supabase.storage
-                        .from('all_images')
-                        .upload(fileName, task.recordedAudio.blob, {
-                            contentType: task.recordedAudio.blob.type || 'audio/webm',
-                            upsert: false
-                        });
-
-                    if (uploadError) throw new Error(`Audio Upload Error: ${uploadError.message}`);
-
-                    const { data: publicUrlData } = supabase.storage.from('all_images').getPublicUrl(fileName);
-                    return { id: task.id, audioUrl: publicUrlData.publicUrl };
+                    await supabase.storage.from('all_images').upload(fileName, task.recordedAudio.blob);
+                    const { data } = supabase.storage.from('all_images').getPublicUrl(fileName);
+                    return { id: task.id, audioUrl: data.publicUrl };
                 }
                 return { id: task.id, audioUrl: null };
-            });
+            }));
+            const audioMap = audioUploads.reduce((m, item) => ({ ...m, [item.id]: item.audioUrl }), {});
 
-            const uploadedAudioResults = await Promise.all(audioUploadPromises);
-            const audioUrlMap = uploadedAudioResults.reduce((map, item) => {
-                map[item.id] = item.audioUrl;
-                return map;
-            }, {});
-
-            // 1.5 Parallelize Instruction Uploads
-            const instructionUploadPromises = tasks.map(async (task) => {
-                const resultsUrls = [];
-                const resultsTypes = [];
-
-                if (task.references && task.references.length > 0) {
+            const instructionUploads = await Promise.all(tasks.map(async (task) => {
+                const urls = [], types = [];
+                if (task.references?.length > 0) {
                     for (const ref of task.references) {
                         if (ref.type === 'image' && ref.file) {
-                            const ext = ref.file.name.split('.').pop();
-                            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-                            const { error: uploadError } = await supabase.storage
-                                .from('all_images')
-                                .upload(fileName, ref.file, { upsert: false });
-                            if (uploadError) throw new Error(`Reference Upload Error: ${uploadError.message}`);
-                            const { data: publicUrlData } = supabase.storage.from('all_images').getPublicUrl(fileName);
-
-                            resultsUrls.push(publicUrlData.publicUrl);
-                            resultsTypes.push(ref.type);
-                        } else if (['video', 'pdf', 'link'].includes(ref.type) && ref.link) {
-                            resultsUrls.push(ref.link);
-                            resultsTypes.push(ref.type);
-                        }
+                            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ref.file.name.split('.').pop()}`;
+                            await supabase.storage.from('all_images').upload(fileName, ref.file);
+                            const { data } = supabase.storage.from('all_images').getPublicUrl(fileName);
+                            urls.push(data.publicUrl); types.push(ref.type);
+                        } else if (ref.link) { urls.push(ref.link); types.push(ref.type); }
                     }
                 }
+                return { id: task.id, instructionUrl: urls.length ? JSON.stringify(urls) : null, instructionType: types.length ? JSON.stringify(types) : null };
+            }));
+            const instructionMap = instructionUploads.reduce((m, item) => ({ ...m, [item.id]: item }), {});
 
-                let finalUrl = null;
-                let finalType = null;
-                if (resultsUrls.length > 0) {
-                    finalUrl = JSON.stringify(resultsUrls);
-                    finalType = JSON.stringify(resultsTypes);
-                }
-
-                return { id: task.id, instructionUrl: finalUrl, instructionType: finalType };
-            });
-
-            const uploadedInstructionResults = await Promise.all(instructionUploadPromises);
-            const instructionUrlMap = uploadedInstructionResults.reduce((map, item) => {
-                map[item.id] = item;
-                return map;
-            }, {});
-
-            // 2. Generate all occurrences
             const allTasksToSubmit = [];
             for (const task of tasks) {
                 const dates = await generateDatesForTask(task);
-                const freqKey = freqMap[task.frequency] || "one-time";
-                const audioUrl = audioUrlMap[task.id];
-                const instructionData = instructionUrlMap[task.id] || {};
-
                 for (const dueDate of dates) {
                     allTasksToSubmit.push({
                         department: task.department,
                         givenBy: task.givenBy,
                         doer: task.doer,
                         task_description: task.description,
-                        audio_url: audioUrl,
-                        instruction_attachment_url: instructionData.instructionUrl || null,
-                        instruction_attachment_type: instructionData.instructionType || null,
-                        frequency: freqKey,
-                        duration: task.duration || null,
+                        audio_url: audioMap[task.id],
+                        instruction_attachment_url: instructionMap[task.id].instructionUrl,
+                        instruction_attachment_type: instructionMap[task.id].instructionType,
+                        frequency: freqMap[task.frequency] || "one-time",
+                        duration: task.duration,
                         enableReminders: task.enableReminders,
                         requireAttachment: task.requireAttachment,
                         dueDate,
-                        // originalStartDate = the admin-selected start date (same for all occurrences)
                         originalStartDate: formatDateISO(task.date) + `T${task.time || "09:00"}:00`,
                         status: "pending"
                     });
                 }
             }
 
-            if (allTasksToSubmit.length === 0) {
-                alert("No tasks to submit.");
-                setIsSubmitting(false);
-                return;
-            }
-
-            // 3. Chunked Database Inserts (100 per chunk)
             const CHUNK_SIZE = 100;
-            const insertedTasks = [];
-
+            const inserted = [];
             for (let i = 0; i < allTasksToSubmit.length; i += CHUNK_SIZE) {
                 const chunk = allTasksToSubmit.slice(i, i + CHUNK_SIZE);
-                const result = await dispatch(assignTaskInTable({ tasks: chunk, table: null }));
-                if (result.error) throw new Error(result.error.message || "Failed to assign tasks in chunk " + (Math.floor(i / CHUNK_SIZE) + 1));
-                if (result.payload) {
-                    // Normalize results if it's nested
-                    const data = result.payload;
-                    insertedTasks.push(...(Array.isArray(data) ? data : [data]));
-                }
+                const res = await dispatch(assignTaskInTable({ tasks: chunk, table: null }));
+                if (res.error) throw new Error(res.error.message);
+                if (res.payload) inserted.push(...(Array.isArray(res.payload) ? res.payload : [res.payload]));
             }
 
-            // 4. Send WhatsApp notifications
             try {
-                if (insertedTasks && insertedTasks.length > 0) {
-                    for (const uiTask of tasks) {
-                        const freqKey = freqMap[uiTask.frequency]?.toLowerCase();
-                        const t = insertedTasks.find(it =>
-                            (it.name === uiTask.doer) &&
-                            (!it.frequency || it.frequency?.toLowerCase() === freqKey || freqKey === "one-time") &&
-                            ((it.task_description || "") === (uiTask.description || "") || (audioUrlMap[uiTask.id] && it.audio_url === audioUrlMap[uiTask.id]))
-                        );
-
-                        if (t) {
-                            const isOneTime = t.frequency?.toLowerCase().includes('one time') ||
-                                t.frequency?.toLowerCase().includes('one-time') ||
-                                t.frequency?.toLowerCase().includes('no recurrence');
-
-                            await sendTaskAssignmentNotification({
-                                doerName: t.name,
-                                taskId: t.task_id || t.id,
-                                description: t.task_description || (t.instruction_attachment_url ? `📎 Reference(s) Provided` : ''),
-                                audioUrl: t.audio_url,
-                                startDate: new Date(t.task_start_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
-                                givenBy: t.given_by,
-                                department: t.department,
-                                duration: t.duration,
-                                taskType: isOneTime ? 'delegation' : 'checklist'
-                            });
-                        }
+                for (const uiTask of tasks) {
+                    const t = inserted.find(it => it.name === uiTask.doer && (it.task_description === uiTask.description || it.audio_url === audioMap[uiTask.id]));
+                    if (t) {
+                        await sendTaskAssignmentNotification({
+                            doerName: t.name,
+                            taskId: t.task_id || t.id,
+                            description: t.task_description || (t.instruction_attachment_url ? '📎 Ref Attached' : ''),
+                            audioUrl: t.audio_url,
+                            startDate: new Date(t.task_start_date).toLocaleString('en-IN'),
+                            givenBy: t.given_by,
+                            department: t.department,
+                            duration: t.duration,
+                            taskType: (t.frequency?.toLowerCase().includes('one')) ? 'delegation' : 'checklist'
+                        });
                     }
                 }
-            } catch (whatsappError) {
-                console.error('WhatsApp notification error:', whatsappError);
-            }
+            } catch (err) { console.error(err); }
 
-            showToast(`Successfully assigned ${allTasksToSubmit.length} task(s)!`, 'success');
-            setTasks([defaultTask()]);
-            setShowPreviewModal(false);
+            showToast(`Assigned ${allTasksToSubmit.length} tasks!`, 'success');
             setTimeout(() => navigate('/dashboard/admin'), 2000);
-        } catch (e) {
-            console.error("Submission error", e);
-            showToast(`Failed to assign tasks: ${e.message || "Unknown error"}`, 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (e) { showToast(e.message, 'error'); } finally { setIsSubmitting(false); }
     };
 
     return (
         <ERPLayout>
-            <div className="max-w-3xl mx-auto p-4 sm:p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-blue-600 rounded-xl text-white shadow-md">
-                            <ClipboardList size={20} />
+            <div className="w-full min-h-screen bg-[#F8FAFC]">
+                <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate(-1)} className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Bulk Task Assignment</h1>
+                                <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Multi-entry workflow & automation</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-black text-gray-900">Checklist Task Assignment</h1>
-                            <p className="text-sm text-gray-500 mt-0.5">Assign one or multiple checklist tasks at once</p>
-                        </div>
-                    </div>
-                    <button onClick={() => navigate('/dashboard/assign-task')} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Success Message */}
-                {successMessage && (
-                    <div className="mb-5 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 size={18} />
-                            <span className="font-bold text-sm">{successMessage}</span>
-                        </div>
-                        <button onClick={() => setSuccessMessage("")} className="text-green-600 hover:text-green-800 font-bold text-lg">×</button>
-                    </div>
-                )}
-
-                {/* Task Cards */}
-                <div className="space-y-4">
-                    {tasks.map((task, index) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            index={index}
-                            total={tasks.length}
-                            department={department}
-                            doerName={doerName}
-                            givenBy={givenBy}
-                            dispatch={dispatch}
-                            onUpdate={updateTask}
-                            onRemove={removeTask}
-                        />
-                    ))}
-                </div>
-
-                {/* Add Another Task */}
-                <button
-                    type="button"
-                    onClick={addTask}
-                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-blue-300 text-blue-600 font-bold rounded-2xl hover:border-purple-500 hover:bg-blue-50 transition-all duration-200 group"
-                >
-                    <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    Add Another Task
-                </button>
-
-                {/* Summary & Submit */}
-                <div className="mt-5 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <p className="text-sm font-bold text-gray-700">{tasks.length} task{tasks.length !== 1 ? 's' : ''} ready to assign</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Recurring tasks will generate multiple entries</p>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-2xl font-black text-blue-600">{tasks.length}</span>
-                            <p className="text-xs text-gray-400">Entries</p>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100 self-start sm:self-center">
+                            <ClipboardList size={16} className="text-indigo-600" />
+                            <span className="text-[10px] font-black text-indigo-700 uppercase tracking-wider">{tasks.length} Active Slots</span>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/dashboard/assign-task')}
-                            className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-                        >
-                            <X className="w-4 h-4" /> Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handlePreview}
-                            disabled={isSubmitting}
-                            className="flex-grow py-3 bg-blue-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transform transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <><Loader2 size={18} className="animate-spin" /> Generating...</>
-                            ) : (
-                                <><Calendar size={18} /> Preview Tasks</>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            {/* Preview Modal */}
-            {showPreviewModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                            <h3 className="text-lg font-bold text-gray-800">Confirm Task Assignment</h3>
-                            <button onClick={() => setShowPreviewModal(false)} className="p-2 hover:bg-gray-200 rounded-full transition-all">
-                                <X className="h-5 w-5 text-gray-500" />
+                    <div className="space-y-6">
+                        {tasks.map((task, index) => (
+                            <TaskCard
+                                key={task.id}
+                                index={index}
+                                task={task}
+                                total={tasks.length}
+                                department={department}
+                                doerName={doerName}
+                                givenBy={givenBy}
+                                dispatch={dispatch}
+                                onUpdate={updateTask}
+                                onRemove={removeTask}
+                            />
+                        ))}
+
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button
+                                type="button"
+                                onClick={addTask}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 border-2 border-dashed border-gray-200 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 rounded-[2rem] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest group"
+                            >
+                                <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                                <span>Add Another Entry Slot</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handlePreview}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-[2rem] shadow-xl shadow-indigo-100 hover:shadow-indigo-200 active:scale-[0.98] transition-all duration-300 font-black uppercase text-[10px] sm:text-xs tracking-widest disabled:opacity-50"
+                            >
+                                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <FileCheck size={18} />}
+                                <span>{isSubmitting ? "Generating Analysis..." : "Verify & Generate Tasks"}</span>
                             </button>
                         </div>
-                        <div className="p-5 overflow-y-auto flex-1">
-                            <div className="mb-4 bg-blue-50 text-blue-800 p-4 rounded-xl flex items-start gap-3">
-                                <FileCheck className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-bold">Summary</p>
-                                    <p className="text-sm">You are about to assign <span className="font-bold">{allGeneratedTasks.length}</span> task(s) across {tasks.length} entries.</p>
-                                    <p className="text-xs mt-1 opacity-80">Recurring tasks are filtered based on holidays and working day calendar.</p>
-                                </div>
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {successMessage && (
+                        <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md">
+                            <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><CheckCircle2 size={20} /></div>
+                                <div><p className="font-black text-sm uppercase tracking-wider">Success!</p><p className="text-xs font-medium text-emerald-50">{successMessage}</p></div>
                             </div>
-                            <div className="space-y-2">
-                                {allGeneratedTasks.slice(0, 20).map((task, index) => (
-                                    <div key={index} className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 text-sm">
-                                        <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                        <span className="font-medium text-gray-700">
-                                            {new Date(task.dueDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-                                        </span>
-                                        <span className="text-gray-400">—</span>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600 text-xs font-bold">{task.doer}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {showPreviewModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                <div>
+                                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Verification Center</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Final Audit before assignment</p>
+                                </div>
+                                <button onClick={() => setShowPreviewModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all"><X className="h-5 w-5 text-gray-400" /></button>
+                            </div>
+                            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                                <div className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-2xl flex items-start gap-4">
+                                    <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-md"><FileCheck size={20} /></div>
+                                    <div>
+                                        <p className="text-sm font-black text-indigo-900 uppercase tracking-tight">Deployment Summary</p>
+                                        <p className="text-xs font-medium text-indigo-700/80 mt-1">You are initiating <span className="font-black text-indigo-900">{allGeneratedTasks.length}</span> instances across {tasks.length} workflows. All non-working days have been automatically excluded.</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    {allGeneratedTasks.slice(0, 15).map((task, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl hover:border-indigo-200 transition-all group">
+                                            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">{i + 1}</div>
+                                            <div className="flex-1">
+                                                <p className="text-xs font-black text-gray-900 tracking-tight">{new Date(task.dueDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{task.doer} • {task.frequency}</p>
+                                            </div>
                                             <div className="flex items-center gap-2">
-                                                {task.description && (
-                                                    <span className="text-[10px] text-gray-400 truncate max-w-[150px]">
-                                                        {task.description}
-                                                    </span>
-                                                )}
-                                                {task.recordedAudio && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">
-                                                        <Mic className="h-3 w-3" /> Voice
-                                                    </span>
-                                                )}
-                                                {task.instructionType !== 'none' && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">
-                                                        <FileCheck className="h-3 w-3" /> Refer
-                                                    </span>
-                                                )}
+                                                {task.audio_url && <Mic size={14} className="text-indigo-400" />}
+                                                {task.instruction_attachment_url && <ExternalLink size={14} className="text-blue-400" />}
                                             </div>
                                         </div>
-                                        <span className="ml-auto text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 uppercase font-black">
-                                            {task.frequency}
-                                        </span>
-                                    </div>
-                                ))}
-                                {allGeneratedTasks.length > 20 && (
-                                    <p className="text-center text-sm text-gray-400 py-2">...and {allGeneratedTasks.length - 20} more tasks</p>
-                                )}
+                                    ))}
+                                    {allGeneratedTasks.length > 15 && <p className="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest py-4">+ {allGeneratedTasks.length - 15} more instances scheduled</p>}
+                                </div>
                             </div>
-                        </div>
-                        <div className="p-5 border-t border-gray-100 flex gap-3 rounded-b-2xl bg-gray-50">
-                            <button onClick={() => setShowPreviewModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition-colors">
-                                Edit Details
-                            </button>
-                            <button
-                                onClick={confirmSubmission}
-                                disabled={isSubmitting}
-                                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-purple-700 transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Assigning...</> : <><Save size={16} /> Confirm & Assign</>}
-                            </button>
-                        </div>
+                            <div className="p-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3 bg-gray-50/50">
+                                <button onClick={() => setShowPreviewModal(false)} className="flex-1 py-4 px-6 rounded-2xl border border-gray-200 bg-white text-xs font-black text-gray-600 uppercase tracking-widest hover:bg-gray-100 transition-all">Revise Draft</button>
+                                <button onClick={confirmSubmission} disabled={isSubmitting} className="flex-1 py-4 px-6 rounded-2xl bg-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
+                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    <span>{isSubmitting ? "Deploying..." : "Confirm & Deploy"}</span>
+                                </button>
+                            </div>
+                        </motion.div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </ERPLayout>
     );
 }

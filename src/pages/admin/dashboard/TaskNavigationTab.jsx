@@ -476,21 +476,21 @@ export default function TaskNavigationTabs({
   return (
     <div className="w-full space-y-6">
       {/* Premium Tab Selection */}
-      <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex items-center justify-between">
-        <div className="flex bg-gray-100/80 p-1.5 rounded-2xl gap-1">
+      <div className="bg-white p-2 sm:p-4 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="flex bg-gray-100/80 p-1 rounded-xl sm:rounded-2xl gap-1 overflow-x-auto custom-scrollbar">
           {["recent", "upcoming", "overdue"].map((view) => (
             <button
               key={view}
               onClick={() => setTaskView(view)}
               className={`
-                relative flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 min-w-[130px] z-10
+                relative flex items-center justify-center gap-2 py-2 sm:py-2.5 px-3 sm:px-8 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-500 min-w-[90px] sm:min-w-[130px] z-10
                 ${taskView === view ? "text-white" : "text-gray-400 hover:text-indigo-600"}
               `}
             >
               {taskView === view && (
                 <motion.div
                   layoutId="activeTabGlow"
-                  className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg shadow-indigo-200"
+                  className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-indigo-200"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -506,15 +506,15 @@ export default function TaskNavigationTabs({
           ))}
         </div>
 
-        {/* Search Input - Desktop */}
-        <div className="hidden md:flex items-center gap-3 bg-gray-50 border border-gray-100 px-4 py-2 rounded-2xl w-72 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
-          <Filter className="w-4 h-4 text-gray-400" />
+        {/* Search Input */}
+        <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl w-full sm:w-72 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
+          <Filter className="w-4 h-4 text-gray-400 shrink-0" />
           <input
             type="text"
-            placeholder="Quick search tasks..."
+            placeholder="Quick search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-transparent border-none focus:ring-0 text-xs font-bold text-gray-700 w-full placeholder:text-gray-300 placeholder:font-black uppercase tracking-widest"
+            className="bg-transparent border-none focus:ring-0 text-[10px] sm:text-xs font-bold text-gray-700 w-full placeholder:text-gray-300 placeholder:font-black uppercase tracking-widest"
           />
         </div>
       </div>
@@ -535,12 +535,13 @@ export default function TaskNavigationTabs({
           <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Adjust your filters to discover records</p>
         </motion.div>
       ) : (
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
+        <div className="bg-white rounded-2xl sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
           <div
             className="task-table-container overflow-x-auto"
             style={{ maxHeight: "calc(100vh - 420px)", minHeight: "400px", overflowY: "auto" }}
           >
-            <table className="min-w-full border-separate border-spacing-0">
+            {/* Desktop Table View */}
+            <table className="min-w-full border-separate border-spacing-0 hidden lg:table">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-gray-50/95 backdrop-blur-md">
                   <th className="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">ID</th>
@@ -655,6 +656,81 @@ export default function TaskNavigationTabs({
                 </AnimatePresence>
               </tbody>
             </table>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-100">
+              <AnimatePresence>
+                {displayedTasks.map((task, index) => {
+                  const getStatusStyle = (s, ad) => {
+                    if (s === "completed" || s === "done" || s === "yes") {
+                      return ad ? { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100", label: "Finalized" } 
+                                : { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100", label: "Verification" };
+                    }
+                    if (s === "overdue") return { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-100", label: "Delayed" };
+                    return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100", label: "Active" };
+                  };
+                  const statusUI = getStatusStyle(task.status, task.admin_done);
+
+                  return (
+                    <motion.div
+                      key={`${task.id}-${task.taskStartDate}-${index}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="p-4 space-y-4"
+                      onClick={() => handleEditClick(task)}
+                    >
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-indigo-600/50">#{task.id}</span>
+                            {dashboardType === "delegation" && (
+                              <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider
+                                ${task.timeStatus === "Overdue" ? "bg-rose-50 text-rose-600 border border-rose-100" :
+                                  task.timeStatus === "Today" ? "bg-amber-50 text-amber-600 border border-amber-100" :
+                                    task.timeStatus === "Submitted" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                                      "bg-blue-50 text-blue-600 border border-blue-100"
+                                }`}>
+                                {task.timeStatus}
+                              </span>
+                            )}
+                         </div>
+                         <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border shadow-sm ${statusUI.bg} ${statusUI.text} ${statusUI.border}`}>
+                            {statusUI.label}
+                         </span>
+                      </div>
+
+                      <div className="text-xs font-bold text-gray-700 leading-relaxed">
+                         <RenderDescription
+                            text={task.title || task.task_description}
+                            audioUrl={task.audio_url}
+                            instructionUrl={task.instruction_attachment_url}
+                            instructionType={task.instruction_attachment_type}
+                          />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                         <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[9px] font-black text-gray-500">
+                               {task.assignedTo?.charAt(0) || '?'}
+                            </div>
+                            <div className="flex flex-col">
+                               <span className="text-[10px] font-black text-gray-700">{task.assignedTo}</span>
+                               <span className="text-[8px] font-bold text-gray-400 uppercase">{task.department}</span>
+                            </div>
+                         </div>
+                         <div className="text-right flex flex-col">
+                            <span className="text-[10px] font-black text-gray-700">{task.taskStartDate}</span>
+                            <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                               <div className={`w-1 h-1 rounded-full ${getFrequencyColor(task.frequency)}`} />
+                               <span className="text-[8px] font-black text-gray-400 uppercase">{task.frequency}</span>
+                            </div>
+                         </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
 
             {isLoadingMore && (
               <div className="p-10 flex flex-col items-center justify-center">
