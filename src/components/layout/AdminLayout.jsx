@@ -184,13 +184,6 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode, showLa
   // Update the routes array based on user role and super admin status
   const routes = [
     {
-      href: "/dashboard/admin",
-      label: "Dashboard",
-      icon: Database,
-      active: location.pathname === "/dashboard/admin",
-      showFor: ["admin", "user", "HOD"],
-    },
-    {
       href: "/dashboard/quick-task",
       label: "Task Manager List",
       icon: Zap,

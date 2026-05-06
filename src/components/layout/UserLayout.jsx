@@ -67,12 +67,10 @@ const UserLayout = ({ children }) => {
 
   const routes = isAdmin
     ? [
-      { href: "/admin/dashboard", label: "Dashboard", icon: "home" },
       { href: "/admin/assign-task", label: "Assign Task", icon: "check-square" },
       { href: "/admin/tasks", label: "All Tasks", icon: "clipboard-list" },
     ]
     : [
-      { href: "/user/dashboard", label: "Dashboard", icon: "home" },
       { href: "/user/tasks", label: "My Tasks", icon: "clipboard-list" },
       { href: "/user/completed-tasks", label: "Completed Tasks", icon: "check-square" },
       { href: "/user/profile", label: "Profile", icon: "user" },
@@ -99,7 +97,7 @@ const UserLayout = ({ children }) => {
       <aside className="hidden w-48 flex-shrink-0 border-r border-green-200 dark:border-teal-800 bg-white dark:bg-gray-950 md:flex md:flex-col">
         <div className="flex h-14 items-center border-b border-green-200 dark:border-teal-800 px-4 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900 dark:to-teal-900">
           <Link
-            to={isAdmin ? "/admin/dashboard" : "/user/dashboard"}
+            to={isAdmin ? "/admin/assign-task" : "/user/tasks"}
             className="flex items-center gap-2 font-semibold text-green-700 dark:text-green-300"
           >
             <img src={aceLogo} alt="Checklist & Delegation Logo" className="h-8 w-8 rounded-full object-cover border border-green-200" />
@@ -176,7 +174,7 @@ const UserLayout = ({ children }) => {
       >
         <div className="flex h-14 items-center border-b border-green-200 dark:border-teal-800 px-4 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900 dark:to-teal-900">
           <Link
-            to={isAdmin ? "/admin/dashboard" : "/user/dashboard"}
+            to={isAdmin ? "/admin/assign-task" : "/user/tasks"}
             className="flex items-center gap-2 font-semibold text-green-700 dark:text-green-300"
             onClick={() => setIsMobileMenuOpen(false)}
           >

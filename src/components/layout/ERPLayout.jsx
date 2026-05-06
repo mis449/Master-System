@@ -30,7 +30,9 @@ import {
   Target,
   FileBarChart,
   CalendarDays,
-  AlertTriangle
+  AlertTriangle,
+  Zap,
+  CalendarCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import aceLogo from '../../assets/Ace_Logoo.jpg';
@@ -52,7 +54,7 @@ const ERPLayout = ({ children }) => {
       id: 'dashboard', 
       label: 'Dashboard', 
       icon: LayoutDashboard, 
-      path: '/dashboard/admin?view=user_status',
+      path: '/dashboard/admin',
       roles: ['admin', 'manager', 'user'],
       subItems: []
     },
@@ -64,9 +66,10 @@ const ERPLayout = ({ children }) => {
       roles: ['admin', 'manager', 'user'],
       subItems: [
         { label: 'Dashboard', path: '/dashboard/admin?view=checklist', icon: LayoutDashboard },
-        { label: 'Task List', path: '/dashboard/task', icon: ListTodo },
+        { label: 'Task Manager List', path: '/dashboard/quick-task', icon: Zap },
         { label: 'Assign Task', path: '/dashboard/assign-task', icon: PlusSquare },
         { label: 'Delegation', path: '/dashboard/delegation', icon: Users2 },
+        { label: 'Checklist', path: '/dashboard/task', icon: CalendarCheck },
         { label: 'Calendar', path: '/dashboard/calendar', icon: Calendar },
         { label: 'Holiday List', path: '/dashboard/holiday-list', icon: Palmtree },
         { label: 'Admin Approval', path: '/dashboard/admin-approval', icon: CheckCircle },
@@ -101,6 +104,14 @@ const ERPLayout = ({ children }) => {
       roles: ['admin', 'manager'],
       subItems: []
     },
+    { 
+      id: 'users', 
+      label: 'User Management', 
+      icon: Users, 
+      path: '/dashboard/user-management',
+      roles: ['admin'],
+      subItems: []
+    },
   ];
 
   const [activeModuleId, setActiveModuleId] = useState(() => {
@@ -109,6 +120,7 @@ const ERPLayout = ({ children }) => {
     
     if (path.startsWith('/sales')) return 'sales';
     if (path.startsWith('/purchase')) return 'purchase';
+    if (path.startsWith('/dashboard/user-management')) return 'users';
     if (path.includes('mis') || path.includes('kpi-kra')) return 'mis';
     if (path === '/dashboard/admin' || path === '/dashboard') {
       if (search.includes('view=checklist')) return 'checklist';
@@ -125,6 +137,7 @@ const ERPLayout = ({ children }) => {
     
     if (path.startsWith('/sales')) setActiveModuleId('sales');
     else if (path.startsWith('/purchase')) setActiveModuleId('purchase');
+    else if (path.startsWith('/dashboard/user-management')) setActiveModuleId('users');
     else if (path.includes('mis') || path.includes('kpi-kra')) setActiveModuleId('mis');
     else if (path === '/dashboard/admin' || path === '/dashboard') {
       if (search.includes('view=checklist')) setActiveModuleId('checklist');
@@ -199,7 +212,7 @@ const ERPLayout = ({ children }) => {
       {/* Sidebar Desktop */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 hidden md:flex flex-col bg-white border-r border-gray-200 shadow-2xl transition-all duration-500 ease-in-out
-          ${isSidebarOpen ? 'w-60' : 'w-16'}`}
+          ${isSidebarOpen ? 'w-52' : 'w-16'}`}
       >
         {/* Header - Brand & Logo */}
         <div className="h-16 flex items-center px-3 border-b border-gray-100 overflow-hidden shrink-0">
@@ -207,12 +220,12 @@ const ERPLayout = ({ children }) => {
             <img 
               src={aceLogo} 
               alt="Logo" 
-              className="w-10 h-10 rounded-xl shadow-md border border-gray-50 flex-shrink-0"
+              className="w-10 h-10 rounded-xl shadow-[0_8px_16px_rgba(37,99,235,0.15)] border border-gray-50 flex-shrink-0"
             />
             {isSidebarOpen && (
               <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-500">
-                <span className="text-xl font-black text-gray-800 tracking-tight">MIS</span>
-                <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md tracking-wider uppercase shadow-sm shadow-blue-200">ADMIN</span>
+                <span className="text-xl font-black text-gray-800 tracking-tight">Master</span>
+                <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md tracking-wider uppercase shadow-sm shadow-blue-200">SYSTEM</span>
               </div>
             )}
           </div>
@@ -245,7 +258,7 @@ const ERPLayout = ({ children }) => {
                     />
                     
                     {isSidebarOpen && (
-                      <span className="ml-3 font-bold text-sm truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                      <span className="ml-2.5 font-bold text-[12px] md:text-[13px] leading-tight tracking-tight flex-1 text-left animate-in fade-in slide-in-from-left-2 duration-300">
                         {module.label}
                       </span>
                     )}
@@ -345,7 +358,7 @@ const ERPLayout = ({ children }) => {
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-700">
           <div className="flex items-center gap-3">
-            <img src={aceLogo} alt="Logo" className="w-10 h-10 rounded-lg border-2 border-white/20" />
+            <img src={aceLogo} alt="Logo" className="w-10 h-10 rounded-lg shadow-[0_8px_16px_rgba(0,0,0,0.2)] border-2 border-white/20" />
             <span className="font-bold text-white">ERP MASTER</span>
           </div>
           <button onClick={toggleMobileMenu} className="p-1 rounded-lg text-white/80 hover:bg-white/10 transition-colors">
@@ -393,7 +406,7 @@ const ERPLayout = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-16'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-52' : 'md:ml-16'}`}>
         {/* Navbar */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40 backdrop-blur-md bg-white/80">
           <div className="flex items-center gap-4">

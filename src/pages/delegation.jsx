@@ -440,7 +440,7 @@ function DelegationDataPage() {
         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700 font-medium">
-              Showing <span className="text-purple-600">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-purple-600">{Math.min(currentPage * itemsPerPage, currentTasks.length)}</span> of <span className="text-purple-600">{currentTasks.length}</span> results
+              Showing <span className="text-blue-600">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-blue-600">{Math.min(currentPage * itemsPerPage, currentTasks.length)}</span> of <span className="text-blue-600">{currentTasks.length}</span> results
             </p>
           </div>
           <div>
@@ -463,7 +463,7 @@ function DelegationDataPage() {
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-bold ${currentPage === pageNum ? 'z-10 bg-purple-600 text-white shadow-lg' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'}`}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-bold ${currentPage === pageNum ? 'z-10 bg-blue-600 text-white shadow-lg' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'}`}
                   >
                     {pageNum}
                   </button>
@@ -807,13 +807,13 @@ function DelegationDataPage() {
       <div className="space-y-4 sm:space-y-6">
         {/* Sticky Header and Controls */}
         <div className="sticky top-0 z-40 bg-gray-50/95 backdrop-blur-md pt-2 pb-4 space-y-4 -mx-2 px-2 sm:mx-0 sm:px-0">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-blue-700">
             {showHistory
               ? CONFIG.PAGE_CONFIG.historyTitle
               : CONFIG.PAGE_CONFIG.title}
           </h1>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-purple-50 shadow-sm">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-50 shadow-sm">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="relative flex-1">
                 <Search
@@ -827,7 +827,7 @@ function DelegationDataPage() {
                   }
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
 
@@ -837,7 +837,7 @@ function DelegationDataPage() {
                     <select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="w-full sm:w-auto border border-purple-200 rounded-md px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 h-10"
+                      className="w-full sm:w-auto border border-blue-200 rounded-md px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
                     >
                       {filterOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -849,7 +849,7 @@ function DelegationDataPage() {
                 )}
                 <button
                   onClick={toggleHistory}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-purple-700 bg-white border border-purple-200 rounded-md hover:bg-purple-50 transition-colors shadow-sm h-10"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-blue-700 bg-white border border-blue-200 rounded-md hover:bg-blue-50 transition-colors shadow-sm h-10"
                 >
                   {showHistory ? (
                     <>
@@ -871,7 +871,7 @@ function DelegationDataPage() {
                     <button
                       onClick={handleSubmit}
                       disabled={selectedItemsCount === 0 || isSubmitting}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors h-10"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors h-10"
                     >
                       {isSubmitting
                         ? "..."
@@ -904,14 +904,14 @@ function DelegationDataPage() {
           </div>
         )}
 
-        <div className="rounded-lg border border-purple-200 shadow-md bg-white overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100 p-3 sm:p-4">
-            <h2 className="text-purple-700 font-medium text-sm sm:text-base">
+        <div className="rounded-lg border border-blue-200 shadow-md bg-white overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 p-3 sm:p-4">
+            <h2 className="text-blue-700 font-medium text-sm sm:text-base">
               {showHistory
                 ? `Completed ${CONFIG.SOURCE_SHEET_NAME} Tasks`
                 : `Pending ${CONFIG.SOURCE_SHEET_NAME} Tasks`}
             </h2>
-            <p className="text-purple-600 text-xs sm:text-sm mt-1">
+            <p className="text-blue-600 text-xs sm:text-sm mt-1">
               {showHistory
                 ? `${CONFIG.PAGE_CONFIG.historyDescription} for ${userRole === "admin" ? "all" : "your"
                 } tasks`
@@ -921,8 +921,8 @@ function DelegationDataPage() {
 
           {loading ? (
             <div className="text-center py-10">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-              <p className="text-purple-600 text-sm sm:text-base">Loading task data...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-blue-600 text-sm sm:text-base">Loading task data...</p>
             </div>
           ) : error ? (
             <div className="bg-red-50 p-4 rounded-md text-red-800 text-center text-sm sm:text-base">
@@ -937,11 +937,11 @@ function DelegationDataPage() {
           ) : showHistory ? (
             <>
               {/* Simplified History Filters - Only Date Range */}
-              <div className="p-3 sm:p-4 border-b border-purple-100 bg-gray-50">
+              <div className="p-3 sm:p-4 border-b border-blue-100 bg-gray-50">
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="flex flex-col">
                     <div className="mb-2 flex items-center">
-                      <span className="text-xs sm:text-sm font-medium text-purple-700">
+                      <span className="text-xs sm:text-sm font-medium text-blue-700">
                         Filter by Date Range:
                       </span>
                     </div>
@@ -1073,7 +1073,7 @@ function DelegationDataPage() {
                               ) || "—"}
                             </div>
                           </td>
-                          <td className="px-3 sm:px-6 py-2 sm:py-4 bg-purple-50 min-w-[150px] max-w-[250px]">
+                          <td className="px-3 sm:px-6 py-2 sm:py-4 bg-blue-50 min-w-[150px] max-w-[250px]">
                             <div
                               className="text-xs sm:text-sm text-gray-900 whitespace-normal break-words leading-relaxed"
                               title={history.reason}
@@ -1141,9 +1141,9 @@ function DelegationDataPage() {
               <div className="md:hidden space-y-4 p-4 bg-gray-50/50">
                 {paginatedTasks.length > 0 ? (
                   paginatedTasks.map((history, index) => (
-                    <div key={index} className="bg-white rounded-xl border border-purple-100 shadow-sm overflow-hidden">
-                      <div className="bg-purple-50/50 px-4 py-3 border-b border-purple-100 flex justify-between items-center">
-                        <span className="text-xs font-bold text-purple-800">#{history.id || index}</span>
+                    <div key={index} className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
+                      <div className="bg-blue-50/50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
+                        <span className="text-xs font-bold text-blue-800">#{history.id || index}</span>
                         <span
                           className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${history.status?.toLowerCase() === "done"
                             ? (history.admin_done ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800")
@@ -1184,9 +1184,9 @@ function DelegationDataPage() {
                           </div>
                         )}
                         {history.reason && (
-                          <div className="space-y-1 p-2 bg-purple-50 rounded">
-                            <p className="text-[10px] text-purple-400 uppercase font-semibold">Remarks</p>
-                            <p className="text-xs text-purple-700 italic">{history.reason}</p>
+                          <div className="space-y-1 p-2 bg-blue-50 rounded">
+                            <p className="text-[10px] text-blue-400 uppercase font-semibold">Remarks</p>
+                            <p className="text-xs text-blue-700 italic">{history.reason}</p>
                           </div>
                         )}
                         {history.image_url && (
@@ -1217,7 +1217,7 @@ function DelegationDataPage() {
                       <th className="px-2 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           checked={
                             (() => {
                               const selectableTasks = paginatedTasks.filter(t => t.timeStatus !== "Upcoming");
@@ -1257,7 +1257,7 @@ function DelegationDataPage() {
                       <th className="px-2 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-indigo-50">
                         Next Target
                       </th>
-                      <th className="px-2 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px] bg-purple-50">
+                      <th className="px-2 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px] bg-blue-50">
                         Remarks
                       </th>
                       <th className="px-2 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-orange-50">
@@ -1290,12 +1290,12 @@ function DelegationDataPage() {
                               </tr>
                             )}
                             <tr
-                              className={`${isSelected ? "bg-purple-50" : ""} hover:bg-gray-50`}
+                              className={`${isSelected ? "bg-blue-50" : ""} hover:bg-gray-50`}
                             >
                             <td className="px-2 sm:px-6 py-2 sm:py-4">
                               <input
                                 type="checkbox"
-                                className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
                                 checked={isSelected}
                                 disabled={task.timeStatus === "Upcoming"}
                                 title={task.timeStatus === "Upcoming" ? "Cannot submit upcoming tasks" : ""}
@@ -1352,7 +1352,7 @@ function DelegationDataPage() {
                               </div>
                             </td>
                             <td className="px-2 sm:px-6 py-2 sm:py-4">
-                              <div className="text-[10px] text-purple-600 font-bold whitespace-nowrap">
+                              <div className="text-[10px] text-blue-600 font-bold whitespace-nowrap">
                                 {task.submission_date ? formatDateTimeForDisplay(task.submission_date) : "New Task"}
                               </div>
                             </td>
@@ -1395,7 +1395,7 @@ function DelegationDataPage() {
                                 className="border border-gray-300 rounded-md px-2 py-1 w-full disabled:bg-gray-100 disabled:cursor-not-allowed text-xs sm:text-sm"
                               />
                             </td>
-                            <td className="px-2 sm:px-6 py-2 sm:py-4 min-w-[150px] max-w-[250px] bg-purple-50">
+                            <td className="px-2 sm:px-6 py-2 sm:py-4 min-w-[150px] max-w-[250px] bg-blue-50">
                               <textarea
                                 placeholder="Enter remarks"
                                 disabled={!isSelected}
@@ -1440,17 +1440,17 @@ function DelegationDataPage() {
                                       setViewerMedia({ url: task.image, type: 'image' });
                                       setViewerOpen(true);
                                     }}
-                                    className="text-purple-600 text-xs font-bold underline"
+                                    className="text-blue-600 text-xs font-bold underline"
                                   >
                                     View
                                   </button>
                                 </div>
                               ) : (
                                 <label className="cursor-pointer group">
-                                  <div className={`flex items-center justify-center p-2 rounded-lg border-2 border-dashed transition-all ${isSelected ? "border-purple-300 group-hover:border-purple-500 bg-purple-50" : "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"}`}>
+                                  <div className={`flex items-center justify-center p-2 rounded-lg border-2 border-dashed transition-all ${isSelected ? "border-blue-300 group-hover:border-blue-500 bg-blue-50" : "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"}`}>
                                     <Upload
                                       size={18}
-                                      className={isSelected ? "text-purple-500" : "text-gray-400"}
+                                      className={isSelected ? "text-blue-500" : "text-gray-400"}
                                     />
                                     {task.require_attachment?.toUpperCase() ===
                                       "YES" && (
@@ -1494,7 +1494,7 @@ function DelegationDataPage() {
               {/* Mobile view Toolbar */}
               {!showHistory && (
                 <div className="md:hidden sticky top-[header_height] z-30 transition-all duration-300">
-                  <div className="bg-white border-b border-purple-100 px-4 py-3 flex items-center justify-between shadow-sm">
+                  <div className="bg-white border-b border-blue-100 px-4 py-3 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="relative flex items-center">
                         <input
@@ -1504,7 +1504,7 @@ function DelegationDataPage() {
                             return submittableTasks.length > 0 && submittableTasks.every(t => selectedItems.has(t.id));
                           })()}
                           onChange={handleSelectAllItems}
-                          className="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-all cursor-pointer"
+                          className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-all cursor-pointer"
                         />
                       </div>
                       <span className="text-sm font-black text-gray-700 uppercase tracking-tight">Select All Tasks</span>
@@ -1551,16 +1551,16 @@ function DelegationDataPage() {
                             {task.timeStatus} Tasks
                           </div>
                         )}
-                        <div key={index} className={`bg-white rounded-xl border border-purple-100 shadow-sm overflow-hidden ${isSelected ? "ring-2 ring-purple-400" : ""}`}>
-                        <div className="bg-purple-50/50 px-4 py-3 border-b border-purple-100 flex justify-between items-center">
+                        <div key={index} className={`bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden ${isSelected ? "ring-2 ring-blue-400" : ""}`}>
+                        <div className="bg-blue-50/50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
                           <div className="flex items-center gap-3">
                             <input
                               type="checkbox"
-                              className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               checked={isSelected}
                               onChange={(e) => handleCheckboxClick(e, task.id)}
                             />
-                            <span className="text-xs font-bold text-purple-800 uppercase tracking-wider">#{task.id}</span>
+                            <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">#{task.id}</span>
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${task.timeStatus === "Overdue" ? "bg-red-100 text-red-700" :
                             task.timeStatus === "Today" ? "bg-amber-100 text-amber-700" :
@@ -1595,7 +1595,7 @@ function DelegationDataPage() {
                               <p className="text-xs font-black text-gray-900">{formatDateTimeForDisplay(task.planned_date)}</p>
                             </div>
                             <div className="space-y-1 text-right">
-                              <p className="text-[10px] text-purple-600 uppercase font-semibold">Last Activity</p>
+                              <p className="text-[10px] text-blue-600 uppercase font-semibold">Last Activity</p>
                               <p className="text-[10px] font-bold text-gray-900">{task.submission_date ? formatDateTimeForDisplay(task.submission_date) : "New Task"}</p>
                             </div>
                           </div>
@@ -1608,7 +1608,7 @@ function DelegationDataPage() {
                                   disabled={!isSelected}
                                   value={statusData[task.id] || ""}
                                   onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-purple-400"
+                                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-blue-400"
                                 >
                                   <option value="">Select</option>
                                   <option value="Done">Done</option>
@@ -1634,7 +1634,7 @@ function DelegationDataPage() {
                                 disabled={!isSelected}
                                 value={remarksData[task.id] || ""}
                                 onChange={(e) => setRemarksData((prev) => ({ ...prev, [task.id]: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs focus:ring-purple-400 resize-none"
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs focus:ring-blue-400 resize-none"
                                 rows="2"
                               />
                             </div>
@@ -1648,16 +1648,16 @@ function DelegationDataPage() {
                                   <button onClick={() => setUploadedImages(prev => { const next = { ...prev }; delete next[task.id]; return next; })} className="text-red-400"><X size={14} /></button>
                                 </div>
                               ) : task.image ? (
-                                <div className="flex items-center gap-2 p-2 bg-purple-50 rounded border border-purple-100">
+                                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border border-blue-100">
                                   <img src={task.image} className="w-8 h-8 rounded object-cover" alt="preview" />
-                                  <span className="text-[10px] text-purple-700 font-bold">Uploaded</span>
+                                  <span className="text-[10px] text-blue-700 font-bold">Uploaded</span>
                                   <button onClick={() => {
                                     setViewerMedia({ url: task.image, type: 'image' });
                                     setViewerOpen(true);
-                                  }} className="ml-auto text-purple-600 text-[10px] font-bold">View</button>
+                                  }} className="ml-auto text-blue-600 text-[10px] font-bold">View</button>
                                 </div>
                               ) : (
-                                <label className={`flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-xl transition-all ${isSelected ? "border-purple-200 bg-purple-50 text-purple-600" : "border-gray-100 bg-gray-50 text-gray-300"}`}>
+                                <label className={`flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-xl transition-all ${isSelected ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-100 bg-gray-50 text-gray-300"}`}>
                                   <Upload size={16} />
                                   <span className="text-xs font-bold">{task.require_attachment?.toUpperCase() === "YES" ? "Required*" : "Upload"}</span>
                                   <input type="file" className="hidden" accept="image/*" disabled={!isSelected} onChange={(e) => handleImageUpload(task.id, e)} />
@@ -1681,16 +1681,16 @@ function DelegationDataPage() {
               {/* Mobile Floating Submit Bar */}
               {!showHistory && selectedItems.size > 0 && (
                 <div className="md:hidden fixed bottom-6 left-4 right-4 z-40 animate-in slide-in-from-bottom-8 duration-500">
-                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-purple-100 p-2 overflow-hidden">
+                  <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-blue-100 p-2 overflow-hidden">
                     <div className="flex items-center justify-between">
                       <div className="pl-4">
-                        <p className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-0.5">Delegation</p>
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-0.5">Delegation</p>
                         <p className="text-xs font-bold text-gray-500">{selectedItems.size} task{selectedItems.size !== 1 ? 's' : ''} selected</p>
                       </div>
                       <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-black rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95 flex items-center gap-2"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center gap-2"
                       >
                         {isSubmitting ? (
                           <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Submitting</>

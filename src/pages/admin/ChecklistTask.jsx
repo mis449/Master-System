@@ -115,13 +115,13 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
     return (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible hover:shadow-md transition-all duration-300">
             {/* Card Header */}
-            <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 rounded-t-2xl">
+            <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 rounded-t-2xl">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-black shadow-sm">
+                    <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black shadow-sm">
                         {index + 1}
                     </div>
-                    <span className="text-sm font-bold text-purple-800">Task {index + 1}</span>
-                    {task.doer && <span className="text-xs text-purple-500 font-medium">— {task.doer}</span>}
+                    <span className="text-sm font-bold text-blue-800">Task {index + 1}</span>
+                    {task.doer && <span className="text-xs text-blue-600 font-medium">— {task.doer}</span>}
                 </div>
                 {total > 1 && (
                     <button type="button" onClick={() => onRemove(task.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
@@ -144,7 +144,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                                 onUpdate(task.id, { department: e.target.value, doer: "" });
                                 dispatch(uniqueDoerNameData(e.target.value));
                             }}
-                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
                         >
                             <option value="">Select Department</option>
                             {department.map((d, i) => (
@@ -163,7 +163,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                             value={task.givenBy}
                             onChange={handleChange}
                             disabled={(localStorage.getItem("role")?.toUpperCase() === "HOD" || (localStorage.getItem("role")?.toLowerCase() === "admin" && localStorage.getItem("user-name")?.toLowerCase() !== "admin"))}
-                            className={`w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${(localStorage.getItem("role")?.toUpperCase() === "HOD" || (localStorage.getItem("role")?.toLowerCase() === "admin" && localStorage.getItem("user-name")?.toLowerCase() !== "admin")) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm ${(localStorage.getItem("role")?.toUpperCase() === "HOD" || (localStorage.getItem("role")?.toLowerCase() === "admin" && localStorage.getItem("user-name")?.toLowerCase() !== "admin")) ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             <option value="">Select Assign From</option>
                             {givenBy.map((g, i) => <option key={i} value={g}>{g}</option>)}
@@ -180,7 +180,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                         name="doer"
                         value={task.doer}
                         onChange={handleChange}
-                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
                     >
                         <option value="">Select Doer</option>
                         {getFilteredDoers().map((d, i) => (
@@ -204,7 +204,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                                 const newRefs = [...(task.references || []), { id: Date.now() + Math.random(), type: e.target.value, link: "", file: null }];
                                 onUpdate(task.id, { references: newRefs });
                             }}
-                            className="text-[10px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded px-2 py-1 outline-none cursor-pointer transition-colors"
+                            className="text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-purple-100 border border-blue-200 rounded px-2 py-1 outline-none cursor-pointer transition-colors"
                         >
                             <option value="none">+ Add Reference</option>
                             <option value="image">Image (Upload)</option>
@@ -288,9 +288,9 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                                             onChange={handleChange}
                                             rows="3"
                                             placeholder="Enter task description..."
-                                            className="w-full p-3 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none bg-gray-50 focus:bg-white transition-all text-sm"
+                                            className="w-full p-3 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-purple-500 outline-none resize-none bg-gray-50 focus:bg-white transition-all text-sm"
                                         />
-                                        <button type="button" onClick={startRecording} className="absolute bottom-2.5 right-2.5 p-1.5 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200 transition-all" title="Record Voice Note">
+                                        <button type="button" onClick={startRecording} className="absolute bottom-2.5 right-2.5 p-1.5 bg-purple-100 text-blue-600 rounded-full hover:bg-purple-200 transition-all" title="Record Voice Note">
                                             <Mic className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -307,9 +307,9 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                                     </div>
                                 )}
                                 {task.recordedAudio && status !== 'recording' && (
-                                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-purple-700 flex items-center gap-1.5">
+                                            <span className="text-xs font-bold text-blue-700 flex items-center gap-1.5">
                                                 <Mic className="w-3 h-3" /> Voice Note Attached
                                             </span>
                                             <button type="button" onClick={() => { clearBlobUrl(); onUpdate(task.id, { recordedAudio: null }); }} className="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1">
@@ -331,7 +331,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                         <button
                             type="button"
                             onClick={() => !task.dateLocked && onUpdate(task.id, { showCalendar: !task.showCalendar })}
-                            className={`w-full px-3 py-2.5 text-left border border-gray-200 rounded-lg bg-gray-50 hover:bg-white focus:ring-2 focus:ring-purple-500 transition-all flex items-center justify-between text-xs ${task.dateLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-full px-3 py-2.5 text-left border border-gray-200 rounded-lg bg-gray-50 hover:bg-white focus:ring-2 focus:ring-blue-500 transition-all flex items-center justify-between text-xs ${task.dateLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
                             disabled={task.dateLocked}
                         >
                             <span className={task.date ? "text-gray-800" : "text-gray-400"}>
@@ -356,7 +356,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                             name="time"
                             value={task.time}
                             onChange={handleChange}
-                            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-purple-500 outline-none transition-all text-sm"
+                            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
                         />
                     </div>                    <div>
                         <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Frequency</label>
@@ -365,7 +365,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                             value={task.frequency}
                             onChange={handleChange}
                             disabled={task.frequencyLocked}
-                            className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-purple-500 outline-none transition-all text-xs ${task.frequencyLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-xs ${task.frequencyLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {FREQUENCY_OPTIONS.map((opt, i) => <option key={i} value={opt}>{opt}</option>)}
                         </select>
@@ -381,7 +381,7 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                             value={task.duration}
                             onChange={handleChange}
                             placeholder="e.g. 30 mins"
-                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
                         />
                     </div>
                 </div>
@@ -391,20 +391,20 @@ function TaskCard({ task, index, total, department, doerName, givenBy, dispatch,
                     <button
                         type="button"
                         onClick={() => onUpdate(task.id, { enableReminders: !task.enableReminders })}
-                        className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold transition-all ${task.enableReminders ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                        className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold transition-all ${task.enableReminders ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
                     >
                         <span>Enable Reminders</span>
-                        <div className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors ${task.enableReminders ? 'bg-purple-600' : 'bg-gray-300'}`}>
+                        <div className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors ${task.enableReminders ? 'bg-blue-600' : 'bg-gray-300'}`}>
                             <div className={`bg-white w-3 h-3 rounded-full shadow transform transition-transform ${task.enableReminders ? 'translate-x-4' : ''}`} />
                         </div>
                     </button>
                     <button
                         type="button"
                         onClick={() => onUpdate(task.id, { requireAttachment: !task.requireAttachment })}
-                        className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold transition-all ${task.requireAttachment ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                        className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold transition-all ${task.requireAttachment ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
                     >
                         <span>Require Attachment</span>
-                        <div className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors ${task.requireAttachment ? 'bg-purple-600' : 'bg-gray-300'}`}>
+                        <div className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors ${task.requireAttachment ? 'bg-blue-600' : 'bg-gray-300'}`}>
                             <div className={`bg-white w-3 h-3 rounded-full shadow transform transition-transform ${task.requireAttachment ? 'translate-x-4' : ''}`} />
                         </div>
                     </button>
@@ -866,7 +866,7 @@ export default function ChecklistTask() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-purple-600 rounded-xl text-white shadow-md">
+                        <div className="p-2.5 bg-blue-600 rounded-xl text-white shadow-md">
                             <ClipboardList size={20} />
                         </div>
                         <div>
@@ -912,7 +912,7 @@ export default function ChecklistTask() {
                 <button
                     type="button"
                     onClick={addTask}
-                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-purple-300 text-purple-600 font-bold rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 group"
+                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-blue-300 text-blue-600 font-bold rounded-2xl hover:border-purple-500 hover:bg-blue-50 transition-all duration-200 group"
                 >
                     <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     Add Another Task
@@ -926,7 +926,7 @@ export default function ChecklistTask() {
                             <p className="text-xs text-gray-400 mt-0.5">Recurring tasks will generate multiple entries</p>
                         </div>
                         <div className="text-right">
-                            <span className="text-2xl font-black text-purple-600">{tasks.length}</span>
+                            <span className="text-2xl font-black text-blue-600">{tasks.length}</span>
                             <p className="text-xs text-gray-400">Entries</p>
                         </div>
                     </div>
@@ -942,7 +942,7 @@ export default function ChecklistTask() {
                             type="button"
                             onClick={handlePreview}
                             disabled={isSubmitting}
-                            className="flex-grow py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transform transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="flex-grow py-3 bg-blue-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transform transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? (
                                 <><Loader2 size={18} className="animate-spin" /> Generating...</>
@@ -965,7 +965,7 @@ export default function ChecklistTask() {
                             </button>
                         </div>
                         <div className="p-5 overflow-y-auto flex-1">
-                            <div className="mb-4 bg-purple-50 text-purple-800 p-4 rounded-xl flex items-start gap-3">
+                            <div className="mb-4 bg-blue-50 text-blue-800 p-4 rounded-xl flex items-start gap-3">
                                 <FileCheck className="h-5 w-5 mt-0.5 flex-shrink-0" />
                                 <div>
                                     <p className="font-bold">Summary</p>
@@ -990,7 +990,7 @@ export default function ChecklistTask() {
                                                     </span>
                                                 )}
                                                 {task.recordedAudio && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded">
+                                                    <span className="inline-flex items-center gap-1 text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">
                                                         <Mic className="h-3 w-3" /> Voice
                                                     </span>
                                                 )}
@@ -1018,7 +1018,7 @@ export default function ChecklistTask() {
                             <button
                                 onClick={confirmSubmission}
                                 disabled={isSubmitting}
-                                className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-purple-700 transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Assigning...</> : <><Save size={16} /> Confirm & Assign</>}
                             </button>

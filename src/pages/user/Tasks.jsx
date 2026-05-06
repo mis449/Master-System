@@ -186,25 +186,25 @@ const UserTasks = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <h1 className="text-2xl font-bold tracking-tight text-green-700 dark:text-green-400">My Tasks</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-400">My Tasks</h1>
         <button
           onClick={handleSubmitTasks}
           disabled={selectedTasks.length === 0 || isSubmitting}
-          className="btn btn-primary bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white"
+          className="btn btn-primary bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
         >
           {isSubmitting ? "Submitting..." : `Complete ${selectedTasks.length} Selected Tasks`}
         </button>
       </div>
 
-      <div className="card border-green-200 dark:border-green-800 shadow-md">
-        <div className="card-header bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950">
-          <h2 className="text-lg font-medium text-green-700 dark:text-green-300">Task Management</h2>
-          <p className="text-sm text-green-600 dark:text-green-400">View, filter, and manage your assigned tasks</p>
+      <div className="card border-blue-200 dark:border-blue-800 shadow-md">
+        <div className="card-header bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+          <h2 className="text-lg font-medium text-blue-700 dark:text-blue-300">Task Management</h2>
+          <p className="text-sm text-blue-600 dark:text-blue-400">View, filter, and manage your assigned tasks</p>
         </div>
         <div className="card-body space-y-6">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="flex-1 space-y-2">
-              <label htmlFor="search" className="flex items-center text-green-700 dark:text-green-300">
+              <label htmlFor="search" className="flex items-center text-blue-700 dark:text-blue-300">
                 <i className="fas fa-search h-4 w-4 mr-2"></i>
                 Search Tasks
               </label>
@@ -213,11 +213,11 @@ const UserTasks = () => {
                 placeholder="Search by task title or description"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input border-green-200 dark:border-green-800"
+                className="input border-blue-200 dark:border-blue-800"
               />
             </div>
             <div className="space-y-2 md:w-[180px]">
-              <label htmlFor="status-filter" className="flex items-center text-green-700 dark:text-green-300">
+              <label htmlFor="status-filter" className="flex items-center text-blue-700 dark:text-blue-300">
                 <i className="fas fa-filter h-4 w-4 mr-2"></i>
                 Filter by Status
               </label>
@@ -225,7 +225,7 @@ const UserTasks = () => {
                 id="status-filter"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="select border-green-200 dark:border-green-800"
+                className="select border-blue-200 dark:border-blue-800"
               >
                 <option value="all">All Tasks</option>
                 <option value="pending">Pending</option>
@@ -234,7 +234,7 @@ const UserTasks = () => {
               </select>
             </div>
             <div className="space-y-2 md:w-[180px]">
-              <label htmlFor="frequency-filter" className="flex items-center text-green-700 dark:text-green-300">
+              <label htmlFor="frequency-filter" className="flex items-center text-blue-700 dark:text-blue-300">
                 <i className="fas fa-filter h-4 w-4 mr-2"></i>
                 Filter by Frequency
               </label>
@@ -242,7 +242,7 @@ const UserTasks = () => {
                 id="frequency-filter"
                 value={filterFrequency}
                 onChange={(e) => setFilterFrequency(e.target.value)}
-                className="select border-green-200 dark:border-green-800"
+                className="select border-blue-200 dark:border-blue-800"
               >
                 <option value="all">All Frequencies</option>
                 <option value="one-time">One Time</option>
@@ -263,19 +263,19 @@ const UserTasks = () => {
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-green-700 dark:text-green-300">Task List</h3>
+                <h3 className="text-lg font-medium text-blue-700 dark:text-blue-300">Task List</h3>
                 {filteredTasks.map((task) => (
                   <div
                     key={task.id}
                     className={`card ${task.completed ? "opacity-60" : ""} border-l-4 ${
                       task.completed
-                        ? "border-l-green-500"
+                        ? "border-l-blue-500"
                         : selectedTasks.includes(task.id)
                           ? "border-l-blue-500"
                           : "border-l-gray-300"
                     } transition-all hover:shadow-md`}
                   >
-                    <div className="p-4 pb-2 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 border-b border-green-200 dark:border-green-800">
+                    <div className="p-4 pb-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-b border-blue-200 dark:border-blue-800">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <input
@@ -287,7 +287,7 @@ const UserTasks = () => {
                             className="checkbox"
                           />
                           <h3
-                            className={`text-lg text-green-700 dark:text-green-300 ${task.completed ? "line-through" : ""}`}
+                            className={`text-lg text-blue-700 dark:text-blue-300 ${task.completed ? "line-through" : ""}`}
                           >
                             {task.title}
                           </h3>
@@ -296,7 +296,7 @@ const UserTasks = () => {
                           {task.frequency.charAt(0).toUpperCase() + task.frequency.slice(1)}
                         </span>
                       </div>
-                      <p className="text-sm text-green-600 dark:text-green-400">Due: {task.dueDate}</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">Due: {task.dueDate}</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {task.enableReminders && (
                           <span className="badge badge-blue">
@@ -318,10 +318,10 @@ const UserTasks = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-green-700 dark:text-green-300">Task Completion Form</h3>
+                <h3 className="text-lg font-medium text-blue-700 dark:text-blue-300">Task Completion Form</h3>
                 {selectedTasks.length === 0 ? (
-                  <div className="card border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 p-6 text-center">
-                    <p className="text-green-600 dark:text-green-400">Select tasks from the list to complete them.</p>
+                  <div className="card border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 p-6 text-center">
+                    <p className="text-blue-600 dark:text-blue-400">Select tasks from the list to complete them.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -330,15 +330,15 @@ const UserTasks = () => {
                       if (!task) return null
 
                       return (
-                        <div key={taskId} className="card border-green-200 dark:border-green-800">
-                          <div className="card-header bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950">
-                            <h3 className="text-md text-green-700 dark:text-green-300">{task.title}</h3>
+                        <div key={taskId} className="card border-blue-200 dark:border-blue-800">
+                          <div className="card-header bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+                            <h3 className="text-md text-blue-700 dark:text-blue-300">{task.title}</h3>
                           </div>
                           <div className="card-body space-y-4">
                             <div className="space-y-2">
                               <label
                                 htmlFor={`remarks-${task.id}`}
-                                className="block text-green-700 dark:text-green-300"
+                                className="block text-blue-700 dark:text-blue-300"
                               >
                                 Remarks
                               </label>
@@ -347,14 +347,14 @@ const UserTasks = () => {
                                 placeholder="Add your remarks or comments here"
                                 value={remarks[task.id] || ""}
                                 onChange={(e) => handleRemarksChange(task.id, e.target.value)}
-                                className="input border-green-200 dark:border-green-800"
+                                className="input border-blue-200 dark:border-blue-800"
                                 rows={3}
                               />
                             </div>
                             <div className="space-y-2">
                               <label
                                 htmlFor={`file-${task.id}`}
-                                className={`block ${task.requireAttachment ? "text-amber-700 dark:text-amber-300 font-medium" : "text-green-700 dark:text-green-300"}`}
+                                className={`block ${task.requireAttachment ? "text-amber-700 dark:text-amber-300 font-medium" : "text-blue-700 dark:text-blue-300"}`}
                               >
                                 {task.requireAttachment ? "Upload Proof (Required)" : "Upload Proof (Optional)"}
                               </label>
@@ -365,11 +365,11 @@ const UserTasks = () => {
                                 className={`input ${
                                   task.requireAttachment
                                     ? "border-amber-300 dark:border-amber-700"
-                                    : "border-green-200 dark:border-green-800"
+                                    : "border-blue-200 dark:border-blue-800"
                                 }`}
                               />
                               {selectedFiles[task.id] && (
-                                <p className="text-xs text-green-600 dark:text-green-400">
+                                <p className="text-xs text-blue-600 dark:text-blue-400">
                                   Selected file: {selectedFiles[task.id]?.name}
                                 </p>
                               )}
@@ -391,7 +391,7 @@ const UserTasks = () => {
                     <button
                       onClick={handleSubmitTasks}
                       disabled={isSubmitting}
-                      className="w-full btn btn-primary bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white"
+                      className="w-full btn btn-primary bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                     >
                       {isSubmitting ? "Submitting..." : `Complete ${selectedTasks.length} Selected Tasks`}
                     </button>

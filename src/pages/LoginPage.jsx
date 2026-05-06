@@ -52,9 +52,9 @@ const LoginPage = () => {
           try {
             const { data } = await supabase
               .from('users')
-              .select('Designation')
+              .select('designation')
               .eq('user_name', userData.user_name || userData.username)
-              .single();
+              .maybeSingle();
             if (data) {
               designation = data.Designation || "";
             }
@@ -100,7 +100,7 @@ const LoginPage = () => {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="pt-8 pb-4 px-6 text-center space-y-1">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-float">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg animate-float">
               <ShieldCheck className="text-white" size={32} />
             </div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight mt-3">
@@ -167,7 +167,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoginLoading}
-              className="w-full py-3.5 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2"
             >
               {isLoginLoading ? (
                 <>

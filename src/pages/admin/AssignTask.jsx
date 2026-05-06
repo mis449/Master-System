@@ -76,7 +76,7 @@ function SelectField({ icon: Icon, label, value, onChange, options, placeholder,
           value={value}
           onChange={onChange}
           required={required}
-          className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all pr-8"
+          className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-purple-400 transition-all pr-8"
         >
           <option value="">{placeholder || `Select ${label}`}</option>
           {options.map((opt) => (
@@ -101,7 +101,7 @@ function InputField({ icon: Icon, label, type = "text", value, onChange, placeho
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all"
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-purple-400 transition-all"
       />
     </div>
   );
@@ -117,7 +117,7 @@ function TextAreaField({ icon: Icon, label, value, onChange, placeholder, requir
         placeholder={placeholder}
         required={required}
         rows={3}
-        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all resize-none"
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-purple-400 transition-all resize-none"
       />
     </div>
   );
@@ -181,7 +181,7 @@ function DelegationForm({ departments, givenByList, doerList, onSubmit, isSubmit
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-purple-200 transition-all duration-200 disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-200 transition-all duration-200 disabled:opacity-60"
         >
           {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           {isSubmitting ? "Submitting..." : "Submit Delegation Task"}
@@ -210,12 +210,12 @@ function ChecklistTaskRow({ task, index, total, departments, givenByList, doerLi
   });
 
   return (
-    <div className="bg-white border border-purple-100 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-all">
+    <div className="bg-white border border-blue-100 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-all">
       {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-blue-100">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-black">{index + 1}</div>
-          <span className="text-sm font-bold text-purple-800">Task {index + 1}</span>
+          <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">{index + 1}</div>
+          <span className="text-sm font-bold text-blue-800">Task {index + 1}</span>
         </div>
         {total > 1 && (
           <button type="button" onClick={() => onRemove(task.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
@@ -288,7 +288,7 @@ function ChecklistForm({ departments, givenByList, doerList, onSubmit, isSubmitt
 
       <button
         type="button" onClick={addTask}
-        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-purple-300 text-purple-600 font-bold text-sm rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all"
+        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-blue-300 text-blue-600 font-bold text-sm rounded-xl hover:border-purple-500 hover:bg-blue-50 transition-all"
       >
         <Plus size={16} /> Add Another Task
       </button>
@@ -480,7 +480,7 @@ export default function AssignTask() {
             onClick={() => setTaskType("delegation")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-200 ${
               taskType === "delegation"
-                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-200"
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-200"
                 : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
             }`}
           >
@@ -508,16 +508,16 @@ export default function AssignTask() {
         </div>
 
         {/* Info Banner */}
-        <div className={`rounded-2xl border p-4 mb-6 ${taskType === "delegation" ? "bg-purple-50 border-purple-200" : "bg-indigo-50 border-indigo-200"}`}>
+        <div className={`rounded-2xl border p-4 mb-6 ${taskType === "delegation" ? "bg-blue-50 border-blue-200" : "bg-indigo-50 border-indigo-200"}`}>
           <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-xl ${taskType === "delegation" ? "bg-purple-600" : "bg-indigo-600"} text-white shrink-0`}>
+            <div className={`p-2 rounded-xl ${taskType === "delegation" ? "bg-blue-600" : "bg-indigo-600"} text-white shrink-0`}>
               {taskType === "delegation" ? <Zap size={16} /> : <RepeatIcon />}
             </div>
             <div>
-              <h3 className={`text-sm font-bold ${taskType === "delegation" ? "text-purple-800" : "text-indigo-800"}`}>
+              <h3 className={`text-sm font-bold ${taskType === "delegation" ? "text-blue-800" : "text-indigo-800"}`}>
                 {taskType === "delegation" ? "Delegation Task — One-Time" : "Checklist Task — Recurring"}
               </h3>
-              <p className={`text-xs mt-0.5 ${taskType === "delegation" ? "text-purple-600" : "text-indigo-600"}`}>
+              <p className={`text-xs mt-0.5 ${taskType === "delegation" ? "text-blue-600" : "text-indigo-600"}`}>
                 {taskType === "delegation"
                   ? "Assign a one-off task to a team member. It will appear in the Delegation module."
                   : "Assign recurring tasks with a frequency. They will appear in the Checklist module and auto-generate for 1 year."}

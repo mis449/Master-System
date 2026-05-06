@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [], notDoneOnTimeData = [] }) => {
     // 1. Calculate Dynamic Y-Axis scale including Negative range
-    const { yAxisTicks, totalRange, zeroPos, yMax, yMin } = useMemo(() => {
+    const { yAxisTicks, totalRange, zeroPos } = useMemo(() => {
         const maxPos = Math.max(...pendingData, 250);
         // Treat percentages as negative magnitudes for visualization
         // The user's image shows values like -70, -75, and an axis going to -250.
@@ -23,9 +23,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
         return {
             yAxisTicks: ticks,
             totalRange: range,
-            zeroPos: zeroPercentTop,
-            yMax: roundedMax,
-            yMin: minNeg
+            zeroPos: zeroPercentTop
         };
     }, [pendingData]);
 
@@ -52,7 +50,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
 
                 {/* Fixed Y-Axis (Sticky) */}
                 <div className="sticky left-0 z-40 bg-white/95 backdrop-blur-sm flex flex-col justify-between pr-2 border-r border-gray-200 text-[10px] text-gray-500 w-12 shrink-0 h-full">
-                    {yAxisTicks.map((tick, i) => (
+                    {yAxisTicks.map((tick) => (
                         <div
                             key={tick}
                             className="flex justify-end items-center relative"

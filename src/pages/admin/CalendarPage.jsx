@@ -409,19 +409,19 @@ const CalendarPage = () => {
             <div
                 key={i}
                 onClick={() => handleCellClick(i, holiday, isOffDay)}
-                className={`aspect-square border-r border-b border-gray-200 p-2 cursor-pointer transition-colors relative ${isHoliday ? 'bg-rose-50' : isOffDay ? 'bg-slate-50' : isToday ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
+                className={`aspect-square border-r border-b border-gray-200 p-2 cursor-pointer transition-colors relative ${isHoliday ? 'bg-blue-50' : isOffDay ? 'bg-slate-50' : isToday ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
             >
                 <div className="flex justify-between items-start mb-1">
-                    <span className={`text-xs font-bold ${isHoliday ? 'text-red-700 underline' : isOffDay ? 'text-gray-600' : isToday ? 'text-blue-700' : 'text-gray-700'}`}>
+                    <span className={`text-xs font-bold ${isHoliday ? 'text-blue-700 underline' : isOffDay ? 'text-gray-600' : isToday ? 'text-blue-700' : 'text-gray-700'}`}>
                         {i}
                     </span>
                     {dayTasks.length > 0 && !isHoliday && (
                         <div className="flex gap-0.5">
                             {Array.from(new Set(dayTasks.map(d => d.cat))).map(cat => (
                                 <div key={cat} className={`w-2 h-2 rounded-full ${cat === 'CK' ? 'bg-blue-600' :
-                                    cat === 'MT' ? 'bg-orange-600' :
-                                        cat === 'RP' ? 'bg-red-600' :
-                                            cat === 'DL' ? 'bg-purple-600' :
+                                    cat === 'MT' ? 'bg-blue-600' :
+                                        cat === 'RP' ? 'bg-blue-600' :
+                                            cat === 'DL' ? 'bg-blue-600' :
                                                 'bg-indigo-600'
                                     }`} title={cat} />
                             ))}
@@ -431,7 +431,7 @@ const CalendarPage = () => {
 
                 <div className="space-y-0.5 mt-1 overflow-hidden h-[calc(100%-1.5rem)]">
                     {isHoliday && (
-                        <p className="text-[9px] font-black text-red-600 uppercase leading-tight truncate px-1 mb-0.5 bg-red-100/50 rounded-sm">
+                        <p className="text-[9px] font-black text-blue-600 uppercase leading-tight truncate px-1 mb-0.5 bg-blue-100/50 rounded-sm">
                             {holiday.holiday_name}
                         </p>
                     )}
@@ -546,8 +546,8 @@ const CalendarPage = () => {
                 <div className="flex flex-wrap items-center justify-center gap-4 py-4 md:justify-start">
                     {[
                         { label: 'Checklist', color: 'bg-blue-600' },
-                        { label: 'Delegation', color: 'bg-purple-600' },
-                        { label: 'Holiday', color: 'bg-red-400' }
+                        { label: 'Delegation', color: 'bg-blue-600' },
+                        { label: 'Holiday', color: 'bg-blue-400' }
                     ].map(item => (
                         <div key={item.label} className="flex items-center gap-1.5 grayscale-[0.2] hover:grayscale-0 transition-all">
                             <div className={`w-3 h-3 ${item.color} rounded-sm shadow-sm`}></div>
@@ -602,19 +602,19 @@ const CalendarPage = () => {
                                         onClick={() => handleCellClick(day, holiday, isOffDay)}
                                         className={`bg-white rounded-lg border transition-all active:scale-[0.98] shadow-sm flex overflow-hidden ${isToday ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
                                     >
-                                        <div className={`w-14 flex-shrink-0 flex flex-col items-center justify-center ${isHoliday ? 'bg-red-50 text-red-600' : isToday ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-500'} border-r`}>
+                                        <div className={`w-14 flex-shrink-0 flex flex-col items-center justify-center ${isHoliday ? 'bg-blue-50 text-blue-600' : isToday ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-500'} border-r`}>
                                             <span className="text-[9px] font-bold uppercase">{new Date(dayDate).toLocaleString('default', { weekday: 'short' })}</span>
                                             <span className="text-lg font-bold">{day}</span>
                                         </div>
                                         <div className="p-3 flex-1 min-w-0">
                                             {isHoliday && (
-                                                <p className="text-[10px] font-bold text-red-600 uppercase mb-1">Holiday: {holiday.holiday_name}</p>
+                                                <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Holiday: {holiday.holiday_name}</p>
                                             )}
                                             {dayTasksTotal.length > 0 ? (
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {dayTasksTotal.slice(0, 3).map((task, idx) => (
                                                         <div key={idx} className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded border border-gray-100 max-w-full">
-                                                            <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${task.cat === 'CK' ? 'bg-blue-600' : task.cat === 'MT' ? 'bg-orange-600' : task.cat === 'RP' ? 'bg-red-600' : 'bg-purple-600'}`}></div>
+                                                            <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${task.cat === 'CK' ? 'bg-blue-600' : task.cat === 'MT' ? 'bg-blue-600' : task.cat === 'RP' ? 'bg-blue-600' : 'bg-blue-600'}`}></div>
                                                             <span className="text-[10px] font-bold text-gray-600 truncate max-w-[120px] uppercase">{task.title}</span>
                                                         </div>
                                                     ))}
@@ -675,12 +675,12 @@ const CalendarPage = () => {
                         {/* Modal Body */}
                         <div className="p-6 overflow-y-auto space-y-4 bg-white">
                             {isHolidayDate ? (
-                                <div className="py-12 px-6 text-center space-y-3 bg-red-50/30 border border-red-100 rounded-2xl">
-                                    <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <div className="py-12 px-6 text-center space-y-3 bg-blue-50/30 border border-blue-100 rounded-2xl">
+                                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
                                         <ShieldAlert size={32} />
                                     </div>
-                                    <h3 className="text-xl font-black text-red-900 uppercase tracking-tight">{holidayName}</h3>
-                                    <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Operations Suspended</p>
+                                    <h3 className="text-xl font-black text-blue-900 uppercase tracking-tight">{holidayName}</h3>
+                                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Operations Suspended</p>
                                 </div>
                             ) : selectedTasks.length === 0 ? (
                                 <div className="py-24 text-center">
@@ -706,12 +706,12 @@ const CalendarPage = () => {
                                                     onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
                                                     className="p-4 flex items-center gap-4 cursor-pointer group"
                                                 >
-                                                    <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${task.cat === 'CK' ? 'bg-blue-600' : task.cat === 'MT' ? 'bg-orange-600' : task.cat === 'RP' ? 'bg-red-600' : 'bg-purple-600'}`}></div>
+                                                    <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${task.cat === 'CK' ? 'bg-blue-600' : task.cat === 'MT' ? 'bg-blue-600' : task.cat === 'RP' ? 'bg-blue-600' : 'bg-blue-600'}`}></div>
                                                     
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-0.5">
                                                             <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">#{task.id}</span>
-                                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${task.type === 'checklist' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${task.type === 'checklist' ? 'bg-blue-50 text-blue-600' : 'bg-blue-50 text-blue-600'}`}>
                                                                 {task.type}
                                                             </span>
                                                         </div>
@@ -767,7 +767,7 @@ const CalendarPage = () => {
                                                             <div className="grid grid-cols-2 gap-8 py-5 border-y border-gray-100">
                                                                 <div>
                                                                     <p className="text-[9px] font-black text-gray-400 uppercase mb-2 tracking-widest">Operator Name</p>
-                                                                    <div className="flex items-center gap-3 font-bold text-gray-800 text-xs uppercase">
+                                                                    <div className="flex items-center gap-3 font-bold text-blue-800 text-xs uppercase">
                                                                         <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] overflow-hidden border-2 border-white shadow-sm">
                                                                             {userProfiles[task.name] ? (
                                                                                 <img src={userProfiles[task.name]} className="w-full h-full object-cover" alt="" />
@@ -780,7 +780,7 @@ const CalendarPage = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[9px] font-black text-gray-400 uppercase mb-2 tracking-widest">Department Unit</p>
-                                                                    <div className="text-xs font-black text-purple-600 uppercase">
+                                                                    <div className="text-xs font-black text-blue-600 uppercase">
                                                                         {task.department || 'General Operations'}
                                                                     </div>
                                                                 </div>

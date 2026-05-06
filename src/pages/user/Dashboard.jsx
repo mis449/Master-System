@@ -225,7 +225,7 @@ const TasksList = ({ filter }) => {
             className={`card ${task.completed ? "opacity-60" : ""} border-l-4 ${task.completed ? "border-l-green-500" : "border-l-blue-500"
               } transition-all hover:shadow-md`}
           >
-            <div className="p-4 pb-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-b border-blue-200 dark:border-blue-800">
+            <div className="p-4 pb-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-b border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <input

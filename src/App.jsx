@@ -14,6 +14,7 @@ import CalendarPage from "./pages/admin/CalendarPage"
 import QuickTask from "./pages/QuickTask"
 import Demo from "./pages/user/Demo"
 import Setting from "./pages/Setting"
+import UserManagement from "./pages/UserManagement"
 import MisReport from "./pages/admin/dashboard/MisReport";
 
 // --- Data & Delegation Imports ---
@@ -304,6 +305,15 @@ function App() {
                     />
 
                     {/* --- Settings --- */}
+                    <Route
+                        path="/dashboard/user-management"
+                        element={
+                            <ProtectedRoute allowedRoles={["admin"]}>
+                                <UserManagement />
+                            </ProtectedRoute>
+                        }
+                    />
+
                     <Route
                         path="/dashboard/setting"
                         element={

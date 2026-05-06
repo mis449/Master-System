@@ -25,11 +25,9 @@ const Setting = () => {
   const userRole = localStorage.getItem("role");
   const username = localStorage.getItem("user-name");
   const { showToast } = useMagicToast();
-  const [activeTab, setActiveTab] = useState('users');
-  const [showUserModal, setShowUserModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('departments');
   const [showDeptModal, setShowDeptModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [currentDeptId, setCurrentDeptId] = useState(null);
   const [usernameFilter, setUsernameFilter] = useState('');
   const [usernameDropdownOpen, setUsernameDropdownOpen] = useState(false);
@@ -59,11 +57,7 @@ const Setting = () => {
   const startBtnRef = useRef(null);
   const endBtnRef = useRef(null);
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [userToDeleteData, setUserToDeleteData] = useState({ id: null, name: '' });
   const [isDeleting, setIsDeleting] = useState(false);
-  const [profileFile, setProfileFile] = useState(null);
-  const [profilePreview, setProfilePreview] = useState(null);
 
   const { userData, department, departmentsOnly, givenBy, customDropdowns, loading, error } = useSelector((state) => state.setting);
   const dispatch = useDispatch();
@@ -227,10 +221,7 @@ const Setting = () => {
   };
 
   const handleAddButtonClick = () => {
-    if (activeTab === 'users') {
-      resetUserForm();
-      setShowUserModal(true);
-    } else if (activeTab === 'departments' || activeTab === 'categories') {
+    if (activeTab === 'departments' || activeTab === 'categories') {
       resetDeptForm();
       setShowDeptModal(true);
     }
@@ -966,7 +957,7 @@ const Setting = () => {
     switch (role) {
       case 'admin': return 'bg-blue-100 text-blue-800';
       case 'HOD': return 'bg-orange-100 text-orange-800';
-      case 'manager': return 'bg-purple-100 text-purple-800';
+      case 'manager': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -994,28 +985,26 @@ const Setting = () => {
     <ERPLayout>
       <div className="space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-6">
-          <h1 className="text-2xl font-bold text-purple-600">User Management System</h1>
+          <h1 className="text-2xl font-bold text-blue-600">User Management System</h1>
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex bg-gray-100/80 p-1 rounded-xl border border-gray-200/30 relative overflow-x-auto no-scrollbar max-w-max xscrol">
               {[
-                { id: 'users', label: 'Users', icon: User },
                 { id: 'departments', label: 'Departments', icon: Building, action: () => { dispatch(departmentDetails()); dispatch(givenByDetails()); } },
                 { id: 'leave', label: 'Leave', icon: Calendar },
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  className={`relative flex items-center justify-center gap-2 py-2 px-6 rounded-lg text-xs font-bold transition-all duration-500 whitespace-nowrap min-w-[110px] z-10 ${activeTab === tab.id ? 'text-white' : 'text-gray-500 hover:text-purple-600'}`}
+                  className={`relative flex items-center justify-center gap-2 py-2 px-6 rounded-lg text-xs font-bold transition-all duration-500 whitespace-nowrap min-w-[110px] z-10 ${activeTab === tab.id ? 'text-white' : 'text-gray-500 hover:text-blue-600'}`}
                   onClick={() => {
                     handleTabChange(tab.id);
-                    if (tab.id === 'users') dispatch(userDetails());
                     if (tab.action) tab.action();
                   }}
                 >
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="settingsTabPillMinimal"
-                      className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                      className="absolute inset-0 bg-blue-600 rounded-lg shadow-md"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
@@ -1035,15 +1024,14 @@ const Setting = () => {
                 <RefreshCw size={20} className={isRefreshing ? 'animate-spin' : ''} />
               </button>
 
-              {(activeTab === 'users' || activeTab === 'departments') && (
+              {activeTab === 'departments' && (
                 <button
                   onClick={handleAddButtonClick}
-                  className={`flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-lg font-bold shadow-md hover:bg-purple-700 transition-all text-sm ${(activeTab === 'users' && userRole !== 'admin') ? 'hidden' : ''}`}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all text-sm"
                 >
                   <Plus size={18} />
                   <span className="hidden sm:inline">
-                    {activeTab === 'users' ? 'New User' :
-                      (activeDeptSubTab === 'departments' ? 'New Department' : 'New Assign From')}
+                    {activeDeptSubTab === 'departments' ? 'New Department' : 'New Assign From'}
                   </span>
                   <span className="sm:hidden">Add</span>
                 </button>
@@ -1068,14 +1056,14 @@ const Setting = () => {
         {activeTab === 'leave' && (
           <div className="space-y-5">
             {/* Step 1: Leave Form */}
-            <div className="bg-white shadow rounded-xl border border-purple-200 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100 px-6 py-4 flex items-center justify-between">
+            <div className="bg-white shadow rounded-xl border border-blue-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-purple-700">Leave Management</h2>
-                  <p className="text-xs text-purple-500 mt-0.5">Reassign tasks to a substitute during leave period</p>
+                  <h2 className="text-lg font-bold text-blue-700">Leave Management</h2>
+                  <p className="text-xs text-blue-500 mt-0.5">Reassign tasks to a substitute during leave period</p>
                 </div>
                 {(leaveTasks.length > 0 || leaveSuccess) && (
-                  <button onClick={handleResetLeave} className="text-xs text-purple-600 border border-purple-200 rounded-lg px-3 py-1.5 hover:bg-purple-50 font-semibold transition-all">
+                  <button onClick={handleResetLeave} className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 font-semibold transition-all">
                     ↺ Start Over
                   </button>
                 )}
@@ -1095,7 +1083,7 @@ const Setting = () => {
                         setLeavePersonName(user ? user.user_name : '');
                         setLeaveTasks([]);
                       }}
-                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-gray-50"
+                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
                     >
                       <option value="">Select person...</option>
                       {userData && [...userData].filter(u => u && u.user_name).sort((a, b) => a.user_name.localeCompare(b.user_name)).map(user => (
@@ -1112,7 +1100,7 @@ const Setting = () => {
                       value={leaveRemark}
                       onChange={e => setLeaveRemark(e.target.value)}
                       placeholder="e.g. Family function, Sick leave..."
-                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-gray-50"
+                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
                     />
                   </div>
 
@@ -1144,7 +1132,7 @@ const Setting = () => {
                         setShowStartCalendar(!showStartCalendar);
                         setShowEndCalendar(false);
                       }}
-                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-left flex justify-between items-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-left flex justify-between items-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                       <span className={leaveStartDate ? 'text-gray-800' : 'text-gray-400'}>
                         {leaveStartDate ? formatDateLong(new Date(leaveStartDate)) : 'Select date'}
@@ -1190,7 +1178,7 @@ const Setting = () => {
                         setShowEndCalendar(!showEndCalendar);
                         setShowStartCalendar(false);
                       }}
-                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-left flex justify-between items-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-left flex justify-between items-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                       <span className={leaveEndDate ? 'text-gray-800' : 'text-gray-400'}>
                         {leaveEndDate ? formatDateLong(new Date(leaveEndDate)) : 'Select date'}
@@ -1214,7 +1202,7 @@ const Setting = () => {
                     <button
                       onClick={handleFetchLeaveTasks}
                       disabled={leaveTasksLoading || !leavePersonName || !leaveStartDate || !leaveEndDate}
-                      className="w-full py-2.5 px-4 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {leaveTasksLoading ? (
                         <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Fetching...</>
@@ -1238,7 +1226,7 @@ const Setting = () => {
 
             {/* Step 2: Tasks Preview + Shift */}
             {leaveTasks.length > 0 && !leaveSuccess && (
-              <div className="bg-white shadow rounded-xl border border-purple-200 overflow-hidden">
+              <div className="bg-white shadow rounded-xl border border-blue-200 overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base font-bold text-blue-800">Tasks During Leave Period</h3>
@@ -1288,7 +1276,7 @@ const Setting = () => {
                                 setSelectedLeaveTaskIds([]);
                               }
                             }}
-                            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
@@ -1301,7 +1289,7 @@ const Setting = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {leaveTasks.map((task, idx) => (
-                        <tr key={task._uniqueId} className={`hover:bg-gray-50 transition-colors ${selectedLeaveTaskIds.includes(task._uniqueId) ? 'bg-purple-50/50' : ''}`}>
+                        <tr key={task._uniqueId} className={`hover:bg-gray-50 transition-colors ${selectedLeaveTaskIds.includes(task._uniqueId) ? 'bg-blue-50/50' : ''}`}>
                           <td className="px-4 py-3">
                             <input
                               type="checkbox"
@@ -1313,7 +1301,7 @@ const Setting = () => {
                                   setSelectedLeaveTaskIds(prev => prev.filter(id => id !== task._uniqueId));
                                 }
                               }}
-                              className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                             />
                           </td>
                           <td className="px-4 py-3 text-xs text-gray-400 font-medium">{idx + 1}</td>
@@ -1332,7 +1320,7 @@ const Setting = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${task._table === 'checklist' ? 'bg-blue-100 text-blue-700' :
-                              task._table === 'delegation' ? 'bg-purple-100 text-purple-700' :
+                              task._table === 'delegation' ? 'bg-blue-100 text-blue-700' :
                                 task._table === 'maintenance_tasks' ? 'bg-orange-100 text-orange-700' :
                                   task._table === 'repair_tasks' ? 'bg-red-100 text-red-700' :
                                     'bg-green-100 text-green-700'
@@ -1374,255 +1362,16 @@ const Setting = () => {
         )}
 
 
-        {/* Users Tab */}
-        {activeTab === 'users' && (
-          <div className="bg-white shadow rounded-lg overflow-hidden border border-purple-200">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple px-4 py-4 md:px-6 flex flex-col md:flex-row gap-4 md:items-center justify-between">
-              <h2 className="text-lg font-bold text-purple-700">User List</h2>
-
-              <div className="flex items-center gap-2">
-                <div className="relative w-full sm:w-auto">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    list="usernameOptions"
-                    placeholder="Search users..."
-                    value={usernameFilter}
-                    onChange={(e) => setUsernameFilter(e.target.value)}
-                    className="w-full sm:w-48 pl-10 pr-8 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm shadow-sm"
-                  />
-                  <datalist id="usernameOptions">
-                    {(userData || []).filter(u => u && u.user_name).map(user => (
-                      <option key={`opt-user-${user.id}`} value={user.user_name} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-            </div>
-
-            <div className="max-h-[calc(100vh-250px)] overflow-auto scrollbar-thin">
-              <div className="inline-block min-w-full align-middle">
-                {/* Desktop View */}
-                <div className="hidden md:block">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Username
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Phone No.
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User ID
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Password
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Department
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Reported To
-                        </th>
-                        {userRole === 'admin' && (
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {(() => {
-                        const filtered = (userData || [])
-                          .filter(user =>
-                            user &&
-                            user.user_name && (
-                              !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase()))
-                          );
-                        console.log("Setting Page - Filtered Users COUNT:", filtered.length);
-                        return filtered;
-                      })().map((user, index) => (
-                        <tr key={`user-${user?.id || index}`} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden mr-3 border border-indigo-200">
-                                {user?.profile_image ? (
-                                  <img src={user.profile_image} alt={user.user_name} className="h-full w-full object-cover" />
-                                ) : (
-                                  <span className="text-xs font-bold text-indigo-700">{user?.user_name?.charAt(0).toUpperCase()}</span>
-                                )}
-                              </div>
-                              <div className="text-sm font-medium text-gray-900">{user?.user_name}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{user?.email_id}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{user?.number}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user?.status)}`}>
-                              {user?.status || 'active'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100 w-fit">
-                              {user?.id}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 font-mono">
-                              {(userRole === 'admin' || user?.user_name === username) ? user?.password : '••••••••'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{user?.department || '—'}</div>
-                          </td>
-
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex flex-col gap-1.5">
-                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(user?.role)}`}>
-                                {user?.role}
-                              </span>
-                              {user?.can_self_assign && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-tighter border border-indigo-100 shadow-sm animate-fade-in">
-                                  <div className="w-1 h-1 rounded-full bg-indigo-600 animate-pulse"></div>
-                                  Self-Assign
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-xs font-medium text-gray-600">{user?.reported_by || 'Admin'}</span>
-                          </td>
-                          {userRole === 'admin' && (
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => handleEditUser(user?.id)}
-                                  className="p-1 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                  title="Edit User"
-                                >
-                                  <Edit size={18} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteUser(user?.id)}
-                                  className="p-1 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                  title="Delete User"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile View Cards */}
-                <div className="md:hidden space-y-4 p-4 bg-gray-50/50">
-                  {(userData || [])
-                    .filter(user =>
-                      user &&
-                      user.user_name &&
-                      user.user_name !== 'admin' &&
-                      user.user_name !== 'DSMC' && (
-                        !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase()))
-                    )
-                    .map((user, index) => (
-                      <div key={`user-card-${user?.id || index}`} className="bg-white rounded-xl border border-purple-100 shadow-sm overflow-hidden animate-fade-in">
-                        <div className="bg-purple-50/50 px-4 py-3 border-b border-purple-100 flex justify-between items-center">
-                          <span className="text-sm font-bold text-purple-900">{user?.user_name}</span>
-                        </div>
-                        <div className="p-4 space-y-3">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 uppercase font-semibold">Status</p>
-                              <span className={`px-1.5 py-0.5 inline-flex text-[10px] leading-4 font-bold rounded-full uppercase ${getStatusColor(user?.status)}`}>
-                                {user?.status || 'active'}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 uppercase font-semibold">User ID</p>
-                              <p className="text-xs text-gray-700 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 w-fit">
-                                {user?.id}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 uppercase font-semibold">Password</p>
-                              <p className="text-xs text-gray-700 font-mono">
-                                {(userRole === 'admin' || user?.user_name === username) ? user?.password : '••••••••'}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 uppercase font-semibold">Role</p>
-                              <span className={`px-1.5 py-0.5 inline-flex text-[10px] leading-4 font-bold rounded-full uppercase ${getRoleColor(user?.role)}`}>
-                                {user?.role}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1">
-                            <p className="text-[10px] text-gray-400 uppercase font-semibold">Email</p>
-                            <p className="text-xs text-gray-700 truncate">{user?.email_id || '—'}</p>
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 uppercase font-semibold">Department</p>
-                              <p className="text-xs text-indigo-700 font-bold">{user?.department || '—'}</p>
-                            </div>
-                          </div>
-
-                          {userRole === 'admin' && (
-                            <div className="pt-3 border-t border-gray-100 flex justify-end gap-2">
-                              <button
-                                onClick={() => handleEditUser(user?.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all"
-                              >
-                                <Edit size={14} /> Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteUser(user?.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-all"
-                              >
-                                <Trash2 size={14} /> Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        )}
-
         {/* Departments Tab */}
         {activeTab === 'departments' && (
-          <div className="bg-white shadow rounded-lg overflow-hidden border border-purple-200">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple px-4 py-4 md:px-6">
+          <div className="bg-white shadow rounded-lg overflow-hidden border border-blue-200">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-purple px-4 py-4 md:px-6">
               <div className="flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left">
-                <h2 className="text-lg font-bold text-purple-700">Department Management</h2>
+                <h2 className="text-lg font-bold text-blue-700">Department Management</h2>
 
-                <div className="flex border border-purple-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                <div className="flex border border-blue-200 rounded-lg overflow-hidden bg-white shadow-sm">
                   <button
-                    className={`px-4 py-2 text-xs font-bold transition-all ${activeDeptSubTab === 'departments' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50'}`}
+                    className={`px-4 py-2 text-xs font-bold transition-all ${activeDeptSubTab === 'departments' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 hover:bg-blue-50'}`}
                     onClick={() => {
                       setActiveDeptSubTab('departments');
                       dispatch(departmentDetails());
@@ -1631,7 +1380,7 @@ const Setting = () => {
                     Main Departments
                   </button>
                   <button
-                    className={`px-4 py-2 text-xs font-bold border-l border-purple-100 transition-all ${activeDeptSubTab === 'givenBy' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50'}`}
+                    className={`px-4 py-2 text-xs font-bold border-l border-blue-100 transition-all ${activeDeptSubTab === 'givenBy' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 hover:bg-blue-50'}`}
                     onClick={() => {
                       setActiveDeptSubTab('givenBy');
                       dispatch(givenByDetails());
@@ -1763,305 +1512,6 @@ const Setting = () => {
 
 
 
-        {/* User Modal */}
-        {showUserModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300"
-              onClick={() => setShowUserModal(false)}
-            ></div>
-
-            <div className="relative bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-300 border border-white/50 flex flex-col max-h-[95vh]">
-              {/* Premium Header */}
-              <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-10 py-8 relative">
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px]"></div>
-                <div className="relative z-10 flex justify-between items-center">
-                  <div>
-                    <h3 className="text-2xl font-black text-white tracking-tight">
-                      {isEditing ? 'Update Profile' : 'Nurture Talent'}
-                    </h3>
-                    <p className="text-white/70 text-xs font-bold uppercase tracking-[0.2em] mt-1">
-                      {isEditing ? 'Refine user information' : 'Create a new team member'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowUserModal(false)}
-                    className="p-2.5 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all hover:rotate-90"
-                  >
-                    <X size={22} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-10 overflow-y-auto no-scrollbar">
-                <form onSubmit={isEditing ? handleUpdateUser : handleAddUser} className="space-y-8">
-                  {/* Profile Image Section */}
-                  <div className="flex flex-col items-center mb-8">
-                    <div className="relative group">
-                      <div className="h-28 w-28 rounded-full bg-white p-1.5 shadow-2xl ring-4 ring-purple-100/50">
-                        <div className="h-full w-full rounded-full bg-gradient-to-tr from-indigo-50 to-purple-50 border-2 border-dashed border-purple-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-purple-400 group-hover:bg-purple-50/50">
-                          {profilePreview || userForm.profile_image ? (
-                            <img
-                              src={profilePreview || userForm.profile_image}
-                              alt="Profile"
-                              className="h-full w-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-                            />
-                          ) : (
-                            <User size={40} className="text-purple-200 group-hover:text-purple-400 transition-colors" />
-                          )}
-                        </div>
-                      </div>
-                      <label className="absolute bottom-1 right-1 bg-indigo-600 text-white p-2.5 rounded-full cursor-pointer shadow-xl hover:bg-indigo-700 transition-all active:scale-90 ring-4 ring-white">
-                        <Plus size={18} strokeWidth={3} />
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                              setProfileFile(file);
-                              const reader = new FileReader();
-                              reader.onloadend = () => setProfilePreview(reader.result);
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </label>
-                    </div>
-                    <span className="text-[10px] text-gray-400 mt-4 font-black uppercase tracking-widest">Profile Identity</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="username" className="block text-sm font-bold text-gray-700 ml-1">Username</label>
-                      <input
-                        type="text"
-                        name="username"
-                        id="username"
-                        value={userForm.username}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                        placeholder="Enter username"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="block text-sm font-bold text-gray-700 ml-1">Email Address</label>
-                      <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        value={userForm.email}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                        placeholder="Enter email address"
-                      />
-                    </div>
-
-                    {!isEditing && (
-                      <div className="space-y-2">
-                        <label htmlFor="password" className="block text-sm font-bold text-gray-700 ml-1">Password</label>
-                        <input
-                          type="password"
-                          name="password"
-                          id="password"
-                          value={userForm.password}
-                          onChange={handleUserInputChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                          placeholder="••••••••"
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <label htmlFor="phone" className="block text-sm font-bold text-gray-700 ml-1">Phone Number</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        id="phone"
-                        value={userForm.phone}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                        placeholder="+91 00000 00000"
-                      />
-                    </div>
-
-
-
-                    <div className="space-y-2">
-                      <label htmlFor="role" className="block text-sm font-bold text-gray-700 ml-1">User Role</label>
-                      <select
-                        id="role"
-                        name="role"
-                        value={userForm.role}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="HOD">HOD</option>
-                        <option value="user">User</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="reported_by" className="block text-sm font-bold text-gray-700 ml-1">Reported To (Supervisor)</label>
-                      <select
-                        id="reported_by"
-                        name="reported_by"
-                        value={userForm.reported_by}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                      >
-                        <option value="">No Supervisor (Direct Admin)</option>
-                        {userData && userData.length > 0 && userData
-                          .filter(u => u && u.user_name !== userForm.username && u.user_name !== 'admin')
-                          .map((u, i) => (
-                            <option key={i} value={u.user_name}>{u.user_name}</option>
-                          ))
-                        }
-                      </select>
-                    </div>
-
-                    <div className="space-y-2 md:col-span-2">
-                      <label htmlFor="department" className="block text-sm font-bold text-gray-700 ml-1">Department Assigned</label>
-                      <select
-                        id="department"
-                        name="department"
-                        value={userForm.department}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                      >
-                        <option value="">Choose a department...</option>
-                        {department && department.length > 0 ? (
-                          [...new Set(department.map(dept => dept.department))]
-                            .filter(Boolean)
-                            .map((deptName, index) => (
-                              <option key={index} value={deptName}>{deptName}</option>
-                            ))
-                        ) : null}
-                      </select>
-                    </div>
-
-                    {/* Designation Field — shown for both new and edit */}
-                    <div className="space-y-2">
-                      <label htmlFor="Designation" className="block text-sm font-bold text-gray-700 ml-1">Designation</label>
-                      <input
-                        type="text"
-                        name="Designation"
-                        id="Designation"
-                        value={userForm.Designation}
-                        onChange={handleUserInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                        placeholder="e.g. Senior Technician, Supervisor..."
-                      />
-                    </div>
-
-                    {isEditing && (
-                      <>
-                        <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-2">
-                          <h4 className="text-sm font-bold text-indigo-900 mb-4 px-1">Leave &amp; Status Management</h4>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="status" className="block text-sm font-bold text-gray-700 ml-1">User Status</label>
-                          <select
-                            id="status"
-                            name="status"
-                            value={userForm.status}
-                            onChange={handleUserInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                          >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="on_leave">On Leave</option>
-                          </select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="leave_date" className="block text-sm font-bold text-gray-700 ml-1">Leave Start Date</label>
-                          <input
-                            type="date"
-                            id="leave_date"
-                            name="leave_date"
-                            value={userForm.leave_date}
-                            onChange={handleUserInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="leave_end_date" className="block text-sm font-bold text-gray-700 ml-1">Leave End Date</label>
-                          <input
-                            type="date"
-                            id="leave_end_date"
-                            name="leave_end_date"
-                            value={userForm.leave_end_date}
-                            onChange={handleUserInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                          />
-                        </div>
-
-                        <div className="space-y-2 md:col-span-2">
-                          <label htmlFor="remark" className="block text-sm font-bold text-gray-700 ml-1">Remark / Reason</label>
-                          <textarea
-                            id="remark"
-                            name="remark"
-                            value={userForm.remark}
-                            onChange={handleUserInputChange}
-                            rows="2"
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
-                            placeholder="Enter any remarks or leave reason..."
-                          ></textarea>
-                        </div>
-                      </>
-                    )}
-
-                  </div>
-                  
-                  <div className="mt-8 bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-[2rem] border border-purple-100/50 flex items-center justify-between group transition-all hover:shadow-xl hover:shadow-purple-100/30">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-purple-600 shadow-sm border border-purple-100 group-hover:scale-110 transition-transform">
-                        <User size={20} strokeWidth={2.5} />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-black text-purple-900 uppercase tracking-widest mb-0.5 group-hover:text-indigo-600 transition-colors">Self-Assign Rights</h4>
-                        <p className="text-[10px] text-gray-400 font-bold max-w-[200px]">Allow this user to assign tasks to themselves</p>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer scale-110">
-                      <input 
-                        type="checkbox" 
-                        name="can_self_assign"
-                        checked={userForm.can_self_assign}
-                        onChange={(e) => setUserForm(prev => ({ ...prev, can_self_assign: e.target.checked }))}
-                        className="sr-only peer" 
-                      />
-                      <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-indigo-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-50 mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowUserModal(false)}
-                      className="px-8 py-3 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-all active:scale-95"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-10 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-black rounded-2xl hover:from-indigo-700 hover:to-purple-700 shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] hover:shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-widest"
-                    >
-                      <Save size={16} strokeWidth={3} />
-                      {isEditing ? 'Save Changes' : 'Create User'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Department / Category Modal */}
         {showDeptModal && (
@@ -2073,7 +1523,7 @@ const Setting = () => {
 
             <div className="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 max-h-[90vh] flex flex-col">
               {/* Premium Header */}
-              <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-rose-500 px-10 py-8 relative">
+              <div className="bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-500 px-10 py-8 relative">
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px]"></div>
                 <div className="relative z-10 flex justify-between items-center">
                   <div>
@@ -2107,7 +1557,7 @@ const Setting = () => {
                       id="name"
                       value={deptForm.name}
                       onChange={handleDeptInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                       placeholder={activeDeptSubTab === 'givenBy' ? 'e.g. CEO' : 'e.g. Marketing'}
                     />
                   </div>
@@ -2134,7 +1584,7 @@ const Setting = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-10 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-black rounded-2xl hover:from-purple-700 hover:to-pink-700 shadow-[0_10px_20px_-5px_rgba(192,38,211,0.4)] hover:shadow-pink-200 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-widest"
+                      className="px-10 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black rounded-2xl hover:from-purple-700 hover:to-indigo-700 shadow-[0_10px_20px_-5px_rgba(192,38,211,0.4)] hover:shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-widest"
                     >
                       <Save size={16} strokeWidth={3} />
                       {currentDeptId ? 'Update Entry' : 'Save Entry'}
@@ -2146,73 +1596,6 @@ const Setting = () => {
           </div>
         )}
 
-        {/* Custom Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300"
-              onClick={() => !isDeleting && setShowDeleteConfirm(false)}
-            ></div>
-            <div className="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50">
-              {/* Header with Icon */}
-              <div className="bg-gradient-to-br from-red-500 to-rose-600 px-6 pt-10 pb-8 text-center relative">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]"></div>
-                <div className="relative z-10">
-                  <div className="mx-auto w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-6 shadow-xl ring-4 ring-white/30">
-                    <Trash2 size={40} className="text-white" strokeWidth={2.5} />
-                  </div>
-                  <h3 className="text-2xl font-black text-white tracking-tight mb-2">Terminate Profile?</h3>
-                  <p className="text-white/80 text-xs font-bold uppercase tracking-widest px-4">
-                    Irreversible Deletion
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-8 py-8 text-center">
-                <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                  Are you absolutely certain about deleting <span className="text-red-600 font-extrabold">&quot;{userToDeleteData.name}&quot;</span>?
-                </p>
-
-                <div className="bg-amber-50 border border-amber-100 rounded-[1.5rem] p-5 text-left mb-8">
-                  <div className="flex gap-3">
-                    <div className="pt-1">
-                      <Settings className="text-amber-600 w-5 h-5 animate-spin-slow" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">Critical Guard</h4>
-                      <p className="text-[11px] text-amber-800/80 leading-relaxed">
-                        Un-shifted tasks will be <span className="font-bold underline text-red-600">permanently purged</span> from our systems.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="button"
-                    disabled={isDeleting}
-                    onClick={confirmDeleteUserAndTasks}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-[0_10px_20px_-5px_rgba(220,38,38,0.4)] hover:shadow-red-200 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-75"
-                  >
-                    {isDeleting ? (
-                      <><RefreshCw size={16} className="animate-spin" /> Executing...</>
-                    ) : (
-                      <>Confirm Termination</>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isDeleting}
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="w-full py-4 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors disabled:opacity-50"
-                  >
-                    Keep Profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </ERPLayout>
   );

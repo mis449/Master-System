@@ -97,33 +97,45 @@ const RealtimeLogoutListener = () => {
 
   // ✅ Check user status on refresh
   useEffect(() => {
+    let isMounted = true;
     const checkUserStatusOnLoad = async () => {
       const username = localStorage.getItem("user-name");
       if (!username) return;
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("status")
-        .ilike("user_name", username)
-        .limit(1);
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select('status')
+          .eq('user_name', username)
+          .maybeSingle();
 
-      if (error) {
-        console.error("Error checking user status on load:", error);
-        return;
-      }
+        if (!isMounted) return;
 
-      const userDataResult = data && data.length > 0 ? data[0] : null;
+        if (error) {
+          // Suppress AbortError as it usually happens during navigation/refresh
+          if (error.message?.includes('AbortError') || error.code === 'ABORT_ERR') {
+            return;
+          }
+          console.error("Error checking user status on load:", error);
+          return;
+        }
 
-      // Only logout if the user is found and explicitly marked as inactive
-      if (userDataResult && userDataResult.status === "inactive") {
-        console.warn("User account is inactive. Logging out.");
-        localStorage.clear();
-        navigate("/login");
-        window.location.reload();
+        // With maybeSingle, data is the object itself (not an array)
+        if (data && data.status === "inactive") {
+          console.warn("User account is inactive. Logging out.");
+          localStorage.clear();
+          navigate("/login");
+          window.location.reload();
+        }
+      } catch (err) {
+        if (isMounted && !err.message?.includes('abort')) {
+          console.error("Unexpected error in checkUserStatusOnLoad:", err);
+        }
       }
     };
 
     checkUserStatusOnLoad();
+    return () => { isMounted = false; };
   }, [navigate]);
 
   return null;
