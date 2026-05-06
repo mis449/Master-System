@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Loader2, Mic, Square, Trash2, Plus, Save, CheckCircle2, Clock } from "lucide-react";
+import { X, Loader2, Mic, Square, Trash2, Plus, Save, CheckCircle2, Clock, ArrowLeft, Wrench } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import ERPLayout from "../../components/layout/ERPLayout";
 import { useDispatch, useSelector } from "react-redux";
 import { createRepair } from "../../redux/slice/repairSlice";
@@ -368,7 +369,7 @@ export default function RepairTask() {
                             taskId: insertedTask.id || insertedTask.task_id,
                             description: insertedTask.issue_description,
                             audioUrl: insertedTask.audio_url,
-                            startDate: new Date(insertedTask.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+                            startDate: new Date(insertedTask.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }),
                             givenBy: insertedTask.filled_by,
                             taskType: 'repair',
                             machineName: insertedTask.machine_name,
@@ -376,15 +377,15 @@ export default function RepairTask() {
                     }
                 }
             } catch (whatsappError) {
-                console.error('WhatsApp notification error:', whatsappError);
+                console.error("WhatsApp notification error:", whatsappError);
             }
 
-            showToast(`${tasks.length} Repair Request(s) submitted successfully!`, 'success');
+            showToast(`${tasks.length} Repair Request(s) submitted successfully!`, "success");
             setTasks([defaultTask()]);
-            setTimeout(() => navigate('/dashboard/assign-task'), 2000);
+            setTimeout(() => navigate("/dashboard/assign-task"), 2000);
         } catch (error) {
             console.error("Submission failed:", error);
-            showToast("Failed to submit requests: " + error.message, 'error');
+            showToast("Failed to submit requests: " + error.message, "error");
         } finally {
             setIsSubmitting(false);
         }

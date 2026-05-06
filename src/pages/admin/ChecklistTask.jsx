@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    ClipboardList, Calendar, X, Mic, Square, Trash2, Plus, Save, Loader2, CheckCircle2, Clock, FileCheck, Play, Pause, ExternalLink
+    ClipboardList, Calendar, X, Mic, Square, Trash2, Plus, Save, Loader2, CheckCircle2, Clock, FileCheck, Play, Pause, ExternalLink, ArrowLeft
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ReactMediaRecorder } from "react-media-recorder";
 import ERPLayout from "../../components/layout/ERPLayout";
 import AudioPlayer from "../../components/AudioPlayer";

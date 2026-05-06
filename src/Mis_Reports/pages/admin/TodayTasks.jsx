@@ -215,7 +215,7 @@ const AdminTodayTasks = () => {
   const handleRowClick = async (empGroup) => {
     setActiveDrillDown({
       personName: empGroup.personName,
-      title: `Today's Task Details`,
+      title: `Today&apos;s Task Details`,
       rows: [],
       loading: true
     });
@@ -385,7 +385,7 @@ const AdminTodayTasks = () => {
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">S.No</th>
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Target Designation</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Today's Load</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Today&apos;s Load</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -433,7 +433,7 @@ const AdminTodayTasks = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1">Today's Load</p>
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1">Today&apos;s Load</p>
                     <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-[11px] font-black shadow-sm ${e.plannedCount > 0 ? "bg-blue-600 text-white shadow-blue-100" : "bg-gray-100 text-gray-400"}`}>
                       {e.plannedCount}
                     </span>

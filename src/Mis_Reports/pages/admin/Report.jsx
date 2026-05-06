@@ -585,7 +585,7 @@ const Report = () => {
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Task</p>
                   <p className="text-xs font-bold text-gray-800 leading-relaxed">{task.taskName}</p>
                   {task.description && (
-                    <p className="text-[10px] text-gray-500 mt-1 font-medium italic line-clamp-1">"{task.description}"</p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium italic line-clamp-1">&quot;{task.description}&quot;</p>
                   )}
                 </div>
 

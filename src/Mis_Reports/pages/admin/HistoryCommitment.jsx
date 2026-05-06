@@ -345,12 +345,12 @@ const AdminHistoryCommitment = () => {
 
                                     <div className="p-3 bg-red-50/50 rounded-xl border border-red-100">
                                         <p className="text-[9px] font-black text-red-600 uppercase mb-2 tracking-widest">Last Week Commitment</p>
-                                        <p className="text-xs font-bold text-red-700 italic">"{formatValue(r.lastWeekCommitment)}"</p>
+                                        <p className="text-xs font-bold text-red-700 italic">&quot;{formatValue(r.lastWeekCommitment)}&quot;</p>
                                     </div>
 
                                     <div className="p-3 bg-green-50/50 rounded-xl border border-green-100">
                                         <p className="text-[9px] font-black text-green-600 uppercase mb-2 tracking-widest">Next Week Commitment</p>
-                                        <p className="text-xs font-bold text-green-700 italic">"{formatValue(r.nextWeekCommitment)}"</p>
+                                        <p className="text-xs font-bold text-green-700 italic">&quot;{formatValue(r.nextWeekCommitment)}&quot;</p>
                                     </div>
                                 </div>
                             ))
