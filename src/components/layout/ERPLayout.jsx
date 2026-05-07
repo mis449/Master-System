@@ -56,6 +56,7 @@ const ERPLayout = ({ children }) => {
       icon: LayoutDashboard, 
       path: '/dashboard/admin',
       roles: ['admin', 'manager', 'user'],
+      section: 'CHECKLIST & DELEGATIONS',
       subItems: []
     },
     { 
@@ -64,6 +65,7 @@ const ERPLayout = ({ children }) => {
       icon: CheckSquare, 
       path: '/dashboard/checklist',
       roles: ['admin', 'manager', 'user'],
+      section: 'CHECKLIST & DELEGATIONS',
       subItems: [
         { label: 'Dashboard', path: '/dashboard/admin?view=checklist', icon: LayoutDashboard },
         { label: 'Task Manager List', path: '/dashboard/quick-task', icon: Zap },
@@ -82,6 +84,7 @@ const ERPLayout = ({ children }) => {
       icon: BarChart3, 
       path: '/dashboard/mis-dashboard',
       roles: ['admin'],
+      section: 'MIS REPORTS',
       subItems: [
         { label: 'Dashboard', path: '/dashboard/mis-dashboard', icon: LayoutDashboard },
         { label: 'History', path: '/dashboard/mis-history', icon: History },
@@ -94,6 +97,7 @@ const ERPLayout = ({ children }) => {
       icon: ShoppingCart, 
       path: '/sales',
       roles: ['admin', 'manager'],
+      section: 'SCALES',
       subItems: []
     },
     { 
@@ -102,6 +106,7 @@ const ERPLayout = ({ children }) => {
       icon: Package, 
       path: '/purchase',
       roles: ['admin', 'manager'],
+      section: 'PURCHASE',
       subItems: []
     },
     { 
@@ -110,6 +115,7 @@ const ERPLayout = ({ children }) => {
       icon: Users, 
       path: '/dashboard/user-management',
       roles: ['admin'],
+      section: 'ADMINISTRATION',
       subItems: []
     },
   ];
@@ -234,10 +240,16 @@ const ERPLayout = ({ children }) => {
         {/* Navigation Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-6">
           <nav className="px-3 space-y-1.5">
-            {filteredModules.map((module) => {
+            {filteredModules.map((module, index) => {
               const isActiveModule = activeModuleId === module.id;
+              const showSectionHeader = index === 0 || filteredModules[index - 1].section !== module.section;
+
               return (
                 <div key={module.id} className="space-y-1">
+                  {showSectionHeader && !isSidebarOpen && (
+                    <div className="h-px bg-gray-100 my-4 first:hidden" />
+                  )}
+
                   <button
                     onClick={() => {
                       setActiveModuleId(module.id);
@@ -366,35 +378,65 @@ const ERPLayout = ({ children }) => {
           </button>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-          {filteredModules.map((module) => (
-            <div key={module.id} className="space-y-1">
-              {module.subItems.map((item, idx) => {
-                const isActive = location.pathname === item.path;
-                return (
+          {filteredModules.map((module, index) => {
+            const showSectionHeader = index === 0 || filteredModules[index - 1].section !== module.section;
+            return (
+              <div key={module.id} className="space-y-1">
+                {showSectionHeader && (
+                  <div className="px-4 py-2 mt-2 first:mt-0">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      {module.section}
+                    </span>
+                  </div>
+                )}
+                
+                {/* If module has subItems, show subItems. If not, show the module itself. */}
+                {module.subItems.length > 0 ? (
+                  module.subItems.map((item, idx) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={idx}
+                        to={item.path}
+                        onClick={toggleMobileMenu}
+                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
+                          ${isActive 
+                            ? 'bg-blue-50/50 text-blue-600' 
+                            : 'text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                        <span className={`ml-3 font-semibold text-sm ${isActive ? 'text-blue-700' : ''}`}>{item.label}</span>
+                        {isActive && (
+                          <motion.div 
+                            layoutId="activeBarMobile"
+                            className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
+                          />
+                        )}
+                      </Link>
+                    );
+                  })
+                ) : (
                   <Link
-                    key={idx}
-                    to={item.path}
+                    to={module.path}
                     onClick={toggleMobileMenu}
                     className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
-                      ${isActive 
+                      ${location.pathname === module.path 
                         ? 'bg-blue-50/50 text-blue-600' 
                         : 'text-gray-600 hover:bg-gray-50'}`}
                   >
-                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                    <span className={`ml-3 font-semibold text-sm ${isActive ? 'text-blue-700' : ''}`}>{item.label}</span>
-                    
-                    {/* Active Indicator Bar on the Right (from Screenshot) */}
-                    {isActive && (
+                    <module.icon className={`w-5 h-5 flex-shrink-0 ${location.pathname === module.path ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    <span className={`ml-3 font-semibold text-sm ${location.pathname === module.path ? 'text-blue-700' : ''}`}>{module.label}</span>
+                    {location.pathname === module.path && (
                       <motion.div 
-                        layoutId="activeBar"
+                        layoutId="activeBarMobile"
                         className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
                       />
                     )}
                   </Link>
-                );
-              })}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
           <button
             onClick={logout}
             className="flex items-center px-4 py-3.5 w-full rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 mt-4 border border-dashed border-red-200"

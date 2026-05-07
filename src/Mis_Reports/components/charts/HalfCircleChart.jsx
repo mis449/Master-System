@@ -25,7 +25,9 @@ const HalfCircleChart = ({ data = [], labels = [], colors = ["#2563eb"] }) => {
           className="w-full h-full"
         >
           {safeData.map((value, index) => {
-            const percentage = (value / total) * 100;
+            const absVal = Math.abs(parseFloat(value) || 0);
+            const absTotal = safeData.reduce((sum, v) => sum + Math.abs(parseFloat(v) || 0), 0);
+            const percentage = (absVal / (absTotal || 1)) * 100;
             const angle = (percentage / 100) * 180;
             const startAngle = currentAngle;
             const endAngle = currentAngle + angle;

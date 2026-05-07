@@ -30,7 +30,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
     return (
         <div className="w-full h-full flex flex-col bg-white rounded-xl shadow-sm border border-gray-100">
             {/* Legend */}
-            <div className="flex flex-wrap justify-center gap-4 mb-6 text-[10px] md:text-xs pt-4">
+            <div className="flex flex-wrap justify-center gap-4 mb-6 text-[10px] md:text-xs pt-4 px-4">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-amber-500 rounded-sm" />
                     <span className="text-gray-600 font-medium">Total Pending Works</span>
@@ -46,7 +46,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
             </div>
 
             {/* Scrollable Container */}
-            <div className="flex-1 flex overflow-x-auto overflow-y-hidden custom-scrollbar pb-16 relative min-h-[400px]">
+            <div className="flex-1 flex overflow-x-auto overflow-y-hidden custom-scrollbar pb-16 relative">
 
                 {/* Fixed Y-Axis (Sticky) */}
                 <div className="sticky left-0 z-40 bg-white/95 backdrop-blur-sm flex flex-col justify-between pr-2 border-r border-gray-200 text-[10px] text-gray-500 w-12 shrink-0 h-full">
@@ -65,7 +65,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
                 {/* Chart Content */}
                 <div
                     className="flex-1 flex items-stretch justify-around relative min-w-max px-4"
-                    style={{ minWidth: Math.max(labels.length * 100, 600) + 'px' }}
+                    style={{ minWidth: Math.max(labels.length * 60, labels.length > 2 ? 300 : 0) + 'px' }}
                 >
                     {/* Grid Lines */}
                     <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
@@ -93,7 +93,7 @@ const DepartmentScoreChart = ({ labels = [], pendingData = [], notDoneData = [],
                         const notDoneOnTimeH = (notDoneOnTimeVal / totalRange) * 100;
 
                         return (
-                            <div key={idx} className="flex flex-col items-center w-[80px] md:w-[120px] shrink-0 relative h-full group">
+                            <div key={idx} className="flex flex-col items-center w-[60px] md:w-[120px] shrink-0 relative h-full group">
 
                                 {/* Pending Bar (Upwards) */}
                                 {pendingVal !== 0 && (

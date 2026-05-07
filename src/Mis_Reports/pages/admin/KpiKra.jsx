@@ -19,14 +19,15 @@ const designationData = {
     totalTasks: '20 daily tasks',
     scoringWorks: 'https://youtu.be/scoring-crm',
     scoreBetter: 'https://youtu.be/improve-crm',
-    keyPerson: 'Jayant Pandey (Marketing Manager)',
+    keyPerson: 'Sneha Soni (EA, Parekh Gallerium)',
     communicationTeam: [
-      'Jaidhish Pessary (Director and See Sales Operation Of Group)',
-      'Kavit Passary (Director and See All Operations)',
-      'Deyshree (Production Incharge)',
-      'Himany Pandey (Purchaser and Transport, EA)'
+      'Naman Parekh (Director and See Dispatch of Materials)',
+      'Siddhant – Sales Head, Parekh Gallerium',
+      'Sneha Soni, See All Operations, Parekh Gallerium)',
+      'Summer (See All Dispatch, Parekh Gallerium)',
+      'Sanjay (Accountant, Parekh Gallerium)'
     ],
-    howToCommunicate: 'Introduction Through EA (Himani) and Get The Number Of All and Connect With Company\'s Phone Number',
+    howToCommunicate: 'Introduction Through Sneha and Get the Contact Numbers of All Team Members and Company Phone Number',
     importanceScore: 'Critical for customer satisfaction and revenue generation',
     systems: [
       {

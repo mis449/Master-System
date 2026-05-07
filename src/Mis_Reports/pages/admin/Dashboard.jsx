@@ -4,6 +4,8 @@ import {
   Search, ChevronDown, Download, Filter, Loader2, CheckCircle2, BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { getDisplayableImageUrl } from '../../utils/imageUtils';
 import HalfCircleChart from "../../components/charts/HalfCircleChart";
 import VerticalBarChart from "../../components/charts/VerticalBarChart";
@@ -62,21 +64,21 @@ const AdminDashboard = () => {
   });
 
   const ALL_COLUMNS = [
-    { key: "name", label: "NAME" },
-    { key: "designation", label: "DESIGNATION" },
-    { key: "target", label: "TARGET" },
-    { key: "actualWork", label: "ACTUAL WORK" },
-    { key: "weeklyDone", label: "WEEKLY DONE %" },
-    { key: "weeklyOnTime", label: "WEEKLY ON TIME %" },
-    { key: "totalWork", label: "TOTAL WORK" },
-    { key: "weekPending", label: "WEEK PENDING" },
-    { key: "allPending", label: "ALL PENDING" },
-    { key: "lastWeekPlannedNotDone", label: "PLANNED % WORK NOT DONE" },
-    { key: "lastWeekPlannedNotDoneOnTime", label: "PLANNED % WORK NOT DONE ON TIME" },
-    { key: "lastWeekCommitment", label: "COMMITMENT" },
-    { key: "nextWeekPlannedNotDone", label: "PLANNED % WORK NOT DONE" },
-    { key: "nextWeekPlannedNotDoneOnTime", label: "PLANNED % WORK NOT DONE ON TIME" },
-    { key: "nextWeekCommitment", label: "COMMITMENT" },
+    { key: "name", label: "Name" },
+    { key: "designation", label: "Designation" },
+    { key: "target", label: "Target" },
+    { key: "actualWork", label: "Actual Work" },
+    { key: "weeklyDone", label: "Weekly Done %" },
+    { key: "weeklyOnTime", label: "Weekly On Time %" },
+    { key: "totalWork", label: "Total Work" },
+    { key: "weekPending", label: "Week Pending" },
+    { key: "allPending", label: "All Pending" },
+    { key: "lastWeekPlannedNotDone", label: "Last Week Planned Work Not Done %" },
+    { key: "lastWeekPlannedNotDoneOnTime", label: "Last Week Planned Work Not Done On Time %" },
+    { key: "lastWeekCommitment", label: "Last Week Commitment" },
+    { key: "nextWeekPlannedNotDone", label: "Next Week Planned Work Not Done %" },
+    { key: "nextWeekPlannedNotDoneOnTime", label: "Next Week Planned Work Not Done On Time %" },
+    { key: "nextWeekCommitment", label: "Next Week Commitment" },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState(() => {
@@ -228,8 +230,125 @@ const AdminDashboard = () => {
   }, [sheetEmployees, filterName, filterDepartment]);
 
   const handleDownload = () => {
-    // Trigger professional print view
-    window.print();
+    if (sheetEmployees.length === 0) return;
+    
+    const doc = new jsPDF('l', 'mm', 'a4'); // Switched to Landscape
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    // 1. Blue Branding Header
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, pageWidth, 25, 'F'); // Reduced height from 40 to 25
+    
+    // Logo Placeholder
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(12, 5, 15, 15, 3, 3, 'F');
+    doc.setTextColor(37, 99, 235);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ACE', 19.5, 14.5, { align: 'center' });
+
+    // Header Content
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.text('MIS ANALYTICS REPORT', pageWidth - 12, 12, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`DATE: ${dateStr.toUpperCase()}`, pageWidth - 12, 18, { align: 'right' });
+
+    // 2. Summary Grids
+    let startY = 32; // Reduced from 50
+    const colWidth = (pageWidth - 35) / 3;
+
+    const summarySections = [
+      { title: 'TOP PERFORMERS', data: topBestPerformers, color: [16, 185, 129], icon: '★' },
+      { title: 'PENDING TASKS', data: sortedPendingList, color: [239, 68, 68], icon: '⚠' },
+      { title: 'LOW PERFORMERS', data: topWorstPerformers, color: [59, 130, 246], icon: '▼' }
+    ];
+
+    summarySections.forEach((sec, idx) => {
+      const xPos = 12 + (idx * (colWidth + 5));
+      
+      doc.setFillColor(...sec.color);
+      doc.roundedRect(xPos, startY, colWidth, 6, 1.5, 1.5, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${sec.icon} ${sec.title}`, xPos + colWidth / 2, startY + 4, { align: 'center' });
+
+      const rows = sec.data.map(emp => [
+        emp.name, 
+        sec.title.includes('PENDING') ? `${emp.pending}` : (emp.weeklyWorkDone || '0%')
+      ]);
+
+      autoTable(doc, {
+        startY: startY + 6,
+        margin: { left: xPos },
+        tableWidth: colWidth,
+        body: rows,
+        theme: 'striped',
+        styles: { fontSize: 6, cellPadding: 1.2 },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', fontStyle: 'bold' } },
+        headStyles: { fillColor: [240, 240, 240] },
+      });
+    });
+
+    // 3. Departmental Analysis
+    startY = doc.lastAutoTable.finalY + 8; // Reduced margin from 15
+    doc.setFillColor(31, 41, 55);
+    doc.rect(12, startY, 2, 5, 'F');
+    doc.setTextColor(31, 41, 55);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DEPARTMENTAL SCORECARD', 18, startY + 4);
+
+    autoTable(doc, {
+      startY: startY + 7,
+      head: [['DEPARTMENT NAME', 'PENDING WORKS', 'NOT DONE %', 'DELAYED %']],
+      body: departmentScores.map(d => [d.name, d.pendingWorks, `${d.workNotDonePct}%`, `${d.notDoneOnTimePct}%`]),
+      theme: 'grid',
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } }
+    });
+
+    // 4. Employee Detailed Master List
+    startY = doc.lastAutoTable.finalY + 8; // Reduced margin from 15
+    doc.setFillColor(37, 99, 235);
+    doc.rect(12, startY, 2, 5, 'F');
+    doc.setTextColor(37, 99, 235);
+    doc.text('DETAILED EMPLOYEE PERFORMANCE LIST', 18, startY + 4);
+
+    const tableCols = ALL_COLUMNS.filter(c => visibleColumns[c.key]);
+    const bodyData = filteredEmployees.map(emp => tableCols.map(col => emp[col.key]));
+
+    autoTable(doc, {
+      startY: startY + 7,
+      head: [tableCols.map(c => c.label)],
+      body: bodyData,
+      theme: 'grid',
+      styles: { fontSize: 6, cellPadding: 1.2, overflow: 'linebreak', halign: 'center' },
+      headStyles: { fillColor: [37, 99, 235], textColor: 255, fontSize: 6, fontStyle: 'bold', halign: 'center' },
+      columnStyles: {
+        0: { cellWidth: 28, fontStyle: 'bold', halign: 'left' }, // Name
+        1: { cellWidth: 28, halign: 'left' }, // Designation
+      },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index > 1) data.cell.styles.halign = 'center';
+      }
+    });
+
+    // 5. Page Numbers & Confidentiality
+    const pages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`CONFIDENTIAL | MIS ANALYTICS | PAGE ${i} OF ${pages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    }
+
+    doc.save(`MIS_Full_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast("Professional PDF Report generated", "success");
   };
 
   const handleRowClick = (employee) => {
@@ -590,7 +709,7 @@ const AdminDashboard = () => {
       `}} />
       <div className="bg-[#F8FAFC] w-full max-w-full overflow-x-hidden">
         {/* Top Controls */}
-        <div className="p-4 sm:p-6 space-y-6">
+        <div className="px-2 py-4 sm:px-10 sm:py-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Admin Dashboard</h1>
             <button 
@@ -671,7 +790,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content Section */}
-        <div className="px-4 pb-10 space-y-6 sm:space-y-8">
+        <div className="px-2 sm:px-10 pb-10 space-y-6 sm:space-y-8">
           {/* Main Table Card */}
           <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-50 flex flex-row items-center justify-between bg-white gap-4">
