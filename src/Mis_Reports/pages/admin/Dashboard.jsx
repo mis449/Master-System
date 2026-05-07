@@ -401,9 +401,12 @@ const AdminDashboard = () => {
 
   const handleDrillDown = async (task, type, value, event) => {
     if (event) event.stopPropagation();
-    if (value === 0 || value === "0") return;
-
-    const scriptUrl = String(task.scriptUrl || "").trim();
+    
+    let scriptUrl = String(task.scriptUrl || "").trim();
+    if (!scriptUrl) {
+      scriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL;
+    }
+    
     if (!scriptUrl) return;
 
     const plannedParsed = parseSheetRef(task.plannedSheetRef);

@@ -10,6 +10,28 @@ const UserDetailsModal = ({
     handleDrillDown,
 }) => {
     const [timeFilter, setTimeFilter] = React.useState("all");
+    const [statusFilter, setStatusFilter] = React.useState("all");
+
+    const getRowStatus = (row) => {
+        if (!row.actual || String(row.actual).trim() === "") return "Pending";
+        
+        // Parse delay (e.g. "32:21:33" or "00:00:00")
+        const delayStr = String(row.delay || "0").trim();
+        if (delayStr === "0" || delayStr === "00:00:00" || delayStr === "") return "On Time";
+        
+        // If there's any non-zero value in HH:MM:SS format
+        const parts = delayStr.split(":");
+        if (parts.length === 3) {
+            const h = parseInt(parts[0], 10) || 0;
+            const m = parseInt(parts[1], 10) || 0;
+            const s = parseInt(parts[2], 10) || 0;
+            if (h > 0 || m > 0 || s > 0) return "Delay";
+        } else if (parseFloat(delayStr) > 0) {
+            return "Delay";
+        }
+        
+        return "On Time";
+    };
 
     const parseDate = (dateStr) => {
         if (!dateStr) return null;
@@ -33,12 +55,21 @@ const UserDetailsModal = ({
 
     const filteredRows = React.useMemo(() => {
         if (!activeDrillDown || !activeDrillDown.rows) return [];
-        if (timeFilter === "all") return activeDrillDown.rows;
+        
+        let rows = activeDrillDown.rows;
+
+        // Apply Status Filter
+        if (statusFilter !== "all") {
+            rows = rows.filter(row => getRowStatus(row) === statusFilter);
+        }
+
+        // Apply Time Filter
+        if (timeFilter === "all") return rows;
 
         const now = new Date();
         const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        return activeDrillDown.rows.filter(row => {
+        return rows.filter(row => {
             const rowDate = parseDate(row.actual) || parseDate(row.planned);
             if (!rowDate) return false;
 
@@ -53,7 +84,7 @@ const UserDetailsModal = ({
             }
             return true;
         });
-    }, [activeDrillDown, timeFilter]);
+    }, [activeDrillDown, timeFilter, statusFilter]);
 
     return (
         <>
@@ -208,26 +239,58 @@ const UserDetailsModal = ({
                             <div className="flex items-center gap-4">
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">
-                                        {activeDrillDown.title}
+                                        {activeDrillDown.title || activeDrillDown.taskName}
                                     </h3>
-                                    <p className="text-sm text-gray-500">
-                                        {activeDrillDown.taskId}
-                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        <p className="text-sm text-gray-500">
+                                            {activeDrillDown.taskId}
+                                        </p>
+                                        {!activeDrillDown.loading && !activeDrillDown.error && filteredRows && (
+                                            <div className="flex items-center gap-2 border-l border-gray-200 pl-3">
+                                                <span className="text-[11px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                    Total: {filteredRows.length}
+                                                </span>
+                                                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                                    Done: {filteredRows.filter(r => getRowStatus(r) !== "Pending").length}
+                                                </span>
+                                                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                                                    Pending: {filteredRows.filter(r => getRowStatus(r) === "Pending").length}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                {!activeDrillDown.loading && !activeDrillDown.error && (
-                                    <div className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm ml-4">
-                                        <Filter className="w-3.5 h-3.5 text-gray-400" />
-                                        <select
-                                            value={timeFilter}
-                                            onChange={(e) => setTimeFilter(e.target.value)}
-                                            className="appearance-none bg-transparent text-xs font-semibold text-gray-700 focus:outline-none pr-6 cursor-pointer"
-                                        >
-                                            <option value="all">All Time</option>
-                                            <option value="today">Today</option>
-                                            <option value="week">Last 1 Week</option>
-                                            <option value="month">Last 1 Month</option>
-                                        </select>
-                                        <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
+                                {activeDrillDown && !activeDrillDown.loading && !activeDrillDown.error && (
+                                    <div className="flex items-center gap-3 ml-4">
+                                        <div className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
+                                            <Filter className="w-3.5 h-3.5 text-gray-400" />
+                                            <select
+                                                value={statusFilter}
+                                                onChange={(e) => setStatusFilter(e.target.value)}
+                                                className="appearance-none bg-transparent text-xs font-semibold text-gray-700 focus:outline-none pr-6 cursor-pointer"
+                                            >
+                                                <option value="all">All Status</option>
+                                                <option value="Pending">Pending</option>
+                                                <option value="Delay">Delay</option>
+                                                <option value="On Time">On Time</option>
+                                            </select>
+                                            <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
+                                        </div>
+
+                                        <div className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
+                                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                            <select
+                                                value={timeFilter}
+                                                onChange={(e) => setTimeFilter(e.target.value)}
+                                                className="appearance-none bg-transparent text-xs font-semibold text-gray-700 focus:outline-none pr-6 cursor-pointer"
+                                            >
+                                                <option value="all">All Time</option>
+                                                <option value="today">Today</option>
+                                                <option value="week">Last 1 Week</option>
+                                                <option value="month">Last 1 Month</option>
+                                            </select>
+                                            <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -260,20 +323,33 @@ const UserDetailsModal = ({
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Planned</th>
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actual</th>
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Delay</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {filteredRows && filteredRows.length > 0 ? (
-                                                    filteredRows.map((row, idx) => (
-                                                        <tr key={idx} className="hover:bg-blue-50 transition-colors">
-                                                            <td className="px-4 py-3 text-sm text-gray-700">{row.taskName}</td>
-                                                            <td className="px-4 py-3 text-sm text-gray-700">{row.planned}</td>
-                                                            <td className="px-4 py-3 text-sm text-gray-700">{row.actual}</td>
-                                                            <td className="px-4 py-3 text-sm text-gray-700">{row.delay}</td>
-                                                        </tr>
-                                                    ))
+                                                    filteredRows.map((row, idx) => {
+                                                        const status = getRowStatus(row);
+                                                        return (
+                                                            <tr key={idx} className="hover:bg-blue-50 transition-colors">
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.taskName}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.planned}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.actual || "---"}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.delay || "00:00:00"}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
+                                                                        status === "Pending" ? "bg-amber-100 text-amber-700" :
+                                                                        status === "Delay" ? "bg-red-100 text-red-700" :
+                                                                        "bg-emerald-100 text-emerald-700"
+                                                                    }`}>
+                                                                        {status}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
                                                 ) : (
-                                                    <tr><td colSpan="4" className="px-4 py-10 text-center text-sm text-gray-500">No data available</td></tr>
+                                                    <tr><td colSpan="5" className="px-4 py-10 text-center text-sm text-gray-500">No data available</td></tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -282,27 +358,44 @@ const UserDetailsModal = ({
                                     {/* Mobile View - Cards */}
                                     <div className="md:hidden space-y-3">
                                         {filteredRows && filteredRows.length > 0 ? (
-                                            filteredRows.map((row, idx) => (
-                                                <div key={idx} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
-                                                    <h4 className="text-sm font-bold text-gray-900 mb-2">{row.taskName}</h4>
-                                                    <div className="grid grid-cols-2 gap-y-2 gap-x-4 border-t border-gray-50 pt-2">
-                                                        <div>
-                                                            <p className="text-[10px] text-gray-400 font-medium uppercase">Planned</p>
-                                                            <p className="text-xs text-gray-700 font-semibold">{row.planned}</p>
+                                            filteredRows.map((row, idx) => {
+                                                const status = getRowStatus(row);
+                                                return (
+                                                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm relative overflow-hidden">
+                                                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                                                            status === "Pending" ? "bg-amber-500" :
+                                                            status === "Delay" ? "bg-red-500" :
+                                                            "bg-emerald-500"
+                                                        }`} />
+                                                        <div className="flex justify-between items-start mb-2 pl-2">
+                                                            <h4 className="text-sm font-bold text-gray-900 truncate pr-2">{row.taskName}</h4>
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                                                                status === "Pending" ? "bg-amber-100 text-amber-700" :
+                                                                status === "Delay" ? "bg-red-100 text-red-700" :
+                                                                "bg-emerald-100 text-emerald-700"
+                                                            }`}>
+                                                                {status}
+                                                            </span>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-[10px] text-gray-400 font-medium uppercase">Actual</p>
-                                                            <p className="text-xs text-gray-700 font-semibold">{row.actual}</p>
-                                                        </div>
-                                                        <div className="col-span-2">
-                                                            <p className="text-[10px] text-gray-400 font-medium uppercase">Delay</p>
-                                                            <p className={`text-xs font-semibold ${row.delay && String(row.delay).toLowerCase().includes('late') ? 'text-red-600' : 'text-emerald-600'}`}>
-                                                                {row.delay || 'On Time'}
-                                                            </p>
+                                                        <div className="grid grid-cols-2 gap-y-2 gap-x-4 border-t border-gray-50 pt-2 pl-2">
+                                                            <div>
+                                                                <p className="text-[10px] text-gray-400 font-medium uppercase">Planned</p>
+                                                                <p className="text-xs text-gray-700 font-semibold">{row.planned}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] text-gray-400 font-medium uppercase">Actual</p>
+                                                                <p className="text-xs text-gray-700 font-semibold">{row.actual || "---"}</p>
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <p className="text-[10px] text-gray-400 font-medium uppercase">Delay</p>
+                                                                <p className={`text-xs font-semibold ${status === 'Delay' ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                                    {row.delay || '00:00:00'}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))
+                                                );
+                                            })
                                         ) : (
                                             <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                                                 <p className="text-xs text-gray-500">No data available</p>
