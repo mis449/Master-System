@@ -5,11 +5,7 @@ import ERPLayout from "../../../components/layout/ERPLayout";
 
 const designations = [
   'CRM',
-  'PURCHASER',
-  'HR',
-  'EA',
   'SALES Coordination',
-  'AUDITOR',
   'ACCOUNTANT'
 ];
 
@@ -113,7 +109,7 @@ const designationData = {
     totalTasks: '22 daily tasks',
     scoringWorks: 'https://youtu.be/scoring-sales',
     scoreBetter: 'https://youtu.be/improve-sales',
-    keyPerson: 'Amit Patel (Sales Director)',
+    keyPerson: 'Siddhant (Sales Head)',
     communicationTeam: ['Sales Teams', 'Support Departments'],
     howToCommunicate: 'Sales meetings, coordination reports, and team updates',
     importanceScore: 'Directly impacts sales performance and team efficiency',
@@ -153,7 +149,7 @@ const designationData = {
     totalTasks: '16 daily tasks',
     scoringWorks: 'https://youtu.be/scoring-finance',
     scoreBetter: 'https://youtu.be/improve-finance',
-    keyPerson: 'Deepak Verma (Finance Head)',
+    keyPerson: 'SanjaySharma, Parekh Gallerium',
     communicationTeam: ['Finance Department', 'Management'],
     howToCommunicate: 'Financial reports, accounting system updates, and team meetings',
     importanceScore: 'Essential for financial accuracy and organizational compliance',
