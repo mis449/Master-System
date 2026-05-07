@@ -684,9 +684,18 @@ export default function ChecklistTask() {
                                 <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Multi-entry workflow & automation</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100 self-start sm:self-center">
-                            <ClipboardList size={16} className="text-indigo-600" />
-                            <span className="text-[10px] font-black text-indigo-700 uppercase tracking-wider">{tasks.length} Active Slots</span>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => navigate('/dashboard/working-day-calendar')}
+                                className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 transition-all"
+                            >
+                                <Calendar size={16} className="text-purple-600" />
+                                <span className="text-[10px] font-black text-purple-700 uppercase tracking-wider text-left">Working Days<br/><span className="text-[8px] opacity-70">Check Calendar</span></span>
+                            </button>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100 self-start sm:self-center">
+                                <ClipboardList size={16} className="text-indigo-600" />
+                                <span className="text-[10px] font-black text-indigo-700 uppercase tracking-wider">{tasks.length} Active Slots</span>
+                            </div>
                         </div>
                     </div>
 

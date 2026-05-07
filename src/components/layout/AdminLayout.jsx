@@ -222,7 +222,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode, showLa
     {
       label: "Holiday",
       icon: CalendarIcon, // Or a specific holiday icon
-      showFor: (isSuperAdmin || userRole.toLowerCase() === "admin") ? ["admin"] : [],
+      showFor: (isSuperAdmin || userRole.toLowerCase() === "admin" || userRole.toLowerCase() === "hod") ? ["admin", "HOD"] : [],
       isSubmenu: true,
       isOpen: isHolidaySubmenuOpen,
       setIsOpen: setIsHolidaySubmenuOpen,
@@ -232,13 +232,13 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode, showLa
           href: "/dashboard/holiday-list",
           label: "Holiday List",
           active: location.pathname === "/dashboard/holiday-list",
-          showFor: ["admin"],
+          showFor: ["admin", "HOD"],
         },
         {
           href: "/dashboard/working-day-calendar",
           label: "Working Day Calendar",
           active: location.pathname === "/dashboard/working-day-calendar",
-          showFor: ["admin"],
+          showFor: ["admin", "HOD"],
         }
       ]
     },
@@ -287,7 +287,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode, showLa
 
         // Holiday submenu logic handled by showFor in routes
         if (route.label === "Holiday") {
-          return isSuperAdmin || userRoleNormalized === "admin";
+          return isSuperAdmin || userRoleNormalized === "admin" || userRoleNormalized === "hod";
         }
         return route.showFor.some(role => role.toLowerCase() === userRoleNormalized);
       })

@@ -476,6 +476,13 @@ export default function AssignTask() {
                 <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Create one-time or recurring tasks</p>
               </div>
             </div>
+            <button 
+                onClick={() => navigate('/dashboard/working-day-calendar')}
+                className="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 transition-all shadow-sm"
+            >
+                <Calendar size={16} className="text-purple-600" />
+                <span className="text-[10px] font-black text-purple-700 uppercase tracking-wider hidden xs:inline">Working Days</span>
+            </button>
           </div>
 
           {/* Task Type Selector */}

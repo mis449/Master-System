@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom"
 import { loginUser } from "../redux/slice/loginSlice"
 import { useMagicToast } from "../context/MagicToastContext"
 import supabase from "../SupabaseClient"
-import { KeyRound, ShieldCheck, User as UserIcon, RefreshCw } from "lucide-react"
+import { KeyRound, User as UserIcon, RefreshCw } from "lucide-react"
+import aceLogo from "../assets/Ace_Logoo.jpg"
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -88,11 +89,11 @@ const LoginPage = () => {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="pt-8 pb-4 px-6 text-center space-y-1">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg animate-float">
-              <ShieldCheck className="text-white" size={32} />
+            <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg animate-float">
+              <img src={aceLogo} alt="Parekh Gallerium Logo" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight mt-3">
-              Master <span className="text-gradient">System</span>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mt-3">
+              Parekh <span className="text-gradient">Gallerium</span>
             </h1>
             <p className="text-gray-400 text-sm font-medium">Welcome back! Please enter your details.</p>
           </div>

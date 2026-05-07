@@ -2,18 +2,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  CheckSquare, 
-  ShoppingCart, 
-  Package, 
-  BarChart3, 
-  Settings, 
-  Users, 
-  LogOut, 
-  Menu, 
-  X, 
-  Bell, 
+import {
+  LayoutDashboard,
+  CheckSquare,
+  ShoppingCart,
+  Package,
+  BarChart3,
+  Settings,
+  Users,
+  LogOut,
+  Menu,
+  X,
+  Bell,
   Search,
   User,
   ChevronRight,
@@ -50,21 +50,21 @@ const ERPLayout = ({ children }) => {
   const { user, role, logout } = useAuth();
 
   const modules = [
-    { 
-      id: 'dashboard', 
-      label: 'Dashboard', 
-      icon: LayoutDashboard, 
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: LayoutDashboard,
       path: '/dashboard/admin',
-      roles: ['admin', 'manager', 'user'],
+      roles: ['admin', 'manager', 'user', 'hod'],
       section: 'CHECKLIST & DELEGATIONS',
       subItems: []
     },
-    { 
-      id: 'checklist', 
-      label: 'Checklist & Delegation', 
-      icon: CheckSquare, 
+    {
+      id: 'checklist',
+      label: 'Checklist & Delegation',
+      icon: CheckSquare,
       path: '/dashboard/checklist',
-      roles: ['admin', 'manager', 'user'],
+      roles: ['admin', 'manager', 'user', 'hod'],
       section: 'CHECKLIST & DELEGATIONS',
       subItems: [
         { label: 'Dashboard', path: '/dashboard/admin?view=checklist', icon: LayoutDashboard },
@@ -74,14 +74,15 @@ const ERPLayout = ({ children }) => {
         { label: 'Checklist', path: '/dashboard/task', icon: CalendarCheck },
         { label: 'Calendar', path: '/dashboard/calendar', icon: Calendar },
         { label: 'Holiday List', path: '/dashboard/holiday-list', icon: Palmtree },
+        { label: 'Working Day Calendar', path: '/dashboard/working-day-calendar', icon: CalendarDays },
         { label: 'Admin Approval', path: '/dashboard/admin-approval', icon: CheckCircle },
         { label: 'Settings', path: '/dashboard/setting', icon: Settings },
       ]
     },
-    { 
-      id: 'mis', 
-      label: 'MIS Report System', 
-      icon: BarChart3, 
+    {
+      id: 'mis',
+      label: 'MIS Report System',
+      icon: BarChart3,
       path: '/dashboard/mis-dashboard',
       roles: ['admin'],
       section: 'MIS REPORTS',
@@ -91,28 +92,28 @@ const ERPLayout = ({ children }) => {
         { label: 'KPI & KRA', path: '/dashboard/kpi-kra', icon: Target },
       ]
     },
-    { 
-      id: 'sales', 
-      label: 'Sales', 
-      icon: ShoppingCart, 
+    {
+      id: 'sales',
+      label: 'Sales',
+      icon: ShoppingCart,
       path: '/sales',
-      roles: ['admin', 'manager'],
+      roles: ['admin', 'manager', 'hod'],
       section: 'SCALES',
       subItems: []
     },
-    { 
-      id: 'purchase', 
-      label: 'Purchase', 
-      icon: Package, 
+    {
+      id: 'purchase',
+      label: 'Purchase',
+      icon: Package,
       path: '/purchase',
       roles: ['admin', 'manager'],
       section: 'PURCHASE',
       subItems: []
     },
-    { 
-      id: 'users', 
-      label: 'User Management', 
-      icon: Users, 
+    {
+      id: 'users',
+      label: 'User Management',
+      icon: Users,
       path: '/dashboard/user-management',
       roles: ['admin'],
       section: 'ADMINISTRATION',
@@ -123,7 +124,7 @@ const ERPLayout = ({ children }) => {
   const [activeModuleId, setActiveModuleId] = useState(() => {
     const path = location.pathname;
     const search = location.search;
-    
+
     if (path.startsWith('/sales')) return 'sales';
     if (path.startsWith('/purchase')) return 'purchase';
     if (path.startsWith('/dashboard/user-management')) return 'users';
@@ -136,11 +137,11 @@ const ERPLayout = ({ children }) => {
   });
 
   const activeModule = modules.find(m => m.id === activeModuleId) || modules[0];
-  
+
   useEffect(() => {
     const path = location.pathname;
     const search = location.search;
-    
+
     if (path.startsWith('/sales')) setActiveModuleId('sales');
     else if (path.startsWith('/purchase')) setActiveModuleId('purchase');
     else if (path.startsWith('/dashboard/user-management')) setActiveModuleId('users');
@@ -152,7 +153,7 @@ const ERPLayout = ({ children }) => {
     else setActiveModuleId('checklist');
   }, [location]);
 
-  const filteredModules = modules.filter(m => 
+  const filteredModules = modules.filter(m =>
     !m.roles || m.roles.includes(role?.toLowerCase())
   );
 
@@ -216,22 +217,22 @@ const ERPLayout = ({ children }) => {
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
       {/* Sidebar Desktop */}
       {/* Sidebar Desktop */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 z-50 hidden md:flex flex-col bg-white border-r border-gray-200 shadow-2xl transition-all duration-500 ease-in-out
           ${isSidebarOpen ? 'w-52' : 'w-16'}`}
       >
         {/* Header - Brand & Logo */}
         <div className="h-16 flex items-center px-3 border-b border-gray-100 overflow-hidden shrink-0">
           <div className="flex items-center gap-3 min-w-max">
-            <img 
-              src={aceLogo} 
-              alt="Logo" 
+            <img
+              src={aceLogo}
+              alt="Logo"
               className="w-10 h-10 rounded-xl shadow-[0_8px_16px_rgba(37,99,235,0.15)] border border-gray-50 flex-shrink-0"
             />
             {isSidebarOpen && (
               <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-500">
-                <span className="text-xl font-black text-gray-800 tracking-tight">Master</span>
-                <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md tracking-wider uppercase shadow-sm shadow-blue-200">SYSTEM</span>
+                <span className="text-sm font-black text-gray-800 tracking-tight">Parekh</span>
+                <span className="bg-blue-600 text-white text-[7px] font-black px-2 py-1 rounded-md tracking-wider uppercase shadow-sm shadow-blue-200">Gallerium</span>
               </div>
             )}
           </div>
@@ -261,14 +262,14 @@ const ERPLayout = ({ children }) => {
                     }}
                     title={!isSidebarOpen ? module.label : ""}
                     className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 group relative
-                      ${isActiveModule 
-                        ? 'bg-blue-50 text-blue-600 shadow-sm' 
+                      ${isActiveModule
+                        ? 'bg-blue-50 text-blue-600 shadow-sm'
                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
                   >
                     <module.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 
-                      ${isActiveModule ? 'scale-110' : 'group-hover:scale-110'}`} 
+                      ${isActiveModule ? 'scale-110' : 'group-hover:scale-110'}`}
                     />
-                    
+
                     {isSidebarOpen && (
                       <span className="ml-2.5 font-bold text-[12px] md:text-[13px] leading-tight tracking-tight flex-1 text-left animate-in fade-in slide-in-from-left-2 duration-300">
                         {module.label}
@@ -277,13 +278,13 @@ const ERPLayout = ({ children }) => {
 
                     {isSidebarOpen && module.subItems.length > 0 && (
                       <ChevronRight className={`ml-auto w-4 h-4 transition-transform duration-300 
-                        ${isActiveModule ? 'rotate-90 text-blue-600' : 'text-gray-400'}`} 
+                        ${isActiveModule ? 'rotate-90 text-blue-600' : 'text-gray-400'}`}
                       />
                     )}
 
                     {/* Active Indicator Bar */}
                     {isActiveModule && (
-                      <motion.div 
+                      <motion.div
                         layoutId="activeIndicator"
                         className="absolute left-0 w-1 h-6 bg-blue-600 rounded-r-full"
                       />
@@ -300,8 +301,8 @@ const ERPLayout = ({ children }) => {
                             key={idx}
                             to={item.path}
                             className={`flex items-center px-3 py-2 rounded-lg text-xs font-bold transition-all relative group
-                              ${isSubActive 
-                                ? 'text-blue-700 bg-blue-50/50' 
+                              ${isSubActive
+                                ? 'text-blue-700 bg-blue-50/50'
                                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
                           >
                             <span>{item.label}</span>
@@ -327,16 +328,16 @@ const ERPLayout = ({ children }) => {
             <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-xs shadow-md">
               {user?.charAt(0) || 'A'}
             </div>
-            
+
             {isSidebarOpen && (
               <div className="flex flex-col truncate flex-1 animate-in fade-in slide-in-from-left-2 duration-300">
                 <span className="text-[11px] font-black text-gray-900 truncate tracking-tight">{user || 'Admin'}</span>
                 <span className="text-[9px] text-blue-600 font-bold uppercase tracking-wider">{role || 'User'}</span>
               </div>
             )}
-            
+
             {isSidebarOpen && (
-              <button 
+              <button
                 onClick={logout}
                 className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Logout"
@@ -345,9 +346,9 @@ const ERPLayout = ({ children }) => {
               </button>
             )}
           </div>
-          
+
           {!isSidebarOpen && (
-            <button 
+            <button
               onClick={logout}
               className="w-full mt-2 p-2 flex justify-center text-red-500 hover:bg-red-50 rounded-xl transition-all"
               title="Logout"
@@ -359,19 +360,19 @@ const ERPLayout = ({ children }) => {
       </aside>
 
       {/* Mobile Menu */}
-      <div 
+      <div
         className={`fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 md:hidden 
           ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={toggleMobileMenu}
       />
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 z-[70] w-72 bg-white transition-transform duration-300 transform md:hidden flex flex-col
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-700">
           <div className="flex items-center gap-3">
             <img src={aceLogo} alt="Logo" className="w-10 h-10 rounded-lg shadow-[0_8px_16px_rgba(0,0,0,0.2)] border-2 border-white/20" />
-            <span className="font-bold text-white">ERP MASTER</span>
+            <span className="font-black text-white text-xs tracking-tight">Parekh <span className="text-[10px] opacity-80 font-medium">Gallerium</span></span>
           </div>
           <button onClick={toggleMobileMenu} className="p-1 rounded-lg text-white/80 hover:bg-white/10 transition-colors">
             <X className="w-6 h-6" />
@@ -389,7 +390,7 @@ const ERPLayout = ({ children }) => {
                     </span>
                   </div>
                 )}
-                
+
                 {/* If module has subItems, show subItems. If not, show the module itself. */}
                 {module.subItems.length > 0 ? (
                   module.subItems.map((item, idx) => {
@@ -400,14 +401,14 @@ const ERPLayout = ({ children }) => {
                         to={item.path}
                         onClick={toggleMobileMenu}
                         className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
-                          ${isActive 
-                            ? 'bg-blue-50/50 text-blue-600' 
+                          ${isActive
+                            ? 'bg-blue-50/50 text-blue-600'
                             : 'text-gray-600 hover:bg-gray-50'}`}
                       >
                         <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                         <span className={`ml-3 font-semibold text-sm ${isActive ? 'text-blue-700' : ''}`}>{item.label}</span>
                         {isActive && (
-                          <motion.div 
+                          <motion.div
                             layoutId="activeBarMobile"
                             className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
                           />
@@ -420,14 +421,14 @@ const ERPLayout = ({ children }) => {
                     to={module.path}
                     onClick={toggleMobileMenu}
                     className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
-                      ${location.pathname === module.path 
-                        ? 'bg-blue-50/50 text-blue-600' 
+                      ${location.pathname === module.path
+                        ? 'bg-blue-50/50 text-blue-600'
                         : 'text-gray-600 hover:bg-gray-50'}`}
                   >
                     <module.icon className={`w-5 h-5 flex-shrink-0 ${location.pathname === module.path ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                     <span className={`ml-3 font-semibold text-sm ${location.pathname === module.path ? 'text-blue-700' : ''}`}>{module.label}</span>
                     {location.pathname === module.path && (
-                      <motion.div 
+                      <motion.div
                         layoutId="activeBarMobile"
                         className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
                       />
@@ -452,20 +453,20 @@ const ERPLayout = ({ children }) => {
         {/* Navbar */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40 backdrop-blur-md bg-white/80">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={toggleSidebar} 
+            <button
+              onClick={toggleSidebar}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hidden md:block transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <button 
-              onClick={toggleMobileMenu} 
+            <button
+              onClick={toggleMobileMenu}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 md:hidden transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center text-xs font-bold tracking-tight">
-              <span className="hidden sm:inline font-black text-white bg-gradient-to-r from-blue-600 to-indigo-700 px-3 py-1.5 rounded-lg uppercase tracking-[0.1em] text-[9px] mr-3 shadow-lg shadow-blue-100">ERP MASTER</span>
+              <span className="hidden sm:inline font-black text-white bg-gradient-to-r from-blue-600 to-indigo-700 px-3 py-1.5 rounded-lg uppercase tracking-[0.1em] text-[7px] mr-3 shadow-lg shadow-blue-100">Parekh Gallerium</span>
               <span className="hidden sm:inline text-gray-400 font-medium">{activeModule.label}</span>
               <ChevronRight className="w-4 h-4 mx-2 hidden sm:block text-gray-300" />
               <span className="text-gray-900 font-black truncate max-w-[150px] sm:max-w-none text-sm">
@@ -479,9 +480,9 @@ const ERPLayout = ({ children }) => {
             <div className="relative hidden lg:block group" ref={searchRef}>
               <div className="relative">
                 <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-blue-600' : 'text-gray-400'}`} />
-                <input 
-                  type="text" 
-                  placeholder="Global Search (Module or #TaskID)..." 
+                <input
+                  type="text"
+                  placeholder="Global Search (Module or #TaskID)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
@@ -496,7 +497,7 @@ const ERPLayout = ({ children }) => {
               {/* Search Results Dropdown */}
               <AnimatePresence>
                 {isSearchFocused && searchQuery.trim() !== '' && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
@@ -556,12 +557,12 @@ const ERPLayout = ({ children }) => {
 
             {/* User Profile */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200"
               >
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white overflow-hidden">
-                   <User className="w-5 h-5" />
+                  <User className="w-5 h-5" />
                 </div>
                 <div className="hidden sm:flex flex-col items-start mr-2">
                   <span className="text-sm font-bold text-gray-900 leading-none">{user || 'Admin User'}</span>
@@ -583,7 +584,7 @@ const ERPLayout = ({ children }) => {
                     <Settings className="w-4 h-4 text-gray-400" /> Account Settings
                   </Link>
                   <div className="h-px bg-gray-50 my-1" />
-                  <button 
+                  <button
                     onClick={logout}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors font-semibold"
                   >
@@ -603,7 +604,8 @@ const ERPLayout = ({ children }) => {
         </main>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
