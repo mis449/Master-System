@@ -10,11 +10,13 @@ export default function TaskManagementTabs({ activeTab, setActiveTab }) {
 
     const allTabs = [
         { id: 'checklist', label: 'Checklist', icon: ClipboardCheck, color: 'text-blue-600', activeColor: 'bg-blue-600' },
+        { id: 'delegation', label: 'Delegation', icon: Users, color: 'text-blue-600', activeColor: 'bg-blue-600' },
     ]
 
     const tabs = allTabs.filter(tab => {
         if (role === "hod") {
             if (tab.id === "checklist") return true;
+            if (tab.id === "delegation") return true;
             if (tab.id === "repair" && isMachineOperator) return true;
             return false;
         }

@@ -113,7 +113,7 @@ export default function StaffTasksTable({
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-gray-900 tracking-tight">Staff Performance</h2>
+            <h2 className="text-[14px] font-bold text-gray-900 tracking-tight">Staff Performance</h2>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">League Table • {getDisplayMonth()}</p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function StaffTasksTable({
             <thead className="sticky top-0 z-20">
               <tr className="bg-gray-50/95 backdrop-blur-md">
                 {["Rank", "Team Member", "Status", "Load", "Done", "On-Time", "Efficiency"].map((header, i) => (
-                  <th key={header} className={`px-4 py-4 text-left text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 1 ? 'min-w-[280px]' : ''}`}>
+                  <th key={header} className={`px-4 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 1 ? 'min-w-[280px]' : ''}`}>
                     {header}
                   </th>
                 ))}

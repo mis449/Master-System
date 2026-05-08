@@ -67,8 +67,8 @@ export default function DashboardHeader({
                     <Activity className="text-white w-7 h-7" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight capitalize">{mainTab} Dashboard</h1>
-                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Management Suite</span>
+                    <h1 className="text-[12px] font-black text-gray-900 tracking-tight capitalize">{mainTab} Dashboard</h1>
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Management Suite</span>
                 </div>
             </div>
         )
@@ -78,7 +78,7 @@ export default function DashboardHeader({
         <div className="relative z-50 flex flex-wrap items-center justify-between gap-4 py-1.5 mb-3 group/header">
             {/* Left Side: Title and Total Users */}
             <div className="flex items-center gap-6">
-                <h1 className="text-xl font-black text-blue-600 tracking-tight">Dashboard</h1>
+                <h1 className="text-[11px] font-semibold text-blue-600 tracking-tight">Dashboard</h1>
                 
                 <div className="flex items-center gap-2">
                     <span className="text-[11px] font-medium text-gray-500">Total Users</span>

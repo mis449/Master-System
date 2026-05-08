@@ -32,7 +32,8 @@ import {
   CalendarDays,
   AlertTriangle,
   Zap,
-  CalendarCheck
+  CalendarCheck,
+  IndianRupee
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import aceLogo from '../../assets/Ace_Logoo.jpg';
@@ -80,6 +81,15 @@ const ERPLayout = ({ children }) => {
       ]
     },
     {
+      id: 'salary',
+      label: 'Salary Management',
+      icon: IndianRupee,
+      path: '/dashboard/salary',
+      roles: ['admin'],
+      section: 'SALARY MANAGEMENT',
+      subItems: []
+    },
+    {
       id: 'mis',
       label: 'MIS Report System',
       icon: BarChart3,
@@ -116,7 +126,7 @@ const ERPLayout = ({ children }) => {
       icon: Users,
       path: '/dashboard/user-management',
       roles: ['admin'],
-      section: 'ADMINISTRATION',
+      section: 'USER MANAGEMENT',
       subItems: []
     },
   ];
@@ -128,6 +138,8 @@ const ERPLayout = ({ children }) => {
     if (path.startsWith('/sales')) return 'sales';
     if (path.startsWith('/purchase')) return 'purchase';
     if (path.startsWith('/dashboard/user-management')) return 'users';
+    if (path.startsWith('/dashboard/salary')) return 'salary';
+
     if (path.includes('mis') || path.includes('kpi-kra')) return 'mis';
     if (path === '/dashboard/admin' || path === '/dashboard') {
       if (search.includes('view=checklist')) return 'checklist';
@@ -145,6 +157,8 @@ const ERPLayout = ({ children }) => {
     if (path.startsWith('/sales')) setActiveModuleId('sales');
     else if (path.startsWith('/purchase')) setActiveModuleId('purchase');
     else if (path.startsWith('/dashboard/user-management')) setActiveModuleId('users');
+    else if (path.startsWith('/dashboard/salary')) setActiveModuleId('salary');
+
     else if (path.includes('mis') || path.includes('kpi-kra')) setActiveModuleId('mis');
     else if (path === '/dashboard/admin' || path === '/dashboard') {
       if (search.includes('view=checklist')) setActiveModuleId('checklist');
@@ -465,11 +479,11 @@ const ERPLayout = ({ children }) => {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center text-xs font-bold tracking-tight">
-              <span className="hidden sm:inline font-black text-white bg-gradient-to-r from-blue-600 to-indigo-700 px-3 py-1.5 rounded-lg uppercase tracking-[0.1em] text-[7px] mr-3 shadow-lg shadow-blue-100">Parekh Gallerium</span>
-              <span className="hidden sm:inline text-gray-400 font-medium">{activeModule.label}</span>
-              <ChevronRight className="w-4 h-4 mx-2 hidden sm:block text-gray-300" />
-              <span className="text-gray-900 font-black truncate max-w-[150px] sm:max-w-none text-sm">
+            <div className="flex items-center text-[10px] font-bold tracking-tight">
+              <span className="hidden sm:inline font-black text-white bg-gradient-to-r from-blue-600 to-indigo-700 px-3 py-1.5 rounded-lg uppercase tracking-[0.1em] text-[10px] mr-3 shadow-lg shadow-blue-100">Parekh Gallerium</span>
+              <span className="hidden sm:inline text-gray-400 font-bold text-[10px]">{activeModule.label}</span>
+              <ChevronRight className="w-3 h-3 mx-1.5 hidden sm:block text-gray-300" />
+              <span className="text-gray-900 font-black truncate max-w-[150px] sm:max-w-none text-[10px]">
                 {activeModule.subItems.find(item => item.path === location.pathname)?.label || 'Overview'}
               </span>
             </div>

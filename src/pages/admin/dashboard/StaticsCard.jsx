@@ -48,7 +48,7 @@ export default function StatisticsCards({
                     <card.icon className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{card.label}</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">{card.label}</span>
                     <div className={`flex items-center gap-1.5 text-${card.color}-600 bg-${card.color}-50/80 backdrop-blur-sm px-3 py-1 rounded-full text-[9px] font-black shadow-sm`}>
                       <Activity className="w-3 h-3 animate-pulse" />
                       REAL-TIME
@@ -58,7 +58,7 @@ export default function StatisticsCards({
                 
                 <div className="mt-auto">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight leading-none">
+                    <span className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-none">
                       {card.value}
                     </span>
                     <TrendingUp className="w-4 h-4 text-emerald-500 mb-0.5" />
@@ -85,8 +85,8 @@ export default function StatisticsCards({
         <div className="rounded-3xl bg-white/70 backdrop-blur-2xl shadow-2xl shadow-blue-100/50 border border-white/60 h-full flex flex-col overflow-hidden group/chart">
           <div className="p-4 sm:p-5 pb-0 flex items-center justify-between">
             <div>
-              <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Compliance Score</h3>
-              <p className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em] mt-1"></p>
+              <h3 className="text-[11px] font-bold text-gray-900 tracking-tight">Compliance Score</h3>
+              <p className="text-[10px] font-bold text-blue-500/60 uppercase tracking-[0.2em] mt-1"></p>
             </div>
             <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 shadow-inner group-hover/chart:rotate-12 transition-transform duration-500">
               <Target className="w-5 h-5" />
@@ -139,10 +139,10 @@ export default function StatisticsCards({
                 
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-3xl sm:text-4xl font-black text-gray-900 leading-none">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 leading-none">
                       {completionRate.toFixed(0)}<span className="text-lg text-emerald-500">%</span>
                     </div>
-                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-3">Accuracy</div>
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-3">Accuracy</div>
                   </div>
                 </div>
               </div>

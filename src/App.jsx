@@ -16,6 +16,8 @@ import Demo from "./pages/user/Demo"
 import Setting from "./pages/Setting"
 import UserManagement from "./pages/UserManagement"
 import MisReport from "./pages/admin/dashboard/MisReport";
+import SalaryManagement from "./pages/admin/SalaryManagement";
+
 
 // --- Data & Delegation Imports ---
 import DataPage from "./pages/admin/DataPage"
@@ -274,6 +276,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <NotificationsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/dashboard/salary"
+                        element={
+                            <ProtectedRoute allowedRoles={["admin"]}>
+                                <SalaryManagement />
                             </ProtectedRoute>
                         }
                     />

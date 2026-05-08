@@ -682,10 +682,10 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode, showLa
         <header className="flex h-16 items-center justify-between border-b border-purple-100 bg-white px-4 md:px-6 shadow-sm z-30">
           <div className="flex md:hidden w-8"></div>
           <div className="flex flex-col items-center">
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
+            <h1 className="text-[10px] font-black bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
               Checklist & Delegation
             </h1>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em] -mt-1 hidden xs:block">
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] -mt-1 hidden xs:block">
               Checklist & Delegation
             </p>
           </div>

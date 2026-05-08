@@ -1167,7 +1167,7 @@ export default function AdminDashboard() {
             <div className="sticky top-0 z-30 bg-white/60 backdrop-blur-xl py-2 border-b border-gray-100/50 shadow-sm transition-all duration-300">
               <div className="max-w-7xl mx-auto">
                 <TaskManagementTabs
-                  activeTab={mainTab === 'default' ? 'checklist' : mainTab}
+                  activeTab={mainTab === 'default' ? dashboardType : mainTab}
                   setActiveTab={(tabId) => {
                     // Clear current tasks immediately to prevent showing old data on new tab
                     setDepartmentData(prev => ({ ...prev, allTasks: [] }));
@@ -1176,15 +1176,22 @@ export default function AdminDashboard() {
                       setMainTab("default")
                       setDepartmentFilter("all")
                       setDashboardType("checklist")
+                    } else if (tabId === 'delegation') {
+                      setMainTab("default")
+                      setDepartmentFilter("all")
+                      setDashboardType("delegation")
                     } else if (tabId === 'maintenance') {
                       setMainTab("maintenance")
                       setDepartmentFilter("Maintenance")
+                      setDashboardType("checklist") // Fallback table
                     } else if (tabId === 'repair') {
                       setMainTab("repair")
                       setDepartmentFilter("Repair")
+                      setDashboardType("checklist") // Fallback table
                     } else if (tabId === 'ea') {
                       setMainTab("ea")
                       setDepartmentFilter("all")
+                      setDashboardType("checklist") // Fallback table
                     }
                   }}
                 />
