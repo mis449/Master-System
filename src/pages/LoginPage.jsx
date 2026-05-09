@@ -8,7 +8,7 @@ import { loginUser } from "../redux/slice/loginSlice"
 import { useMagicToast } from "../context/MagicToastContext"
 import { useAuth } from "../context/AuthContext"
 import supabase from "../SupabaseClient"
-import { KeyRound, User as UserIcon, RefreshCw } from "lucide-react"
+import { KeyRound, User as UserIcon, RefreshCw, Eye, EyeOff } from "lucide-react"
 import aceLogo from "../assets/Ace_Logoo.jpg"
 
 const LoginPage = () => {
@@ -20,11 +20,11 @@ const LoginPage = () => {
   const hasHandledSuccess = useRef(false);
 
   const [isLoginLoading, setIsLoginLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   })
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -149,13 +149,20 @@ const LoginPage = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all text-sm font-medium"
+                  className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all text-sm font-medium"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-blue-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
