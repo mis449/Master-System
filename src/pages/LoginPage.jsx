@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
 import { loginUser } from "../redux/slice/loginSlice"
 import { useMagicToast } from "../context/MagicToastContext"
+import { useAuth } from "../context/AuthContext"
 import supabase from "../SupabaseClient"
 import { KeyRound, User as UserIcon, RefreshCw } from "lucide-react"
 import aceLogo from "../assets/Ace_Logoo.jpg"
@@ -13,8 +14,10 @@ import aceLogo from "../assets/Ace_Logoo.jpg"
 const LoginPage = () => {
   const navigate = useNavigate()
   const { isLoggedIn, userData, error } = useSelector((state) => state.login);
+  const { login } = useAuth();
   const dispatch = useDispatch();
   const { showToast } = useMagicToast();
+  const hasHandledSuccess = useRef(false);
 
   const [isLoginLoading, setIsLoginLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,7 +34,8 @@ const LoginPage = () => {
 
   useEffect(() => {
     const handleLoginSuccess = async () => {
-      if (isLoggedIn && userData) {
+      if (isLoggedIn && userData && !hasHandledSuccess.current) {
+        hasHandledSuccess.current = true;
         console.log("User Data received:", userData); // Debug log
 
         let designation = userData.Designation || userData.designation || "";
@@ -53,18 +57,30 @@ const LoginPage = () => {
         }
 
         // Store all user data in localStorage
-        localStorage.setItem('user-name', userData.user_name || userData.username || "");
-        localStorage.setItem('user-id', userData.id || "");
-        localStorage.setItem('role', userData.role || "");
-        localStorage.setItem('email_id', userData.email_id || userData.email || "");
+        const userName = userData.user_name || userData.username || "";
+        const userRole = userData.role || "";
+        const userEmail = userData.email_id || userData.email || "";
+        const userId = userData.id || "";
+
+        localStorage.setItem('user-name', userName);
+        localStorage.setItem('user-id', userId);
+        localStorage.setItem('role', userRole);
+        localStorage.setItem('email_id', userEmail);
         localStorage.setItem('user_access', userData.user_access || "");
         localStorage.setItem('profile_image', userData.profile_image || "");
         localStorage.setItem('can_self_assign', userData.can_self_assign === true ? "true" : "false");
         localStorage.setItem('designation', designation);
 
-        console.log("Stored email:", userData.email_id || userData.email); // Debug log
+        // Update AuthContext to prevent loop
+        login({ 
+          user_name: userName, 
+          email_id: userEmail, 
+          id: userId 
+        }, userRole);
 
-        showToast(`Welcome back, ${userData.user_name || userData.username}!`, "success");
+        console.log("Stored email:", userEmail); // Debug log
+
+        showToast(`Welcome back, ${userName}!`, "success");
         navigate("/dashboard/admin");
       } else if (error) {
         showToast(error, "error");
@@ -73,7 +89,7 @@ const LoginPage = () => {
     };
 
     handleLoginSuccess();
-  }, [isLoggedIn, userData, error, navigate, showToast]);
+  }, [isLoggedIn, userData, error, navigate, showToast, login]);
 
 
 

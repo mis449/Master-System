@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import supabase from '../SupabaseClient';
 
 const AuthContext = createContext();
@@ -24,21 +24,21 @@ export const AuthProvider = ({ children }) => {
     checkUser();
   }, []);
 
-  const login = async (userData, userRole) => {
+  const login = useCallback(async (userData, userRole) => {
     localStorage.setItem('user-name', userData.user_name);
     localStorage.setItem('role', userRole);
     localStorage.setItem('email_id', userData.email_id);
     localStorage.setItem('user-id', userData.id);
     setUser(userData.user_name);
     setRole(userRole);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.clear();
     setUser(null);
     setRole(null);
     window.location.href = '/login';
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, role, loading, login, logout }}>

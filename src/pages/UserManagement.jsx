@@ -613,11 +613,15 @@ const UserManagement = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {(() => {
                         const filtered = (userData || [])
-                          .filter(user =>
-                            user &&
-                            user.user_name && (
-                              !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase()))
-                          );
+                          .filter(user => {
+                            if (!user || !user.user_name) return false;
+                            
+                            // If not admin, only show their own profile
+                            if (userRole !== 'admin' && user.user_name !== username) return false;
+                            
+                            // Apply search filter
+                            return !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase());
+                          });
                         console.log("Setting Page - Filtered Users COUNT:", filtered.length);
                         return filtered;
                       })().map((user, index) => (
@@ -704,13 +708,17 @@ const UserManagement = () => {
                 {/* Mobile View Cards */}
                 <div className="md:hidden space-y-4 p-4 bg-gray-50/50">
                   {(userData || [])
-                    .filter(user =>
-                      user &&
-                      user.user_name &&
-                      user.user_name !== 'admin' &&
-                      user.user_name !== 'DSMC' && (
-                        !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase()))
-                    )
+                    .filter(user => {
+                      if (!user || !user.user_name) return false;
+                      
+                      // Filter out admin/DSMC for mobile list if needed, OR just apply role filter
+                      if (userRole !== 'admin' && user.user_name !== username) return false;
+                      
+                      // For admins, maybe hide system accounts
+                      if (userRole === 'admin' && (user.user_name === 'admin' || user.user_name === 'DSMC')) return false;
+
+                      return !usernameFilter || user.user_name.toLowerCase().includes(usernameFilter.toLowerCase());
+                    })
                     .map((user, index) => (
                       <div key={`user-card-${user?.id || index}`} className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden animate-fade-in">
                         <div className="bg-blue-50/50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">

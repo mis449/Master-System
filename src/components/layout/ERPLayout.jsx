@@ -68,16 +68,16 @@ const ERPLayout = ({ children }) => {
       roles: ['admin', 'manager', 'user', 'hod'],
       section: 'CHECKLIST & DELEGATIONS',
       subItems: [
-        { label: 'Dashboard', path: '/dashboard/admin?view=checklist', icon: LayoutDashboard },
-        { label: 'Task Manager List', path: '/dashboard/quick-task', icon: Zap },
-        { label: 'Assign Task', path: '/dashboard/assign-task', icon: PlusSquare },
-        { label: 'Delegation', path: '/dashboard/delegation', icon: Users2 },
-        { label: 'Checklist', path: '/dashboard/task', icon: CalendarCheck },
-        { label: 'Calendar', path: '/dashboard/calendar', icon: Calendar },
-        { label: 'Holiday List', path: '/dashboard/holiday-list', icon: Palmtree },
-        { label: 'Working Day Calendar', path: '/dashboard/working-day-calendar', icon: CalendarDays },
-        { label: 'Admin Approval', path: '/dashboard/admin-approval', icon: CheckCircle },
-        { label: 'Settings', path: '/dashboard/setting', icon: Settings },
+        { label: 'Dashboard', path: '/dashboard/admin?view=checklist', icon: LayoutDashboard, roles: ['admin', 'hod', 'user'] },
+        { label: 'Task Manager List', path: '/dashboard/quick-task', icon: Zap, roles: ['admin'] },
+        { label: 'Assign Task', path: '/dashboard/assign-task', icon: PlusSquare, roles: ['admin', 'hod'] },
+        { label: 'Delegation', path: '/dashboard/delegation', icon: Users2, roles: ['admin', 'hod', 'user'] },
+        { label: 'Checklist', path: '/dashboard/task', icon: CalendarCheck, roles: ['admin', 'hod', 'user'] },
+        { label: 'Calendar', path: '/dashboard/calendar', icon: Calendar, roles: ['admin', 'hod', 'user'] },
+        { label: 'Holiday List', path: '/dashboard/holiday-list', icon: Palmtree, roles: ['admin', 'hod'] },
+        { label: 'Working Day Calendar', path: '/dashboard/working-day-calendar', icon: CalendarDays, roles: ['admin', 'hod'] },
+        { label: 'Admin Approval', path: '/dashboard/admin-approval', icon: CheckCircle, roles: ['admin', 'hod'] },
+        { label: 'Settings', path: '/dashboard/setting', icon: Settings, roles: ['admin', 'hod', 'user'] },
       ]
     },
     {
@@ -97,9 +97,9 @@ const ERPLayout = ({ children }) => {
       roles: ['admin'],
       section: 'MIS REPORTS',
       subItems: [
-        { label: 'Dashboard', path: '/dashboard/mis-dashboard', icon: LayoutDashboard },
-        { label: 'History', path: '/dashboard/mis-history', icon: History },
-        { label: 'KPI & KRA', path: '/dashboard/kpi-kra', icon: Target },
+        { label: 'Dashboard', path: '/dashboard/mis-dashboard', icon: LayoutDashboard, roles: ['admin'] },
+        { label: 'History', path: '/dashboard/mis-history', icon: History, roles: ['admin'] },
+        { label: 'KPI & KRA', path: '/dashboard/kpi-kra', icon: Target, roles: ['admin'] },
       ]
     },
     {
@@ -125,7 +125,7 @@ const ERPLayout = ({ children }) => {
       label: 'User Management',
       icon: Users,
       path: '/dashboard/user-management',
-      roles: ['admin'],
+      roles: ['admin', 'user', 'hod', 'manager'],
       section: 'USER MANAGEMENT',
       subItems: []
     },
@@ -167,9 +167,12 @@ const ERPLayout = ({ children }) => {
     else setActiveModuleId('checklist');
   }, [location]);
 
-  const filteredModules = modules.filter(m =>
-    !m.roles || m.roles.includes(role?.toLowerCase())
-  );
+  const filteredModules = modules
+    .filter(m => !m.roles || m.roles.includes(role?.toLowerCase()))
+    .map(m => ({
+      ...m,
+      subItems: m.subItems.filter(s => !s.roles || s.roles.includes(role?.toLowerCase()))
+    }));
 
   const filteredMenuItems = filteredModules.flatMap(m => [
     m,
