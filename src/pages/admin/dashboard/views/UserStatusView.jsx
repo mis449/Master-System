@@ -199,7 +199,6 @@ export default function UserStatusView() {
                         <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-widest rounded-full border border-blue-100">
                           {user.Designation || 'Team Member'}
                         </span>
-                        <span className="text-xs font-semibold text-gray-400">#{user.employee_id || 'N/A'}</span>
                       </div>
                     </div>
 
@@ -420,7 +419,10 @@ export default function UserStatusView() {
               <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[260px]">
                 6M84+9HF, New Dhamtari Rd, Pachpedi Naka, Raipur, Chhattisgarh 492001
               </p>
-              <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm">
+              <button 
+                onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=6M84%2B9HF,+New+Dhamtari+Rd,+Pachpedi+Naka,+Raipur,+Chhattisgarh+492001', '_blank')}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
+              >
                 Get Directions
                 <Activity className="w-2.5 h-2.5" />
               </button>
