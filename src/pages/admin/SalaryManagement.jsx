@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ERPLayout from "../../components/layout/ERPLayout";
 
-import { IndianRupee, Save, ArrowLeft, Loader2, Plus, Trash2, Calendar, User, FileText, Download } from "lucide-react";
+import { IndianRupee, Save, ArrowLeft, Loader2, Plus, Trash2, Calendar, User, FileText, Download, Search } from "lucide-react";
 import supabase from "../../SupabaseClient";
 import { useMagicToast } from "../../context/MagicToastContext";
 
@@ -27,8 +27,7 @@ const formatMonthDisplay = (monthStr) => {
     if (!monthStr) return "";
     const [year, month] = monthStr.split("-");
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    const monthName = date.toLocaleString('default', { month: 'long' }).toLowerCase();
-    return `${year}-${monthName}`;
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
 };
 
 export default function SalaryManagement() {
@@ -37,6 +36,7 @@ export default function SalaryManagement() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [salaryMonth, setSalaryMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [employees, setEmployees] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
     
     // Initial state with calculated days
     const [rows, setRows] = useState(() => {
@@ -838,13 +838,26 @@ export default function SalaryManagement() {
 
             {/* Submitted Data List */}
             <div className="mt-12">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-green-500 rounded-xl text-white shadow-md">
-                        <Save size={18} />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-500 rounded-xl text-white shadow-md">
+                            <Save size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-[14px] font-bold text-gray-900">Submitted Records ({formatMonthDisplay(salaryMonth)})</h2>
+                            <p className="text-[10px] text-gray-400 font-bold">History of salary data for this month</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-[14px] font-bold text-gray-900">Submitted Records ({formatMonthDisplay(salaryMonth)})</h2>
-                        <p className="text-[10px] text-gray-400 font-bold">History of salary data for this month</p>
+
+                    <div className="relative w-full md:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                            type="text"
+                            placeholder="Filter by name or month..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-2xl text-[11px] font-black uppercase tracking-wider focus:border-blue-500 outline-none transition-all shadow-sm"
+                        />
                     </div>
                 </div>
 
@@ -856,6 +869,7 @@ export default function SalaryManagement() {
                                 <tr>
                                     <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Sr.No.</th>
                                     <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Employee</th>
+                                    <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Period</th>
                                     <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Total Days</th>
                                     <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Work. Days</th>
                                     <th className="p-3 text-[10px] font-bold uppercase text-gray-400 tracking-wider">Basic</th>
@@ -885,10 +899,16 @@ export default function SalaryManagement() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    submittedData.map((item, i) => (
+                                    submittedData
+                                        .filter(item => 
+                                            item.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            formatMonthDisplay(item.salary_month).toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map((item, i) => (
                                         <tr key={item.id} className="border-b border-gray-50 hover:bg-green-50/20 transition-colors">
                                             <td className="py-5 px-4 text-sm font-bold text-gray-900">{i + 1}</td>
                                             <td className="py-5 px-4 text-sm font-bold text-black">{item.employee_name}</td>
+                                            <td className="py-5 px-4 text-[10px] font-black text-gray-400 uppercase tracking-tighter">{formatMonthDisplay(item.salary_month)}</td>
                                             <td className="py-5 px-4 text-sm font-bold text-gray-900">{item.total_days}</td>
                                             <td className="py-5 px-4 text-sm font-bold text-black">{item.working_days}</td>
                                             <td className="py-5 px-4 text-sm font-black text-blue-600">₹{item.basic_salary}</td>
@@ -949,12 +969,18 @@ export default function SalaryManagement() {
                                 No records found.
                             </div>
                         ) : (
-                            submittedData.map((item) => (
+                            submittedData
+                                .filter(item => 
+                                    item.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    formatMonthDisplay(item.salary_month).toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map((item) => (
                                 <div key={item.id} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Employee</span>
                                             <h4 className="text-base font-black text-gray-800">{item.employee_name}</h4>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase">{formatMonthDisplay(item.salary_month)}</span>
                                         </div>
                                         <div className="text-right">
                                             <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Round Off</span>

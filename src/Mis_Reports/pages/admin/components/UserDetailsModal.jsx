@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { X, Loader2, Filter, Calendar, ChevronDown } from "lucide-react";
+import { X, Loader2, Filter, ChevronDown } from "lucide-react";
 
 const UserDetailsModal = ({
     selectedUserDetails,
@@ -277,20 +277,7 @@ const UserDetailsModal = ({
                                             <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
                                         </div>
 
-                                        <div className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-                                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                            <select
-                                                value={timeFilter}
-                                                onChange={(e) => setTimeFilter(e.target.value)}
-                                                className="appearance-none bg-transparent text-xs font-semibold text-gray-700 focus:outline-none pr-6 cursor-pointer"
-                                            >
-                                                <option value="all">All Time</option>
-                                                <option value="today">Today</option>
-                                                <option value="week">Last 1 Week</option>
-                                                <option value="month">Last 1 Month</option>
-                                            </select>
-                                            <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
-                                        </div>
+
                                     </div>
                                 )}
                             </div>

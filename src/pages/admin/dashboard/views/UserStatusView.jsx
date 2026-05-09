@@ -20,8 +20,10 @@ import {
   AlertCircle,
   MapPin,
   PhoneCall,
-  Clock
+  Clock,
+  Camera
 } from "lucide-react"
+import supabase from "../../../../SupabaseClient"
 
 export default function UserStatusView() {
   const dispatch = useDispatch()
@@ -38,8 +40,10 @@ export default function UserStatusView() {
     email_id: "",
     number: "",
     status: "active",
-    department: ""
+    department: "",
+    profile_image: ""
   })
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     dispatch(userDetails())
@@ -52,9 +56,35 @@ export default function UserStatusView() {
       email_id: user.email_id || "",
       number: user.number || "",
       status: user.status || "active",
-      department: user.department || ""
+      department: user.department || "",
+      profile_image: user.profile_image || ""
     })
     setIsEditModalOpen(true)
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const fileName = `${Date.now()}_${file.name}`
+      const { data, error } = await supabase.storage
+        .from('all_images')
+        .upload(`profile_images/${fileName}`, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('all_images')
+        .getPublicUrl(data.path)
+
+      setEditFormData(prev => ({ ...prev, profile_image: publicUrl }))
+    } catch (error) {
+      console.error("Error uploading image:", error)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleUpdateUser = async (e) => {
@@ -299,6 +329,27 @@ export default function UserStatusView() {
                 </div>
 
                 <form onSubmit={handleUpdateUser} className="space-y-5">
+                  {/* Profile Image Upload */}
+                  <div className="flex flex-col items-center mb-6">
+                    <div className="relative group/avatar">
+                      <div className="w-24 h-24 rounded-[2rem] bg-gray-50 p-1 shadow-xl ring-4 ring-gray-50 overflow-hidden border border-gray-100 flex items-center justify-center">
+                        {isUploading ? (
+                          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+                        ) : editFormData.profile_image ? (
+                          <img src={editFormData.profile_image} alt="Profile" className="w-full h-full object-cover rounded-[1.8rem]" />
+                        ) : (
+                          <div className="text-3xl font-black text-indigo-300">
+                            {editFormData.user_name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg cursor-pointer hover:bg-indigo-700 transition-all active:scale-90 border-2 border-white group-hover/avatar:scale-110">
+                        <Camera className="w-4 h-4" />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                      </label>
+                    </div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-3">Profile Photo</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
@@ -472,6 +523,31 @@ export default function UserStatusView() {
         </div>
 
       </motion.footer>
+      <div className="text-center pb-12 mt-12 border-t border-gray-50 pt-8">
+        <a 
+          href="https://www.botivate.in/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="group inline-flex flex-col items-center gap-2 transition-all hover:scale-105"
+        >
+          <div className="flex items-center gap-2">
+            <div className="h-[1px] w-8 bg-gray-100 group-hover:w-12 group-hover:bg-blue-200 transition-all" />
+            <span className="text-[9px] font-black text-gray-300 uppercase tracking-[0.4em] group-hover:text-blue-400 transition-colors">
+              Powered by
+            </span>
+            <div className="h-[1px] w-8 bg-gray-100 group-hover:w-12 group-hover:bg-blue-200 transition-all" />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-sm font-black text-gray-900 tracking-[0.2em] group-hover:text-blue-600 transition-colors uppercase">
+              Botivate
+            </span>
+            <div className="relative">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.8)]" />
+              <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping opacity-75" />
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
   )
 }
