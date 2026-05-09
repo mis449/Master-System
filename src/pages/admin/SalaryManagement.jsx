@@ -647,13 +647,13 @@ export default function SalaryManagement() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {/* Employee Name */}
                                 <div className="lg:col-span-2 xl:col-span-1">
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Employee Name</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Employee Name</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <select 
                                             value={row.employee_name}
                                             onChange={(e) => handleEmployeeChange(index, e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all appearance-none"
+                                            className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all appearance-none ${row.employee_name ? 'text-black' : 'text-gray-400'}`}
                                         >
                                             <option value="">Select Employee</option>
                                             {employees.map(emp => (
@@ -665,14 +665,14 @@ export default function SalaryManagement() {
 
                                 {/* Basic Salary */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Basic Salary</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Basic Salary</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold">₹</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                                         <input 
                                             type="number" 
                                             value={row.basic_salary || ""} 
                                             onChange={(e) => handleInputChange(index, "basic_salary", e.target.value)}
-                                            className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-blue-600 focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.basic_salary > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
@@ -680,128 +680,128 @@ export default function SalaryManagement() {
 
                                 {/* Numeric Fields Grid */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Total Days</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Total Days</label>
                                     <input 
                                         type="number" 
                                         value={row.total_days} 
                                         onChange={(e) => handleInputChange(index, "total_days", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.total_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Working Days</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Working Days</label>
                                     <input 
                                         type="number" 
                                         value={row.working_days || ""} 
                                         onChange={(e) => handleInputChange(index, "working_days", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.working_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Extra Days</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Extra Days</label>
                                     <input 
                                         type="number" 
                                         value={row.extra_days || ""} 
                                         onChange={(e) => handleInputChange(index, "extra_days", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.extra_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Advance</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Advance</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold">₹</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                                         <input 
                                             type="number" 
                                             value={row.advance || ""} 
                                             onChange={(e) => handleInputChange(index, "advance", e.target.value)}
-                                            className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-red-500 focus:bg-white focus:border-red-500 outline-none transition-all"
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-red-500 outline-none transition-all ${row.advance > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Absent</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Absent</label>
                                     <input 
                                         type="number" 
                                         value={row.absent || ""} 
                                         onChange={(e) => handleInputChange(index, "absent", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.absent > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Half Day</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Half Day</label>
                                     <input 
                                         type="number" 
                                         value={row.half_day || ""} 
                                         onChange={(e) => handleInputChange(index, "half_day", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.half_day > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Bio Mismatch</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Bio Mismatch</label>
                                     <input 
                                         type="number" 
                                         value={row.biometric_mismatch || ""} 
                                         onChange={(e) => handleInputChange(index, "biometric_mismatch", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.biometric_mismatch > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Late Comers</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Late Comers</label>
                                     <input 
                                         type="number" 
                                         value={row.late_comers || ""} 
                                         onChange={(e) => handleInputChange(index, "late_comers", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.late_comers > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Final Amount</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Final Amount</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold">₹</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                                         <input 
                                             type="number" 
                                             value={row.final_amt || ""} 
                                             onChange={(e) => handleInputChange(index, "final_amt", e.target.value)}
-                                            className="w-full pl-8 pr-4 py-2.5 bg-blue-50 border border-blue-200 rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-blue-50 border border-blue-200 rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.final_amt > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Round Off</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Round Off</label>
                                     <input 
                                         type="number" 
                                         value={row.round_off || ""} 
                                         onChange={(e) => handleInputChange(index, "round_off", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.round_off > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
 
                                 <div className="lg:col-span-2 xl:col-span-1">
-                                    <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Remarks</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Remarks</label>
                                     <input 
                                         type="text" 
                                         value={row.remarks || ""} 
                                         onChange={(e) => handleInputChange(index, "remarks", e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold text-black focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.remarks ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="Any notes..."
                                     />
                                 </div>
