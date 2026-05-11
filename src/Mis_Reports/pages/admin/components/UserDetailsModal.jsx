@@ -34,8 +34,13 @@ const UserDetailsModal = ({
     };
 
     const parseDate = (dateStr) => {
-        if (!dateStr) return null;
-        // Expected format: dd/mm/yyyy hh:mm:ss
+        if (!dateStr || dateStr === "---") return null;
+        
+        // Try parsing as ISO or standard date first
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) return date;
+
+        // Fallback for expected format: dd/mm/yyyy hh:mm:ss
         const parts = dateStr.split(" ");
         const dateParts = parts[0].split("/");
         if (dateParts.length !== 3) return null;
@@ -51,6 +56,26 @@ const UserDetailsModal = ({
             return new Date(year, month, day, hours, minutes, seconds);
         }
         return new Date(year, month, day);
+    };
+
+    const formatDisplayDate = (dateStr) => {
+        if (!dateStr || dateStr === "---") return dateStr;
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
+    const formatDelay = (delay) => {
+        if (!delay || delay === "00:00:00" || delay === "0") return "00:00:00";
+        const d = parseFloat(delay);
+        if (!isNaN(d) && !String(delay).includes(":")) {
+            return d.toFixed(2);
+        }
+        return delay;
     };
 
     const filteredRows = React.useMemo(() => {
@@ -320,9 +345,9 @@ const UserDetailsModal = ({
                                                         return (
                                                             <tr key={idx} className="hover:bg-blue-50 transition-colors">
                                                                 <td className="px-4 py-3 text-sm text-gray-700">{row.taskName}</td>
-                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.planned}</td>
-                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.actual || "---"}</td>
-                                                                <td className="px-4 py-3 text-sm text-gray-700">{row.delay || "00:00:00"}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{formatDisplayDate(row.planned)}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{formatDisplayDate(row.actual) || "---"}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-700">{formatDelay(row.delay)}</td>
                                                                 <td className="px-4 py-3 text-sm text-gray-700">
                                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
                                                                         status === "Pending" ? "bg-amber-100 text-amber-700" :
@@ -367,16 +392,16 @@ const UserDetailsModal = ({
                                                         <div className="grid grid-cols-2 gap-y-2 gap-x-4 border-t border-gray-50 pt-2 pl-2">
                                                             <div>
                                                                 <p className="text-[10px] text-gray-400 font-medium uppercase">Planned</p>
-                                                                <p className="text-xs text-gray-700 font-semibold">{row.planned}</p>
+                                                                <p className="text-xs text-gray-700 font-semibold">{formatDisplayDate(row.planned)}</p>
                                                             </div>
                                                             <div>
                                                                 <p className="text-[10px] text-gray-400 font-medium uppercase">Actual</p>
-                                                                <p className="text-xs text-gray-700 font-semibold">{row.actual || "---"}</p>
+                                                                <p className="text-xs text-gray-700 font-semibold">{formatDisplayDate(row.actual) || "---"}</p>
                                                             </div>
                                                             <div className="col-span-2">
                                                                 <p className="text-[10px] text-gray-400 font-medium uppercase">Delay</p>
                                                                 <p className={`text-xs font-semibold ${status === 'Delay' ? 'text-red-600' : 'text-emerald-600'}`}>
-                                                                    {row.delay || '00:00:00'}
+                                                                    {formatDelay(row.delay)}
                                                                 </p>
                                                             </div>
                                                         </div>
