@@ -172,7 +172,40 @@ const AdminDashboard = () => {
           });
         }
 
-        if (result.success && Array.isArray(result.data)) {
+        if (result.success && Array.isArray(result.data) && dataResult.success && Array.isArray(dataResult.data)) {
+          const currentDataRows = dataResult.data.slice(1);
+          
+          // 1. Identify and fetch all source sheets for live calculation
+          const fetchQueue = [];
+          currentDataRows.forEach(row => {
+            const taskUrl = String(row[25] || "").trim() || scriptUrl;
+            [row[7], row[8], row[9], row[27]].forEach(ref => {
+              const parsed = parseSheetRef(ref);
+              if (parsed?.sheetName) fetchQueue.push({ url: taskUrl, sheet: parsed.sheetName });
+            });
+          });
+
+          const uniqueFetches = [];
+          const seen = new Set();
+          fetchQueue.forEach(f => {
+            const key = `${f.url}|${f.sheet}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueFetches.push(f);
+            }
+          });
+
+          const liveCache = {};
+          await Promise.all(uniqueFetches.map(async ({ url, sheet }) => {
+            try {
+              const res = await fetch(`${url}?sheet=${encodeURIComponent(sheet)}`);
+              const r = await res.json();
+              liveCache[`${url}|${sheet}`] = (r.success && Array.isArray(r.data)) ? r.data : [];
+            } catch (err) {
+              liveCache[`${url}|${sheet}`] = [];
+            }
+          }));
+
           const parsedData = result.data.slice(2)
             .filter(row => row[2] && String(row[2]).trim() !== "")
             .map((row, index) => {
@@ -186,6 +219,45 @@ const AdminDashboard = () => {
                 if (processedUrl) finalImageUrl = processedUrl;
               }
 
+              // Calculate LIVE stats for this employee
+              let liveTarget = 0;
+              let liveActual = 0;
+              let liveOnTime = 0;
+              let livePending = 0;
+
+              const empTasks = currentDataRows.filter(r => String(r[4] || "").trim().toLowerCase() === normalizedName);
+              
+              empTasks.forEach(t => {
+                const tUrl = String(t[25] || "").trim() || scriptUrl;
+                const nP = parseSheetRef(t[9]);
+                const aP = parseSheetRef(t[8]);
+                const dP = parseSheetRef(t[27]);
+
+                if (nP && nP.sheetName && nP.colIndex >= 0) {
+                  const nRows = (liveCache[`${tUrl}|${nP.sheetName}`] || []).slice(nP.startRowIndex);
+                  nRows.forEach((nr, nIdx) => {
+                    if (String(nr[nP.colIndex] || "").trim().toLowerCase() === normalizedName) {
+                      liveTarget++;
+                      const absIdx = nP.startRowIndex + nIdx;
+                      const aSheet = aP ? liveCache[`${tUrl}|${aP.sheetName}`] : null;
+                      const dSheet = dP ? liveCache[`${tUrl}|${dP.sheetName}`] : null;
+                      
+                      const status = getStatus({
+                        actual: aSheet ? (aSheet[absIdx] || [])[aP.colIndex] : "",
+                        delay: dSheet ? (dSheet[absIdx] || [])[dP.colIndex] : ""
+                      });
+
+                      if (status !== "Pending") {
+                        liveActual++;
+                        if (status === "On Time") liveOnTime++;
+                      } else {
+                        livePending++;
+                      }
+                    }
+                  });
+                }
+              });
+
               return {
                 id: `emp-${100 + index}`,
                 name: empName,
@@ -193,13 +265,13 @@ const AdminDashboard = () => {
                 endDate: row[11] || "",
                 designation: designationMap[normalizedName] || row[3] || "N/A",
                 image: finalImageUrl,
-                target: row[3] || 0,
-                actualWorkDone: row[4] || 0,
-                weeklyWorkDone: row[5] || "0%",
-                weeklyWorkDoneOnTime: row[6] || "0%",
-                totalWorkDone: row[7] || 0,
-                weekPending: row[8] || 0,
-                allPendingTillDate: row[9] || 0,
+                target: liveTarget,
+                actualWorkDone: liveActual,
+                weeklyWorkDone: liveTarget > 0 ? Math.round((liveActual / liveTarget) * 100) + "%" : "0%",
+                weeklyWorkDoneOnTime: liveTarget > 0 ? Math.round((liveOnTime / liveTarget) * 100) + "%" : "0%",
+                totalWorkDone: liveActual,
+                weekPending: livePending,
+                allPendingTillDate: livePending,
                 plannedWorkNotDone: row[12] || 0,
                 plannedWorkNotDoneOnTime: row[13] || 0,
                 commitment: row[14] || 0,
@@ -351,7 +423,7 @@ const AdminDashboard = () => {
     showToast("Professional PDF Report generated", "success");
   };
 
-  const handleRowClick = (employee) => {
+  const handleRowClick = async (employee) => {
     const personName = String(employee.name).trim();
     const matchingRows = dataSheetRows.filter(row => {
       const dataName = row[4] ? String(row[4]).trim() : "";
@@ -376,7 +448,104 @@ const AdminDashboard = () => {
       delayColRef: row[27] || ""
     }));
 
-    setSelectedUserDetails({ ...employee, tasks });
+    // Open modal immediately with current data and a loading state for totals
+    setSelectedUserDetails({ ...employee, tasks, loadingTasks: true });
+
+    // Fetch and calculate live totals
+    try {
+      const defaultScriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL;
+      if (!defaultScriptUrl) return;
+
+      // Group fetches by their specific script URLs to handle multiple FMS sources
+      const fetchQueue = []; 
+      tasks.forEach(t => {
+        const taskUrl = String(t.scriptUrl || "").trim() || defaultScriptUrl;
+        [t.plannedSheetRef, t.actualSheetRef, t.nameColRef, t.taskNameColRef, t.delayColRef].forEach(ref => {
+          const parsed = parseSheetRef(ref);
+          if (parsed?.sheetName) {
+            fetchQueue.push({ url: taskUrl, sheet: parsed.sheetName });
+          }
+        });
+      });
+
+      // Filter unique scriptUrl + sheetName combinations
+      const uniqueFetches = [];
+      const seen = new Set();
+      fetchQueue.forEach(f => {
+        const key = `${f.url}|${f.sheet}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueFetches.push(f);
+        }
+      });
+
+      // Fetch all required data in parallel
+      const cache = {}; // Key format: "url|sheet"
+      await Promise.all(uniqueFetches.map(async ({ url, sheet }) => {
+        try {
+          const res = await fetch(`${url}?sheet=${encodeURIComponent(sheet)}`);
+          const result = await res.json();
+          cache[`${url}|${sheet}`] = (result.success && Array.isArray(result.data)) ? result.data : [];
+        } catch (err) {
+          console.error(`Failed to fetch ${sheet} from ${url}:`, err);
+          cache[`${url}|${sheet}`] = [];
+        }
+      }));
+
+      // Recalculate all totals for each task
+      const updatedTasks = tasks.map(task => {
+        const taskUrl = String(task.scriptUrl || "").trim() || defaultScriptUrl;
+        const nameParsed = parseSheetRef(task.nameColRef);
+        const actualParsed = parseSheetRef(task.actualSheetRef);
+        const delayParsed = parseSheetRef(task.delayColRef);
+
+        if (!nameParsed || !nameParsed.sheetName || nameParsed.colIndex < 0) return task;
+
+        const nameSheetRows = cache[`${taskUrl}|${nameParsed.sheetName}`] || [];
+        const nameRowsFromStart = nameParsed.startRowIndex > 0 ? nameSheetRows.slice(nameParsed.startRowIndex) : nameSheetRows;
+        
+        const matchingIndices = [];
+        nameRowsFromStart.forEach((row, idx) => {
+          const cellValue = String(row[nameParsed.colIndex] || "").trim();
+          if (cellValue.toLowerCase() === personName.toLowerCase()) {
+            matchingIndices.push(idx);
+          }
+        });
+
+        const taskDetails = matchingIndices.map(relIdx => {
+          const absIdx = nameParsed.startRowIndex + relIdx;
+          const actualSheet = actualParsed ? cache[`${taskUrl}|${actualParsed.sheetName}`] : null;
+          const delaySheet = delayParsed ? cache[`${taskUrl}|${delayParsed.sheetName}`] : null;
+          
+          return {
+            actual: actualSheet ? (actualSheet[absIdx] || [])[actualParsed.colIndex] : "",
+            delay: delaySheet ? (delaySheet[absIdx] || [])[delayParsed.colIndex] : ""
+          };
+        });
+
+        const target = taskDetails.length;
+        const totalAchievement = taskDetails.filter(d => getStatus(d) !== "Pending").length;
+        const pendingCount = target - totalAchievement;
+        const delayCount = taskDetails.filter(d => getStatus(d) === "Delay").length;
+
+        const workNotDone = target > 0 ? Math.round((pendingCount / target) * 100) + "%" : "0%";
+        const workNotDoneOnTime = target > 0 ? Math.round(((pendingCount + delayCount) / target) * 100) + "%" : "0%";
+
+        return {
+          ...task,
+          target,
+          totalAchievement,
+          workNotDone,
+          workNotDoneOnTime,
+          allPendingTillDate: pendingCount
+        };
+      });
+
+      setSelectedUserDetails(prev => (prev && prev.name === employee.name) ? { ...prev, tasks: updatedTasks, loadingTasks: false } : prev);
+    } catch (error) {
+      console.error("Error calculating task totals:", error);
+      setSelectedUserDetails(prev => prev ? { ...prev, loadingTasks: false } : null);
+    }
   };
 
   const parseSheetRef = (ref) => {
@@ -397,6 +566,25 @@ const AdminDashboard = () => {
     const startRow = colMatch[2] ? parseInt(colMatch[2]) : 1;
     const startRowIndex = startRow > 0 ? startRow - 1 : 0;
     return { sheetName, colIndex, startRowIndex };
+  };
+
+  const getStatus = (row) => {
+    const actualStr = String(row.actual || "").trim();
+    if (!actualStr || actualStr === "" || actualStr === "---") return "Pending";
+    
+    const delayStr = String(row.delay || "0").trim();
+    if (delayStr === "0" || delayStr === "00:00:00" || delayStr === "") return "On Time";
+    
+    const parts = delayStr.split(":");
+    if (parts.length === 3) {
+      const h = parseInt(parts[0], 10) || 0;
+      const m = parseInt(parts[1], 10) || 0;
+      const s = parseInt(parts[2], 10) || 0;
+      if (h > 0 || m > 0 || s > 0) return "Delay";
+    } else if (parseFloat(delayStr) > 0) {
+      return "Delay";
+    }
+    return "On Time";
   };
 
   const handleDrillDown = async (task, type, value, event) => {

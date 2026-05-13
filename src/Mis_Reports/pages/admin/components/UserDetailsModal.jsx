@@ -167,7 +167,16 @@ const UserDetailsModal = ({
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {selectedUserDetails.tasks && selectedUserDetails.tasks.length > 0 ? (
+                                                {selectedUserDetails.loadingTasks ? (
+                                                    <tr>
+                                                        <td colSpan="8" className="px-3 py-10 text-center">
+                                                            <div className="flex flex-col items-center gap-2">
+                                                                <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                                                                <p className="text-xs text-gray-500 font-medium">Calculating live task analytics...</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : selectedUserDetails.tasks && selectedUserDetails.tasks.length > 0 ? (
                                                     selectedUserDetails.tasks.map((task, idx) => (
                                                         <tr
                                                             key={idx}
@@ -197,7 +206,12 @@ const UserDetailsModal = ({
 
                                     {/* Mobile View - Cards */}
                                     <div className="md:hidden space-y-3">
-                                        {selectedUserDetails.tasks && selectedUserDetails.tasks.length > 0 ? (
+                                        {selectedUserDetails.loadingTasks ? (
+                                            <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                                <Loader2 className="w-6 h-6 text-blue-600 animate-spin mx-auto mb-2" />
+                                                <p className="text-xs text-gray-500 font-medium">Calculating live task analytics...</p>
+                                            </div>
+                                        ) : selectedUserDetails.tasks && selectedUserDetails.tasks.length > 0 ? (
                                             selectedUserDetails.tasks.map((task, idx) => (
                                                 <div
                                                     key={idx}
