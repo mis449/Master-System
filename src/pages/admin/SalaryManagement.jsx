@@ -702,7 +702,7 @@ export default function SalaryManagement() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Extra Days</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Bonus</label>
                                     <input 
                                         type="number" 
                                         value={row.extra_days || ""} 
