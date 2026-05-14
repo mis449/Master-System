@@ -148,23 +148,29 @@ const ERPLayout = ({ children }) => {
     return 'checklist';
   });
 
+  const [expandedModuleId, setExpandedModuleId] = useState(activeModuleId);
+
   const activeModule = modules.find(m => m.id === activeModuleId) || modules[0];
 
   useEffect(() => {
     const path = location.pathname;
     const search = location.search;
+    let newId = 'checklist';
 
-    if (path.startsWith('/sales')) setActiveModuleId('sales');
-    else if (path.startsWith('/purchase')) setActiveModuleId('purchase');
-    else if (path.startsWith('/dashboard/user-management')) setActiveModuleId('users');
-    else if (path.startsWith('/dashboard/salary')) setActiveModuleId('salary');
-
-    else if (path.includes('mis') || path.includes('kpi-kra')) setActiveModuleId('mis');
+    if (path.startsWith('/sales')) newId = 'sales';
+    else if (path.startsWith('/purchase')) newId = 'purchase';
+    else if (path.startsWith('/dashboard/user-management')) newId = 'users';
+    else if (path.startsWith('/dashboard/salary')) newId = 'salary';
+    else if (path.includes('mis') || path.includes('kpi-kra')) newId = 'mis';
     else if (path === '/dashboard/admin' || path === '/dashboard') {
-      if (search.includes('view=checklist')) setActiveModuleId('checklist');
-      else setActiveModuleId('dashboard');
+      if (search.includes('view=checklist')) newId = 'checklist';
+      else newId = 'dashboard';
+    } else {
+      newId = 'checklist';
     }
-    else setActiveModuleId('checklist');
+
+    setActiveModuleId(newId);
+    setExpandedModuleId(newId);
   }, [location]);
 
   const filteredModules = modules
@@ -270,11 +276,18 @@ const ERPLayout = ({ children }) => {
 
                   <button
                     onClick={() => {
-                      setActiveModuleId(module.id);
-                      if (module.subItems.length === 0) {
+                      if (module.subItems.length > 0) {
+                        if (expandedModuleId === module.id) {
+                          setExpandedModuleId(null);
+                        } else {
+                          setExpandedModuleId(module.id);
+                          setActiveModuleId(module.id);
+                          if (!isSidebarOpen) setIsSidebarOpen(true);
+                        }
+                      } else {
+                        setActiveModuleId(module.id);
+                        setExpandedModuleId(module.id);
                         navigate(module.path);
-                      } else if (!isSidebarOpen) {
-                        setIsSidebarOpen(true);
                       }
                     }}
                     title={!isSidebarOpen ? module.label : ""}
@@ -295,7 +308,7 @@ const ERPLayout = ({ children }) => {
 
                     {isSidebarOpen && module.subItems.length > 0 && (
                       <ChevronRight className={`ml-auto w-4 h-4 transition-transform duration-300 
-                        ${isActiveModule ? 'rotate-90 text-blue-600' : 'text-gray-400'}`}
+                        ${expandedModuleId === module.id ? 'rotate-90 text-blue-600' : 'text-gray-400'}`}
                       />
                     )}
 
@@ -308,8 +321,8 @@ const ERPLayout = ({ children }) => {
                     )}
                   </button>
 
-                  {/* Sub-items list (only when expanded and active) */}
-                  {isSidebarOpen && isActiveModule && module.subItems.length > 0 && (
+                  {/* Sub-items list (only when expanded) */}
+                  {isSidebarOpen && expandedModuleId === module.id && module.subItems.length > 0 && (
                     <div className="ml-9 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-300">
                       {module.subItems.map((item, idx) => {
                         const isSubActive = location.pathname === item.path;
@@ -408,50 +421,65 @@ const ERPLayout = ({ children }) => {
                   </div>
                 )}
 
-                {/* If module has subItems, show subItems. If not, show the module itself. */}
-                {module.subItems.length > 0 ? (
-                  module.subItems.map((item, idx) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={idx}
-                        to={item.path}
-                        onClick={toggleMobileMenu}
-                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
-                          ${isActive
-                            ? 'bg-blue-50/50 text-blue-600'
-                            : 'text-gray-600 hover:bg-gray-50'}`}
-                      >
-                        <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                        <span className={`ml-3 font-semibold text-sm ${isActive ? 'text-blue-700' : ''}`}>{item.label}</span>
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeBarMobile"
-                            className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
-                          />
-                        )}
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <Link
-                    to={module.path}
-                    onClick={toggleMobileMenu}
-                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
-                      ${location.pathname === module.path
-                        ? 'bg-blue-50/50 text-blue-600'
-                        : 'text-gray-600 hover:bg-gray-50'}`}
-                  >
-                    <module.icon className={`w-5 h-5 flex-shrink-0 ${location.pathname === module.path ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                    <span className={`ml-3 font-semibold text-sm ${location.pathname === module.path ? 'text-blue-700' : ''}`}>{module.label}</span>
-                    {location.pathname === module.path && (
-                      <motion.div
-                        layoutId="activeBarMobile"
-                        className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
-                      />
-                    )}
-                  </Link>
-                )}
+                {/* Module Button */}
+                <button
+                  onClick={() => {
+                    if (module.subItems.length > 0) {
+                      setExpandedModuleId(prev => prev === module.id ? null : module.id);
+                    } else {
+                      navigate(module.path);
+                      toggleMobileMenu();
+                    }
+                  }}
+                  className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 relative group
+                    ${activeModuleId === module.id
+                      ? 'bg-blue-50/50 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <module.icon className={`w-5 h-5 flex-shrink-0 ${activeModuleId === module.id ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                  <span className={`ml-3 font-semibold text-sm ${activeModuleId === module.id ? 'text-blue-700' : ''}`}>{module.label}</span>
+                  
+                  {module.subItems.length > 0 && (
+                    <ChevronDown className={`ml-auto w-4 h-4 transition-transform duration-300 ${expandedModuleId === module.id ? 'rotate-180' : ''}`} />
+                  )}
+
+                  {activeModuleId === module.id && (
+                    <motion.div
+                      layoutId="activeBarMobile"
+                      className="absolute right-0 top-1 bottom-1 w-1 bg-blue-600 rounded-l-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
+                    />
+                  )}
+                </button>
+
+                {/* Sub-items (Mobile Accordion) */}
+                <AnimatePresence>
+                  {expandedModuleId === module.id && module.subItems.length > 0 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden ml-6 space-y-1 mt-1"
+                    >
+                      {module.subItems.map((item, idx) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link
+                            key={idx}
+                            to={item.path}
+                            onClick={toggleMobileMenu}
+                            className={`flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 relative group
+                              ${isActive
+                                ? 'bg-blue-50/30 text-blue-600'
+                                : 'text-gray-500 hover:bg-gray-50'}`}
+                          >
+                            <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <span className={`ml-3 font-medium text-xs ${isActive ? 'text-blue-700' : ''}`}>{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
@@ -594,15 +622,15 @@ const ERPLayout = ({ children }) => {
                     <p className="text-sm font-black text-gray-900">{user || 'Admin'}</p>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{localStorage.getItem('email_id')}</p>
                   </div>
-                  <Link 
-                    to="/dashboard/admin" 
+                  <Link
+                    to="/dashboard/admin"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <User className="w-4 h-4 text-gray-400" /> My Profile
                   </Link>
-                  <Link 
-                    to="/dashboard/user-management" 
+                  <Link
+                    to="/dashboard/user-management"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
