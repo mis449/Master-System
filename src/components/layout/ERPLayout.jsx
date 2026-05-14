@@ -54,7 +54,7 @@ const ERPLayout = ({ children }) => {
     {
       id: 'dashboard',
       label: 'Profile',
-      icon: LayoutDashboard,
+      icon: User,
       path: '/dashboard/admin',
       roles: ['admin', 'manager', 'user', 'hod'],
       section: 'CHECKLIST & DELEGATIONS',
