@@ -442,6 +442,24 @@ const AllTasks = () => {
             headers.push({ id: "updated_at", label: "Submitted" });
           }
           break;
+        case "delegation":
+          tableName = "delegation";
+          dateColumn = "task_start_date";
+          completionField = "submission_date";
+          headers = [
+            { id: "time_status", label: "Time" },
+            { id: "id", label: "ID" },
+            { id: "task_description", label: "Description" },
+            { id: "department", label: "Dept" },
+            { id: "given_by", label: "Given By" },
+            { id: "name", label: "Name" },
+            { id: "planned_date", label: "Planned" },
+            { id: "frequency", label: "Freq" },
+            { id: "enable_reminder", label: "Remind" },
+            { id: "require_attachment", label: "Attach" },
+            { id: "status", label: "Status" },
+          ];
+          break;
         case "checklist":
         default:
           tableName = "checklist";
