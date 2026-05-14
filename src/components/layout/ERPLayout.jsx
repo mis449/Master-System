@@ -53,7 +53,7 @@ const ERPLayout = ({ children }) => {
   const modules = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: 'Profile',
       icon: LayoutDashboard,
       path: '/dashboard/admin',
       roles: ['admin', 'manager', 'user', 'hod'],
@@ -594,10 +594,18 @@ const ERPLayout = ({ children }) => {
                     <p className="text-sm font-black text-gray-900">{user || 'Admin'}</p>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{localStorage.getItem('email_id')}</p>
                   </div>
-                  <Link to="/dashboard/setting" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Link 
+                    to="/dashboard/admin" 
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
                     <User className="w-4 h-4 text-gray-400" /> My Profile
                   </Link>
-                  <Link to="/dashboard/setting" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Link 
+                    to="/dashboard/user-management" 
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
                     <Settings className="w-4 h-4 text-gray-400" /> Account Settings
                   </Link>
                   <div className="h-px bg-gray-50 my-1" />
