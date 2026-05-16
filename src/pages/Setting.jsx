@@ -579,57 +579,13 @@ const Setting = () => {
       can_self_assign: userForm.can_self_assign
     };
 
-    const oldUsername = originalUser?.user_name;
-    const newUsername = updatedUser.user_name;
-    const isRenamed = oldUsername && newUsername && oldUsername !== newUsername;
-
     try {
       console.log("Updating user with image:", imageUrl);
       await dispatch(updateUser({ id: currentUserId, updatedUser })).unwrap();
 
-      if (isRenamed) {
-        showToast(`Syncing tasks for renamed user: ${oldUsername} → ${newUsername}`, "info");
-        
-        // Parallel updates for all task-related tables
-        const syncPromises = [
-          // Checklist
-          supabase.from('checklist').update({ name: newUsername }).eq('name', oldUsername),
-          supabase.from('checklist').update({ given_by: newUsername }).eq('given_by', oldUsername),
-          
-          // Maintenance
-          supabase.from('maintenance_tasks').update({ name: newUsername }).eq('name', oldUsername),
-          supabase.from('maintenance_tasks').update({ given_by: newUsername }).eq('given_by', oldUsername),
-          
-          // Delegation
-          supabase.from('delegation').update({ name: newUsername }).eq('name', oldUsername),
-          supabase.from('delegation').update({ given_by: newUsername }).eq('given_by', oldUsername),
-          
-          // Delegation History
-          supabase.from('delegation_done').update({ name: newUsername }).eq('name', oldUsername),
-          supabase.from('delegation_done').update({ given_by: newUsername }).eq('given_by', oldUsername),
-
-          // Repair
-          supabase.from('repair_tasks').update({ assigned_person: newUsername }).eq('assigned_person', oldUsername),
-          supabase.from('repair_tasks').update({ filled_by: newUsername }).eq('filled_by', oldUsername),
-          
-          // EA Tasks
-          supabase.from('ea_tasks').update({ doer_name: newUsername }).eq('doer_name', oldUsername),
-          supabase.from('ea_tasks').update({ given_by: newUsername }).eq('given_by', oldUsername),
-          
-          // Metadata and Reporting
-          supabase.from('users').update({ reported_by: newUsername }).eq('reported_by', oldUsername),
-          supabase.from('departments').update({ given_by: newUsername }).eq('given_by', oldUsername),
-          supabase.from('assign_from').update({ given_by: newUsername }).eq('given_by', oldUsername)
-        ];
-
-        await Promise.allSettled(syncPromises);
-        showToast("Task sync complete!", "success");
-      }
-
       // Critical: Update localStorage if the edited user is the current logged-in user
-      if (updatedUser.user_name === localStorage.getItem("user-name") || (isRenamed && oldUsername === localStorage.getItem("user-name"))) {
-        console.log("Updating current user's session data");
-        localStorage.setItem("user-name", newUsername);
+      if (updatedUser.user_name === localStorage.getItem("user-name")) {
+        console.log("Updating current user's localStorage image");
         localStorage.setItem("profile_image", imageUrl || "");
         // Refresh to update all layouts immediately
         window.location.reload();
@@ -638,7 +594,7 @@ const Setting = () => {
       resetUserForm();
       setShowUserModal(false);
       showToast("User updated successfully!", "success");
-      dispatch(userDetails()); 
+      dispatch(userDetails()); // Explicitly refresh user details
     } catch (error) {
       console.error('Error updating user:', error);
       showToast("Failed to update user.", "error");
