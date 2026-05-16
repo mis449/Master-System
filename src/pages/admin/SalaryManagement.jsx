@@ -359,7 +359,7 @@ export default function SalaryManagement() {
                 <body>
                     <div class="slip-container">
                         <div class="header">
-                            <h1 class="company-name">PAREKH CHECKLIST & DELEGATION</h1>
+                            <h1 class="company-name">PAREKH Gallerium</h1>
                             <p class="subtitle">Employee Monthly Salary Statement</p>
                             <div class="slip-title">Salary Slip for ${monthName.toUpperCase()}</div>
                         </div>
