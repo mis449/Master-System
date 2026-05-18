@@ -326,7 +326,21 @@ const AdminDashboard = () => {
     doc.text('DETAILED EMPLOYEE PERFORMANCE LIST', 18, startY + 4);
 
     const tableCols = ALL_COLUMNS.filter(c => visibleColumns[c.key]);
-    const bodyData = filteredEmployees.map(emp => tableCols.map(col => emp[col.key]));
+    const bodyData = filteredEmployees.map(emp => tableCols.map(col => {
+      switch (col.key) {
+        case "actualWork": return emp.actualWorkDone;
+        case "weeklyDone": return emp.weeklyWorkDone;
+        case "weeklyOnTime": return emp.weeklyWorkDoneOnTime;
+        case "totalWork": return emp.totalWorkDone;
+        case "allPending": return emp.allPendingTillDate;
+        case "lastWeekPlannedNotDone": return emp.plannedWorkNotDone;
+        case "lastWeekPlannedNotDoneOnTime": return emp.plannedWorkNotDoneOnTime;
+        case "lastWeekCommitment": return emp.commitment;
+        case "nextWeekPlannedNotDone": return emp.nextWeekPlannedWorkNotDone;
+        case "nextWeekPlannedNotDoneOnTime": return emp.nextWeekPlannedWorkNotDoneOnTime;
+        default: return emp[col.key];
+      }
+    }));
 
     autoTable(doc, {
       startY: startY + 7,
