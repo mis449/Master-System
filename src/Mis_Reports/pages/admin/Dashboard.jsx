@@ -14,6 +14,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useMagicToast } from "../../../context/MagicToastContext";
 import ERPLayout from "../../../components/layout/ERPLayout";
 import UserDetailsModal from "./components/UserDetailsModal";
+import aceLogo from "../../../assets/Ace_Logoo.jpg";
 
 const getCurrentWeek = () => {
   const today = new Date();
@@ -238,137 +239,210 @@ const AdminDashboard = () => {
   const handleDownload = () => {
     if (sheetEmployees.length === 0) return;
     
-    const doc = new jsPDF('l', 'mm', 'a4'); // Switched to Landscape
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    const img = new Image();
+    img.src = aceLogo;
 
-    // 1. Blue Branding Header
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, pageWidth, 25, 'F'); // Reduced height from 40 to 25
-    
-    // Logo Placeholder
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(12, 5, 15, 15, 3, 3, 'F');
-    doc.setTextColor(37, 99, 235);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ACE', 19.5, 14.5, { align: 'center' });
+    const generatePdf = () => {
+      const doc = new jsPDF('l', 'mm', 'a4'); // Switched to Landscape
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
-    // Header Content
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.text('MIS ANALYTICS REPORT', pageWidth - 12, 12, { align: 'right' });
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`DATE: ${dateStr.toUpperCase()}`, pageWidth - 12, 18, { align: 'right' });
-
-    // 2. Summary Grids
-    let startY = 32; // Reduced from 50
-    const colWidth = (pageWidth - 35) / 3;
-
-    const summarySections = [
-      { title: 'TOP PERFORMERS', data: topBestPerformers, color: [16, 185, 129], icon: '★' },
-      { title: 'PENDING TASKS', data: sortedPendingList, color: [239, 68, 68], icon: '⚠' },
-      { title: 'LOW PERFORMERS', data: topWorstPerformers, color: [59, 130, 246], icon: '▼' }
-    ];
-
-    summarySections.forEach((sec, idx) => {
-      const xPos = 12 + (idx * (colWidth + 5));
+      // 1. Sleek Royal Blue Corporate Branding Header
+      doc.setFillColor(30, 64, 175); // Premium Royal Blue (#1E40AF)
+      doc.rect(0, 0, pageWidth, 20, 'F'); // Compact slim header for single page fit
       
-      doc.setFillColor(...sec.color);
-      doc.roundedRect(xPos, startY, colWidth, 6, 1.5, 1.5, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${sec.icon} ${sec.title}`, xPos + colWidth / 2, startY + 4, { align: 'center' });
+      // Premium Logo
+      try {
+        doc.addImage(img, 'JPEG', 12, 4, 12, 12);
+      } catch (e) {
+        // Fallback Logo Placeholder
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(12, 4, 12, 12, 2.5, 2.5, 'F');
+        doc.setTextColor(30, 64, 175);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ACE', 18, 11.5, { align: 'center' });
+      }
 
-      const rows = sec.data.map(emp => [
-        emp.name, 
-        sec.title.includes('PENDING') ? `${emp.pending}` : (emp.weeklyWorkDone || '0%')
-      ]);
+      // Header Content
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(15);
+      doc.text('MIS ANALYTICS REPORT OF PAREKH GALLERIUM', pageWidth - 12, 10, { align: 'right' });
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`DATE: ${dateStr.toUpperCase()}`, pageWidth - 12, 15, { align: 'right' });
+
+      // 2. Summary Grids
+      let startY = 26; // Tighter margin
+      const colWidth = (pageWidth - 35) / 3;
+
+      const summarySections = [
+        { title: 'TOP PERFORMERS', data: topBestPerformers, color: [5, 150, 105], icon: '★' },
+        { title: 'PENDING TASKS', data: sortedPendingList, color: [220, 38, 38], icon: '⚠' },
+        { title: 'LOW PERFORMERS', data: topWorstPerformers, color: [30, 64, 175], icon: '▼' }
+      ];
+
+      summarySections.forEach((sec, idx) => {
+        const xPos = 12 + (idx * (colWidth + 5));
+        
+        doc.setFillColor(...sec.color);
+        doc.roundedRect(xPos, startY, colWidth, 5, 1.5, 1.5, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${sec.icon} ${sec.title}`, xPos + colWidth / 2, startY + 3.5, { align: 'center' });
+
+        const rows = sec.data.map(emp => [
+          emp.name, 
+          sec.title.includes('PENDING') ? `${emp.pending}` : (emp.weeklyWorkDone || '0%')
+        ]);
+
+        autoTable(doc, {
+          startY: startY + 5,
+          margin: { left: xPos, bottom: 8 },
+          tableWidth: colWidth,
+          body: rows,
+          theme: 'striped',
+          styles: { 
+            fontSize: 7.5, 
+            cellPadding: 2, 
+            lineColor: [241, 245, 249], 
+            lineWidth: 0.1,
+            valign: 'middle'
+          },
+          columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', fontStyle: 'bold' } },
+          headStyles: { fillColor: [240, 240, 240] },
+          pageBreak: 'avoid'
+        });
+      });
+
+      // 3. Departmental Analysis
+      startY = doc.lastAutoTable.finalY + 5;
+      doc.setFillColor(30, 64, 175); // Royal Blue indicator
+      doc.rect(12, startY, 2, 4, 'F');
+      doc.setTextColor(30, 64, 175);
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DEPARTMENTAL SCORECARD', 18, startY + 3.2);
 
       autoTable(doc, {
-        startY: startY + 6,
-        margin: { left: xPos },
-        tableWidth: colWidth,
-        body: rows,
-        theme: 'striped',
-        styles: { fontSize: 6, cellPadding: 1.2 },
-        columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', fontStyle: 'bold' } },
-        headStyles: { fillColor: [240, 240, 240] },
+        startY: startY + 5,
+        margin: { bottom: 8, left: 12, right: 12 },
+        head: [['DEPARTMENT NAME', 'PENDING WORKS', 'NOT DONE %', 'DELAYED %']],
+        body: departmentScores.map(d => [d.name, d.pendingWorks, `${d.workNotDonePct}%`, `${d.notDoneOnTimePct}%`]),
+        theme: 'grid',
+        styles: { 
+          fontSize: 8.5, 
+          cellPadding: 2.8, 
+          lineColor: [226, 232, 240], 
+          lineWidth: 0.15,
+          valign: 'middle'
+        },
+        headStyles: { 
+          fillColor: [30, 64, 175], // Royal Blue Header
+          textColor: 255, 
+          fontStyle: 'bold', 
+          fontSize: 8.5,
+          halign: 'center',
+          valign: 'middle'
+        },
+        columnStyles: { 
+          0: { halign: 'left', fontStyle: 'bold' }, 
+          1: { halign: 'center' }, 
+          2: { halign: 'center' }, 
+          3: { halign: 'center' } 
+        },
+        pageBreak: 'avoid'
       });
-    });
 
-    // 3. Departmental Analysis
-    startY = doc.lastAutoTable.finalY + 8; // Reduced margin from 15
-    doc.setFillColor(31, 41, 55);
-    doc.rect(12, startY, 2, 5, 'F');
-    doc.setTextColor(31, 41, 55);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DEPARTMENTAL SCORECARD', 18, startY + 4);
+      // 4. Employee Detailed Master List
+      startY = doc.lastAutoTable.finalY + 5;
+      doc.setFillColor(30, 64, 175); // Royal Blue indicator
+      doc.rect(12, startY, 2, 4, 'F');
+      doc.setTextColor(30, 64, 175);
+      doc.text('DETAILED EMPLOYEE PERFORMANCE LIST', 18, startY + 3.2);
 
-    autoTable(doc, {
-      startY: startY + 7,
-      head: [['DEPARTMENT NAME', 'PENDING WORKS', 'NOT DONE %', 'DELAYED %']],
-      body: departmentScores.map(d => [d.name, d.pendingWorks, `${d.workNotDonePct}%`, `${d.notDoneOnTimePct}%`]),
-      theme: 'grid',
-      styles: { fontSize: 7, cellPadding: 1.5 },
-      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
-      columnStyles: { 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } }
-    });
+      const tableCols = ALL_COLUMNS.filter(c => visibleColumns[c.key]);
+      const bodyData = filteredEmployees.map(emp => tableCols.map(col => {
+        switch (col.key) {
+          case "actualWork": return emp.actualWorkDone;
+          case "weeklyDone": return emp.weeklyWorkDone;
+          case "weeklyOnTime": return emp.weeklyWorkDoneOnTime;
+          case "totalWork": return emp.totalWorkDone;
+          case "allPending": return emp.allPendingTillDate;
+          case "lastWeekPlannedNotDone": return emp.plannedWorkNotDone;
+          case "lastWeekPlannedNotDoneOnTime": return emp.plannedWorkNotDoneOnTime;
+          case "lastWeekCommitment": return emp.commitment;
+          case "nextWeekPlannedNotDone": return emp.nextWeekPlannedWorkNotDone;
+          case "nextWeekPlannedNotDoneOnTime": return emp.nextWeekPlannedWorkNotDoneOnTime;
+          default: return emp[col.key];
+        }
+      }));
 
-    // 4. Employee Detailed Master List
-    startY = doc.lastAutoTable.finalY + 8; // Reduced margin from 15
-    doc.setFillColor(37, 99, 235);
-    doc.rect(12, startY, 2, 5, 'F');
-    doc.setTextColor(37, 99, 235);
-    doc.text('DETAILED EMPLOYEE PERFORMANCE LIST', 18, startY + 4);
+      autoTable(doc, {
+        startY: startY + 5,
+        margin: { bottom: 10, left: 12, right: 12 },
+        head: [tableCols.map(c => {
+          switch (c.key) {
+            case "weeklyDone": return "Wk. Done %";
+            case "weeklyOnTime": return "Wk. On Time %";
+            case "lastWeekPlannedNotDone": return "L.W. Not Done %";
+            case "lastWeekPlannedNotDoneOnTime": return "L.W. Delayed %";
+            case "lastWeekCommitment": return "L.W. Commit";
+            case "nextWeekPlannedNotDone": return "N.W. Not Done %";
+            case "nextWeekPlannedNotDoneOnTime": return "N.W. Delayed %";
+            case "nextWeekCommitment": return "N.W. Commit";
+            default: return c.label;
+          }
+        })],
+        body: bodyData,
+        theme: 'grid',
+        styles: { 
+          fontSize: 7.5, 
+          cellPadding: 2.6, 
+          overflow: 'linebreak', 
+          halign: 'center',
+          valign: 'middle',
+          lineColor: [226, 232, 240], 
+          lineWidth: 0.15
+        },
+        headStyles: { 
+          fillColor: [30, 64, 175], // Royal Blue Header
+          textColor: 255, 
+          fontSize: 7.5, 
+          fontStyle: 'bold', 
+          halign: 'center',
+          valign: 'middle'
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', halign: 'left' }, // Name
+          1: { halign: 'left' }, // Designation
+        },
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index > 1) data.cell.styles.halign = 'center';
+        },
+        pageBreak: 'avoid'
+      });
 
-    const tableCols = ALL_COLUMNS.filter(c => visibleColumns[c.key]);
-    const bodyData = filteredEmployees.map(emp => tableCols.map(col => {
-      switch (col.key) {
-        case "actualWork": return emp.actualWorkDone;
-        case "weeklyDone": return emp.weeklyWorkDone;
-        case "weeklyOnTime": return emp.weeklyWorkDoneOnTime;
-        case "totalWork": return emp.totalWorkDone;
-        case "allPending": return emp.allPendingTillDate;
-        case "lastWeekPlannedNotDone": return emp.plannedWorkNotDone;
-        case "lastWeekPlannedNotDoneOnTime": return emp.plannedWorkNotDoneOnTime;
-        case "lastWeekCommitment": return emp.commitment;
-        case "nextWeekPlannedNotDone": return emp.nextWeekPlannedWorkNotDone;
-        case "nextWeekPlannedNotDoneOnTime": return emp.nextWeekPlannedWorkNotDoneOnTime;
-        default: return emp[col.key];
+      // 5. Page Numbers & Confidentiality
+      const pages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`CONFIDENTIAL | MIS ANALYTICS | PAGE ${i} OF ${pages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
       }
-    }));
 
-    autoTable(doc, {
-      startY: startY + 7,
-      head: [tableCols.map(c => c.label)],
-      body: bodyData,
-      theme: 'grid',
-      styles: { fontSize: 6, cellPadding: 1.2, overflow: 'linebreak', halign: 'center' },
-      headStyles: { fillColor: [37, 99, 235], textColor: 255, fontSize: 6, fontStyle: 'bold', halign: 'center' },
-      columnStyles: {
-        0: { cellWidth: 28, fontStyle: 'bold', halign: 'left' }, // Name
-        1: { cellWidth: 28, halign: 'left' }, // Designation
-      },
-      didParseCell: (data) => {
-        if (data.section === 'body' && data.column.index > 1) data.cell.styles.halign = 'center';
-      }
-    });
+      doc.save(`MIS_Full_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      showToast("Professional PDF Report generated", "success");
+    };
 
-    // 5. Page Numbers & Confidentiality
-    const pages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(`CONFIDENTIAL | MIS ANALYTICS | PAGE ${i} OF ${pages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    if (img.complete) {
+      generatePdf();
+    } else {
+      img.onload = generatePdf;
+      img.onerror = generatePdf;
     }
-
-    doc.save(`MIS_Full_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-    showToast("Professional PDF Report generated", "success");
   };
 
   const handleRowClick = async (employee) => {
