@@ -175,37 +175,6 @@ const AdminDashboard = () => {
         if (result.success && Array.isArray(result.data) && dataResult.success && Array.isArray(dataResult.data)) {
           const currentDataRows = dataResult.data.slice(1);
           
-          // 1. Identify and fetch all source sheets for live calculation
-          const fetchQueue = [];
-          currentDataRows.forEach(row => {
-            const taskUrl = String(row[25] || "").trim() || scriptUrl;
-            [row[7], row[8], row[9], row[27]].forEach(ref => {
-              const parsed = parseSheetRef(ref);
-              if (parsed?.sheetName) fetchQueue.push({ url: taskUrl, sheet: parsed.sheetName });
-            });
-          });
-
-          const uniqueFetches = [];
-          const seen = new Set();
-          fetchQueue.forEach(f => {
-            const key = `${f.url}|${f.sheet}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              uniqueFetches.push(f);
-            }
-          });
-
-          const liveCache = {};
-          await Promise.all(uniqueFetches.map(async ({ url, sheet }) => {
-            try {
-              const res = await fetch(`${url}?sheet=${encodeURIComponent(sheet)}`);
-              const r = await res.json();
-              liveCache[`${url}|${sheet}`] = (r.success && Array.isArray(r.data)) ? r.data : [];
-            } catch (err) {
-              liveCache[`${url}|${sheet}`] = [];
-            }
-          }));
-
           const parsedData = result.data.slice(2)
             .filter(row => row[2] && String(row[2]).trim() !== "")
             .map((row, index) => {
@@ -219,59 +188,24 @@ const AdminDashboard = () => {
                 if (processedUrl) finalImageUrl = processedUrl;
               }
 
-              // Calculate LIVE stats for this employee
-              let liveTarget = 0;
-              let liveActual = 0;
-              let liveOnTime = 0;
-              let livePending = 0;
-
-              const empTasks = currentDataRows.filter(r => String(r[4] || "").trim().toLowerCase() === normalizedName);
-              
-              empTasks.forEach(t => {
-                const tUrl = String(t[25] || "").trim() || scriptUrl;
-                const nP = parseSheetRef(t[9]);
-                const aP = parseSheetRef(t[8]);
-                const dP = parseSheetRef(t[27]);
-
-                if (nP && nP.sheetName && nP.colIndex >= 0) {
-                  const nRows = (liveCache[`${tUrl}|${nP.sheetName}`] || []).slice(nP.startRowIndex);
-                  nRows.forEach((nr, nIdx) => {
-                    if (String(nr[nP.colIndex] || "").trim().toLowerCase() === normalizedName) {
-                      liveTarget++;
-                      const absIdx = nP.startRowIndex + nIdx;
-                      const aSheet = aP ? liveCache[`${tUrl}|${aP.sheetName}`] : null;
-                      const dSheet = dP ? liveCache[`${tUrl}|${dP.sheetName}`] : null;
-                      
-                      const status = getStatus({
-                        actual: aSheet ? (aSheet[absIdx] || [])[aP.colIndex] : "",
-                        delay: dSheet ? (dSheet[absIdx] || [])[dP.colIndex] : ""
-                      });
-
-                      if (status !== "Pending") {
-                        liveActual++;
-                        if (status === "On Time") liveOnTime++;
-                      } else {
-                        livePending++;
-                      }
-                    }
-                  });
-                }
-              });
+              const target = parseFloat(row[3]) || 0;
+              const weeklyDonePct = target > 0 ? (100 - Math.abs(parseFloat(String(row[5] || "0").replace("%", "")))) : 0;
+              const weeklyOnTimePct = target > 0 ? (100 - Math.abs(parseFloat(String(row[6] || "0").replace("%", "")))) : 0;
 
               return {
                 id: `emp-${100 + index}`,
                 name: empName,
                 startDate: row[10] || "",
                 endDate: row[11] || "",
-                designation: designationMap[normalizedName] || row[3] || "N/A",
+                designation: designationMap[normalizedName] || "N/A",
                 image: finalImageUrl,
-                target: liveTarget,
-                actualWorkDone: liveActual,
-                weeklyWorkDone: liveTarget > 0 ? Math.round((liveActual / liveTarget) * 100) + "%" : "0%",
-                weeklyWorkDoneOnTime: liveTarget > 0 ? Math.round((liveOnTime / liveTarget) * 100) + "%" : "0%",
-                totalWorkDone: liveActual,
-                weekPending: livePending,
-                allPendingTillDate: livePending,
+                target: row[3] || 0,
+                actualWorkDone: row[4] || 0,
+                weeklyWorkDone: `${Math.round(weeklyDonePct)}%`,
+                weeklyWorkDoneOnTime: `${Math.round(weeklyOnTimePct)}%`,
+                totalWorkDone: row[7] || 0,
+                weekPending: row[8] || 0,
+                allPendingTillDate: row[9] || 0,
                 plannedWorkNotDone: row[12] || 0,
                 plannedWorkNotDoneOnTime: row[13] || 0,
                 commitment: row[14] || 0,
@@ -430,23 +364,33 @@ const AdminDashboard = () => {
       return dataName === personName;
     });
 
-    const tasks = matchingRows.map(row => ({
-      fmsName: row[2] || "",
-      taskName: row[3] || "",
-      nameColRef: row[9] || "",
-      taskNameColRef: row[26] || "",
-      department: row[0] || "",
-      sheetId: row[5] || "",
-      scriptUrl: row[25] || "",
-      plannedSheetRef: row[7] || "",
-      actualSheetRef: row[8] || "",
-      target: row[10] || 0,
-      totalAchievement: row[11] || 0,
-      workNotDone: row[12] || 0,
-      workNotDoneOnTime: row[13] || 0,
-      allPendingTillDate: row[14] || 0,
-      delayColRef: row[27] || ""
-    }));
+    const tasks = matchingRows.map(row => {
+      let scriptUrl = String(row[25] || "").trim();
+      if (!scriptUrl && row[5]) {
+        // Find another row with the same sheetId that has a scriptUrl
+        const siblingRow = dataSheetRows.find(r => r[5] === row[5] && String(r[25] || "").trim());
+        if (siblingRow) {
+          scriptUrl = String(siblingRow[25]).trim();
+        }
+      }
+      return {
+        fmsName: row[2] || "",
+        taskName: row[3] || "",
+        nameColRef: row[9] || "",
+        taskNameColRef: row[26] || "",
+        department: row[0] || "",
+        sheetId: row[5] || "",
+        scriptUrl: scriptUrl,
+        plannedSheetRef: row[7] || "",
+        actualSheetRef: row[8] || "",
+        target: row[10] || 0,
+        totalAchievement: row[11] || 0,
+        workNotDone: row[12] || 0,
+        workNotDoneOnTime: row[13] || 0,
+        allPendingTillDate: row[14] || 0,
+        delayColRef: row[27] || ""
+      };
+    });
 
     // Open modal immediately with current data and a loading state for totals
     setSelectedUserDetails({ ...employee, tasks, loadingTasks: true });

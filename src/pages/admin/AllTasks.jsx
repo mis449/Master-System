@@ -1113,16 +1113,6 @@ const AllTasks = () => {
           <div className="max-w-7xl mx-auto space-y-2">
             {/* Tab System & Primary Actions */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-              <div className="flex-shrink-0">
-                <TaskManagementTabs activeTab={activeTab} setActiveTab={(newTab) => {
-                  setActiveTab(newTab);
-                  setShowHistory(false);
-                  setSelectedItems(new Set());
-                  setSearchTerm("");
-                  setDateFilter("all");
-                }} />
-              </div>
-
               <div className="flex flex-wrap items-center gap-2 flex-grow justify-end">
                 <div className="relative flex-grow max-w-sm">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
