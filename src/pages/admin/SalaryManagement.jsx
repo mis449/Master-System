@@ -84,9 +84,11 @@ export default function SalaryManagement() {
                 ...row, 
                 total_days: totalDays
             };
+            const finalAmt = calculateRowFinalAmount(updatedRow);
             return {
                 ...updatedRow,
-                final_amt: calculateRowFinalAmount(updatedRow)
+                final_amt: finalAmt,
+                round_off: Math.round(finalAmt)
             };
         }));
     }, [salaryMonth]);
@@ -124,11 +126,15 @@ export default function SalaryManagement() {
 
     const calculateRowFinalAmount = (row) => {
         const basic = parseFloat(row.basic_salary) || 0;
+        const totalDays = parseFloat(row.total_days) || 0;
         const workingDays = parseFloat(row.working_days) || 0;
+        const bioMismatch = parseFloat(row.biometric_mismatch) || 0;
+        const lateComers = parseFloat(row.late_comers) || 0;
         
-        if (workingDays <= 0) return 0;
+        if (totalDays <= 0 || workingDays <= 0) return 0;
         
-        const dailyRate = basic / workingDays;
+        const dailyRate = basic / totalDays;
+        const salaryBasedOnWorkingDays = dailyRate * workingDays;
         
         // Additions
         const extraAmt = (parseFloat(row.extra_days) || 0) * dailyRate;
@@ -137,10 +143,8 @@ export default function SalaryManagement() {
         const advanceAmt = parseFloat(row.advance) || 0; // Now a deduction
         const absentAmt = (parseFloat(row.absent) || 0) * dailyRate;
         const halfDayAmt = (parseFloat(row.half_day) || 0) * (dailyRate / 2);
-        const bioPenalty = (parseFloat(row.biometric_mismatch) || 0) * 100; // ₹100 per mismatch
-        const latePenalty = (parseFloat(row.late_comers) || 0) * 50;    // ₹50 per late entry
         
-        const total = basic + extraAmt - advanceAmt - absentAmt - halfDayAmt - bioPenalty - latePenalty;
+        const total = salaryBasedOnWorkingDays + extraAmt - advanceAmt - absentAmt - halfDayAmt - bioMismatch - lateComers;
         return Math.round(total);
     };
 
@@ -155,7 +159,9 @@ export default function SalaryManagement() {
             newRows[index].basic_salary = 0;
         }
 
-        newRows[index].final_amt = calculateRowFinalAmount(newRows[index]);
+        const finalAmt = calculateRowFinalAmount(newRows[index]);
+        newRows[index].final_amt = finalAmt;
+        newRows[index].round_off = Math.round(finalAmt);
         setRows(newRows);
     };
 
@@ -176,7 +182,9 @@ export default function SalaryManagement() {
         // Auto-calculate final amount if any contributing field changes
         const calculationFields = ["basic_salary", "working_days", "extra_days", "advance", "absent", "half_day", "biometric_mismatch", "late_comers", "total_days"];
         if (calculationFields.includes(field)) {
-            newRows[index].final_amt = calculateRowFinalAmount(newRows[index]);
+            const finalAmt = calculateRowFinalAmount(newRows[index]);
+            newRows[index].final_amt = finalAmt;
+            newRows[index].round_off = Math.round(finalAmt);
         }
 
         setRows(newRows);
@@ -394,12 +402,12 @@ export default function SalaryManagement() {
                                     <td>${item.working_days} Days</td>
                                     <td>-</td>
                                 </tr>
-                                ${item.extra_days > 0 ? `<tr><td style="color: #059669">Bonus</td><td>${item.extra_days} Days</td><td>(+) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.extra_days)}</td></tr>` : ""}
+                                ${item.extra_days > 0 ? `<tr><td style="color: #059669">Bonus</td><td>${item.extra_days} Days</td><td>(+) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.extra_days)}</td></tr>` : ""}
                                 ${item.advance > 0 ? `<tr><td style="color: #dc2626">Salary Advance</td><td>-</td><td>(-) ₹${item.advance}</td></tr>` : ""}
-                                ${item.absent > 0 ? `<tr><td style="color: #dc2626">Absents Deduction</td><td>${item.absent} Days</td><td>(-) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.absent)}</td></tr>` : ""}
-                                ${item.half_day > 0 ? `<tr><td style="color: #dc2626">Half Day Deduction</td><td>${item.half_day} Half Days</td><td>(-) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.half_day * 0.5)}</td></tr>` : ""}
-                                ${item.biometric_mismatch > 0 ? `<tr><td style="color: #dc2626">Bio Mismatch Penalty</td><td>${item.biometric_mismatch} Mismatch</td><td>(-) ₹${item.biometric_mismatch * 100}</td></tr>` : ""}
-                                ${item.late_comers > 0 ? `<tr><td style="color: #dc2626">Late Coming Penalty</td><td>${item.late_comers} Late</td><td>(-) ₹${item.late_comers * 50}</td></tr>` : ""}
+                                ${item.absent > 0 ? `<tr><td style="color: #dc2626">Absents Deduction</td><td>${item.absent} Days</td><td>(-) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.absent)}</td></tr>` : ""}
+                                ${item.half_day > 0 ? `<tr><td style="color: #dc2626">Half Day Deduction</td><td>${item.half_day} Half Days</td><td>(-) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.half_day * 0.5)}</td></tr>` : ""}
+                                ${item.biometric_mismatch > 0 ? `<tr><td style="color: #dc2626">Bio Mismatch Deduction</td><td>-</td><td>(-) ₹${item.biometric_mismatch}</td></tr>` : ""}
+                                ${item.late_comers > 0 ? `<tr><td style="color: #dc2626">Late Comers Deduction</td><td>-</td><td>(-) ₹${item.late_comers}</td></tr>` : ""}
                             </tbody>
                         </table>
 
@@ -523,13 +531,12 @@ export default function SalaryManagement() {
                             <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Basic Salary</td>
                             <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600;">${item.total_days}</td>
                             <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; text-align: right;">₹${item.basic_salary}</td>
-                        </tr>
-                        ${item.extra_days > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #059669; font-weight: 600;">Bonus</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.extra_days}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #059669;">(+) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.extra_days)}</td></tr>` : ""}
+                               ${item.extra_days > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #059669; font-weight: 600;">Bonus</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.extra_days}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #059669;">(+) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.extra_days)}</td></tr>` : ""}
                         ${item.advance > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Salary Advance</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">-</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${item.advance}</td></tr>` : ""}
-                        ${item.absent > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Absents Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.absent}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.absent)}</td></tr>` : ""}
-                        ${item.half_day > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Half Day Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.half_day}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${Math.round((item.basic_salary / (item.working_days || item.total_days)) * item.half_day * 0.5)}</td></tr>` : ""}
-                        ${item.biometric_mismatch > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Bio Mismatch Penalty</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.biometric_mismatch}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${item.biometric_mismatch * 100}</td></tr>` : ""}
-                        ${item.late_comers > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Late Comers Penalty</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.late_comers}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${item.late_comers * 50}</td></tr>` : ""}
+                        ${item.absent > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Absents Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.absent}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.absent)}</td></tr>` : ""}
+                        ${item.half_day > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Half Day Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${item.half_day}</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${Math.round((item.basic_salary / (item.total_days || 30)) * item.half_day * 0.5)}</td></tr>` : ""}
+                        ${item.biometric_mismatch > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Bio Mismatch Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">-</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${item.biometric_mismatch}</td></tr>` : ""}
+                        ${item.late_comers > 0 ? `<tr><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight: 600;">Late Comers Deduction</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">-</td><td style="padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #dc2626;">(-) ₹${item.late_comers}</td></tr>` : ""}
                     </tbody>
                 </table>
 
