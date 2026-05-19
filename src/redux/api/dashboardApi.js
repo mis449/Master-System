@@ -367,9 +367,23 @@ export const fetchStaffTasksDataApi = async (dashboardType, staffFilter = null, 
       query = query.eq('name', staffFilter);
     }
 
-    // Apply department filter if provided
+    // Apply department filter if provided (get actual users of this department first)
     if (departmentFilter && departmentFilter !== 'all') {
-      query = query.eq('department', departmentFilter);
+      const { data: deptUsers, error: deptError } = await supabase
+        .from('users')
+        .select('user_name')
+        .eq('department', departmentFilter);
+      
+      if (deptError) {
+        console.error("Error fetching users for department filter:", deptError);
+        throw deptError;
+      }
+      
+      const allowedUsernames = (deptUsers || []).map(u => u.user_name).filter(Boolean);
+      if (allowedUsernames.length === 0) {
+        return [];
+      }
+      query = query.in('name', allowedUsernames);
     }
 
     const { data: tasksData, error } = await query;
@@ -385,11 +399,11 @@ export const fetchStaffTasksDataApi = async (dashboardType, staffFilter = null, 
     const summary = {};
 
     tasksData.forEach(task => {
-      const key = `${task.department}-${task.name}`;
+      const key = task.name; // Group ONLY by username to keep users unique
 
       if (!summary[key]) {
         summary[key] = {
-          department: task.department,
+          department: task.department, // temporary fallback
           name: task.name,
           total_tasks: 0,
           total_completed_tasks: 0,
@@ -429,19 +443,21 @@ export const fetchStaffTasksDataApi = async (dashboardType, staffFilter = null, 
       }
     });
 
-    // Fetch user images for the staff found
+    // Fetch user images and actual departments for the staff found
     const uniqueNames = [...new Set(tasksData.map(t => t.name).filter(Boolean))];
     let userImageMap = {};
+    let userDeptMap = {};
 
     if (uniqueNames.length > 0) {
-      const { data: userDataForImages, error: userError } = await supabase
+      const { data: userDataForDetails, error: userError } = await supabase
         .from('users')
-        .select('user_name, profile_image')
+        .select('user_name, profile_image, department')
         .in('user_name', uniqueNames);
 
-      if (!userError && userDataForImages) {
-        userDataForImages.forEach(u => {
+      if (!userError && userDataForDetails) {
+        userDataForDetails.forEach(u => {
           userImageMap[u.user_name] = u.profile_image;
+          userDeptMap[u.user_name] = u.department;
         });
       }
     }
@@ -461,7 +477,7 @@ export const fetchStaffTasksDataApi = async (dashboardType, staffFilter = null, 
 
       return {
         id: (staff.name || "unnamed").replace(/\s+/g, "-").toLowerCase(),
-        department: staff.department || "No Department",
+        department: userDeptMap[staff.name] || staff.department || "No Department",
         name: staff.name || "Unnamed Staff",
         email: `${(staff.name || "user").toLowerCase().replace(/\s+/g, ".")}@example.com`,
         profile_image: userImageMap[staff.name] || null,
@@ -513,7 +529,7 @@ export const getStaffTasksCountApi = async (dashboardType, staffFilter = null, d
 
     let query = supabase
       .from(dashboardType)
-      .select('department, name')
+      .select('name')
       .gte(dateColumn, `${startDate}T00:00:00`)
       .lte(dateColumn, `${endDate}T23:59:59`)
       .not('name', 'is', null);
@@ -537,7 +553,21 @@ export const getStaffTasksCountApi = async (dashboardType, staffFilter = null, d
 
     // Apply department filter
     if (departmentFilter && departmentFilter !== 'all') {
-      query = query.eq('department', departmentFilter);
+      const { data: deptUsers, error: deptError } = await supabase
+        .from('users')
+        .select('user_name')
+        .eq('department', departmentFilter);
+      
+      if (deptError) {
+        console.error("Error fetching users for department filter in count:", deptError);
+        throw deptError;
+      }
+      
+      const allowedUsernames = (deptUsers || []).map(u => u.user_name).filter(Boolean);
+      if (allowedUsernames.length === 0) {
+        return 0;
+      }
+      query = query.in('name', allowedUsernames);
     }
 
     const { data, error } = await query;
@@ -548,7 +578,7 @@ export const getStaffTasksCountApi = async (dashboardType, staffFilter = null, d
     }
 
     // Count unique staff names
-    const uniqueStaff = new Set(data.map(item => `${item.department}-${item.name}`));
+    const uniqueStaff = new Set(data.map(item => item.name).filter(Boolean));
     console.log(`Total unique staff count for ${month}/${year}: ${uniqueStaff.size}`);
     return uniqueStaff.size;
 

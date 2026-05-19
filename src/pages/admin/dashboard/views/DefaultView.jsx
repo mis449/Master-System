@@ -57,20 +57,16 @@ export default function DefaultView({
 
             {activeTab === "overview" && (
                 <div className="space-y-4">
-                    <div className="rounded-lg border border-blue-200 shadow-md bg-white">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 p-4">
-                            <h3 className="text-blue-700 font-medium">Staff Task Summary</h3>
-                            <p className="text-blue-600 text-sm">Overview of tasks assigned to each staff member</p>
-                        </div>
-                        <div className="p-4">
-                            <StaffTasksTable
-                                dashboardType={dashboardType}
-                                dashboardStaffFilter={dashboardStaffFilter}
-                                departmentFilter={departmentFilter}
-                                parseTaskStartDate={parseTaskStartDate}
-                            />
-                        </div>
+                    <div className="px-4 py-3 bg-blue-50 border border-gray-200 rounded-none">
+                        <h3 className="text-[14px] font-bold text-blue-900 tracking-tight">Staff Task Summary</h3>
+                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1">Overview of tasks assigned to each staff member</p>
                     </div>
+                    <StaffTasksTable
+                        dashboardType={dashboardType}
+                        dashboardStaffFilter={dashboardStaffFilter}
+                        departmentFilter={departmentFilter}
+                        parseTaskStartDate={parseTaskStartDate}
+                    />
                 </div>
             )}
         </div>

@@ -107,14 +107,14 @@ export default function StaffTasksTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-none border border-gray-200 shadow-none">
         <div className="flex items-center gap-4">
-          <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+          <div className="p-2 rounded-none bg-blue-50 text-blue-500">
             <Award className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-[14px] font-bold text-gray-900 tracking-tight">Staff Performance</h2>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">League Table • {getDisplayMonth()}</p>
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-1">League Table • {getDisplayMonth()}</p>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export default function StaffTasksTable({
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="appearance-none pl-9 pr-9 py-1.5 bg-gray-50 border border-gray-100 hover:border-blue-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-[11px] font-bold text-gray-700 transition-all cursor-pointer w-full md:w-48 h-8"
+              className="appearance-none pl-9 pr-9 py-1.5 bg-gray-50 border border-gray-200 hover:border-blue-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-[11px] font-bold text-gray-700 transition-all cursor-pointer w-full md:w-48 h-8"
             >
               {availableMonths.map((month) => (
                 <option key={month.value} value={month.value}>{month.label}</option>
@@ -133,14 +133,14 @@ export default function StaffTasksTable({
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           </div>
           
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-100 h-8">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-none border border-emerald-100 h-8">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-[11px] font-black text-emerald-700">{staffMembers.length}/{totalUsersCount} <span className="font-bold opacity-60 ml-1 uppercase">Active</span></span>
+            <span className="text-[11px] font-bold text-emerald-700">{staffMembers.length}/{totalUsersCount} <span className="font-medium opacity-60 ml-1 uppercase">Active</span></span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
+      <div className="bg-white rounded-none border border-gray-200 shadow-none overflow-hidden">
         <div className="staff-table-container overflow-auto" style={{ maxHeight: "600px" }}>
           {/* Desktop Table View */}
           <table className="min-w-full border-separate border-spacing-0 hidden lg:table">
@@ -173,7 +173,7 @@ export default function StaffTasksTable({
                       className="group hover:bg-blue-50/30 transition-all duration-300"
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-black
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold
                           ${index === 0 ? 'bg-amber-100 text-amber-700 shadow-sm shadow-amber-200 ring-2 ring-amber-50' : 
                             index === 1 ? 'bg-slate-100 text-slate-700 shadow-sm shadow-slate-200 ring-2 ring-slate-50' : 
                             index === 2 ? 'bg-orange-100 text-orange-700 shadow-sm shadow-orange-200 ring-2 ring-orange-50' : 
@@ -184,7 +184,7 @@ export default function StaffTasksTable({
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] shadow-sm
                               ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' : 
                                 index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' : 
                                 index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600 text-white' : 
@@ -198,36 +198,36 @@ export default function StaffTasksTable({
                             )}
                           </div>
                           <div>
-                            <div className="text-[16px] font-black text-gray-900 tracking-tight group-hover:text-blue-600 transition-colors">{staff.name}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">ID: {staff.id.split('-').pop()}</div>
+                            <div className="text-[16px] font-bold text-gray-800 tracking-tight group-hover:text-blue-600 transition-colors">{staff.name}</div>
+                            <div className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-0.5">ID: {staff.id.split('-').pop()}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-black uppercase tracking-wider rounded-md border border-gray-100 group-hover:bg-white transition-colors">
+                        <span className="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-gray-100 group-hover:bg-white transition-colors">
                           {staff.department}
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <Clock className="w-4 h-4 text-gray-300" />
-                          <span className="text-[13px] font-black text-gray-700">{staff.total_tasks}</span>
+                          <span className="text-[13px] font-bold text-gray-700">{staff.total_tasks}</span>
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          <span className="text-[13px] font-black text-emerald-600">{staff.total_completed_tasks}</span>
+                          <span className="text-[13px] font-bold text-emerald-600">{staff.total_completed_tasks}</span>
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-[13px] font-black text-blue-600">{staff.total_done_on_time}</span>
+                        <span className="text-[13px] font-bold text-blue-600">{staff.total_done_on_time}</span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex flex-col gap-1 w-28">
                           <div className="flex justify-between items-center px-1">
-                            <span className={`text-[12px] font-black ${styles.text}`}>{score}%</span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Rate</span>
+                            <span className={`text-[12px] font-bold ${styles.text}`}>{score}%</span>
+                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">Rate</span>
                           </div>
                           <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
                             <motion.div
@@ -268,7 +268,7 @@ export default function StaffTasksTable({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-bold
                           ${index === 0 ? 'bg-amber-100 text-amber-700' : 
                             index === 1 ? 'bg-slate-100 text-slate-700' : 
                             index === 2 ? 'bg-orange-100 text-orange-700' : 
@@ -276,7 +276,7 @@ export default function StaffTasksTable({
                           {(index + 1).toString().padStart(2, '0')}
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs text-white
                             ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 
                               index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' : 
                               index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600' : 
@@ -284,12 +284,12 @@ export default function StaffTasksTable({
                             {staff.name.charAt(0)}
                           </div>
                           <div>
-                            <div className="text-base font-black text-gray-900 tracking-tight">{staff.name}</div>
-                            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{staff.department}</div>
+                            <div className="text-base font-bold text-gray-800 tracking-tight">{staff.name}</div>
+                            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-widest">{staff.department}</div>
                           </div>
                         </div>
                       </div>
-                      <div className={`px-3 py-1 rounded-md text-[12px] font-black border ${styles.bg} ${styles.text} ${styles.border}`}>
+                      <div className={`px-3 py-1 rounded-md text-[12px] font-bold border ${styles.bg} ${styles.text} ${styles.border}`}>
                         {score}%
                       </div>
                     </div>
@@ -319,14 +319,14 @@ export default function StaffTasksTable({
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Synchronizing Data</span>
+              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em]">Synchronizing Data</span>
             </div>
           )}
 
           {!hasMoreData && staffMembers.length > 0 && (
             <div className="py-10 text-center">
               <div className="w-px h-12 bg-gradient-to-b from-gray-200 to-transparent mx-auto mb-4" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">End of Records</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">End of Records</span>
             </div>
           )}
         </div>

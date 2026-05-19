@@ -19,10 +19,50 @@ export default function StatisticsCards({
   const overdueDash = overdueRate * circumference / 100;
 
   const cards = [
-    { label: "Total Task", value: totalTask, sub: "Up to Today", icon: ListTodo, color: "blue", gradient: "from-blue-500 via-blue-600 to-blue-700", shadow: "shadow-blue-100" },
-    { label: "Completed Task", value: completeTask, sub: `${completionRate.toFixed(1)}% Success`, icon: CheckCircle2, color: "emerald", gradient: "from-emerald-400 via-emerald-500 to-teal-600", shadow: "shadow-emerald-100" },
-    { label: "Due Today", value: pendingTask, sub: "Actionable Now", icon: Clock, color: "amber", gradient: "from-amber-400 via-orange-500 to-yellow-600", shadow: "shadow-amber-100" },
-    { label: "Overdue Task", value: overdueTask, sub: "Immediate Attention", icon: AlertTriangle, color: "rose", gradient: "from-rose-500 via-red-600 to-pink-700", shadow: "shadow-rose-100" },
+    { 
+      label: "TOTAL TASK", 
+      value: totalTask, 
+      sub: "Up to Today", 
+      icon: ListTodo, 
+      textTheme: "text-blue-500",
+      textValue: "text-blue-700 font-bold",
+      textSub: "text-blue-500 font-medium",
+      headerBg: "bg-blue-50/50",
+      borderColor: "border-l-blue-500"
+    },
+    { 
+      label: "COMPLETED TASK", 
+      value: completeTask, 
+      sub: `${completionRate.toFixed(1)}% Completed`, 
+      icon: CheckCircle2, 
+      textTheme: "text-emerald-500",
+      textValue: "text-emerald-700 font-bold",
+      textSub: "text-emerald-500 font-medium",
+      headerBg: "bg-emerald-50/50",
+      borderColor: "border-l-emerald-500"
+    },
+    { 
+      label: "TODAY TASK", 
+      value: pendingTask, 
+      sub: "Active Today", 
+      icon: Clock, 
+      textTheme: "text-amber-500",
+      textValue: "text-amber-700 font-bold",
+      textSub: "text-amber-500 font-medium",
+      headerBg: "bg-amber-50/50",
+      borderColor: "border-l-amber-500"
+    },
+    { 
+      label: "OVERDUE TASK", 
+      value: overdueTask, 
+      sub: "Action Required", 
+      icon: AlertTriangle, 
+      textTheme: "text-rose-500",
+      textValue: "text-rose-700 font-bold",
+      textSub: "text-rose-500 font-medium",
+      headerBg: "bg-rose-50/50",
+      borderColor: "border-l-rose-500"
+    },
   ];
 
   return (
@@ -36,38 +76,23 @@ export default function StatisticsCards({
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: idx * 0.1, ease: "easeOut" }}
-              whileHover={{ y: -5, scale: 1.01 }}
-              className={`relative group bg-white/70 backdrop-blur-xl rounded-2xl p-3 shadow-xl ${card.shadow} border border-white/40 overflow-hidden cursor-default`}
+              className={`relative group bg-white rounded-2xl border border-gray-200 border-l-[6px] ${card.borderColor} overflow-hidden cursor-default shadow-none flex flex-col h-full`}
             >
-              {/* Animated Background Mesh */}
-              <div className={`absolute -right-5 -top-5 w-28 h-28 bg-${card.color}-400/10 rounded-full blur-3xl group-hover:scale-135 transition-transform duration-800`} />
+              {/* Header Band */}
+              <div className={`flex justify-between items-center px-4 py-3 ${card.headerBg} border-b border-gray-100`}>
+                <span className={`text-[12px] font-bold ${card.textTheme} uppercase tracking-wider`}>
+                  {card.label}
+                </span>
+                <card.icon className={`w-4 h-4 ${card.textTheme}`} />
+              </div>
               
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-5">
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.gradient} text-white shadow-lg ${card.shadow} group-hover:rotate-6 transition-all duration-500`}>
-                    <card.icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">{card.label}</span>
-                    <div className={`flex items-center gap-1.5 text-${card.color}-600 bg-${card.color}-50/80 backdrop-blur-sm px-3 py-1 rounded-full text-[9px] font-black shadow-sm`}>
-                      <Activity className="w-3 h-3 animate-pulse" />
-                      REAL-TIME
-                    </div>
-                  </div>
+              {/* Card Body */}
+              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
+                <div className={`text-3xl sm:text-4xl ${card.textValue} tracking-tight leading-none`}>
+                  {card.value}
                 </div>
-                
-                <div className="mt-auto">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-none">
-                      {card.value}
-                    </span>
-                    <TrendingUp className="w-4 h-4 text-emerald-500 mb-0.5" />
-                  </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-ping" />
-                    <span className="text-[11px] sm:text-xs font-bold text-gray-500 tracking-wide">{card.sub}</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 transition-colors" />
-                  </div>
+                <div className={`text-[12px] ${card.textSub} mt-2`}>
+                  {card.sub}
                 </div>
               </div>
             </motion.div>
