@@ -184,12 +184,22 @@ export default function StaffTasksTable({
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] shadow-sm
-                              ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' : 
-                                index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' : 
-                                index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600 text-white' : 
-                                'bg-gray-100 text-gray-500'}`}>
-                              {staff.name.charAt(0)}
+                            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shadow-sm bg-gray-100 border border-gray-200">
+                               {staff.profile_image ? (
+                                 <img
+                                   src={staff.profile_image}
+                                   alt={staff.name}
+                                   className="w-full h-full object-cover"
+                                 />
+                               ) : (
+                                 <div className={`w-full h-full flex items-center justify-center font-bold text-[10px] text-white
+                                   ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 
+                                     index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' : 
+                                     index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600' : 
+                                     'bg-gray-100 !text-gray-500'}`}>
+                                   {staff.name.charAt(0)}
+                                 </div>
+                               )}
                             </div>
                             {index < 3 && (
                               <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center shadow-sm">
@@ -276,12 +286,22 @@ export default function StaffTasksTable({
                           {(index + 1).toString().padStart(2, '0')}
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs text-white
-                            ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 
-                              index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' : 
-                              index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600' : 
-                              'bg-gray-100 !text-gray-500'}`}>
-                            {staff.name.charAt(0)}
+                          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-sm bg-gray-100 border border-gray-200">
+                            {staff.profile_image ? (
+                              <img
+                                src={staff.profile_image}
+                                alt={staff.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center font-bold text-xs text-white
+                                ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 
+                                  index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500' : 
+                                  index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-600' : 
+                                  'bg-gray-100 !text-gray-500'}`}>
+                                {staff.name.charAt(0)}
+                              </div>
+                            )}
                           </div>
                           <div>
                             <div className="text-base font-bold text-gray-800 tracking-tight">{staff.name}</div>
