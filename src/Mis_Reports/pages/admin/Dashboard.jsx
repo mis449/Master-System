@@ -152,8 +152,8 @@ const AdminDashboard = () => {
             .filter(row => row[0])
             .map(row => ({
               name: row[0],
-              workNotDonePct: parseFloat(row[1]) || 0,
-              notDoneOnTimePct: parseFloat(row[2]) || 0,
+              workNotDonePct: Math.abs(parseFloat(row[1]) || 0),
+              notDoneOnTimePct: Math.abs(parseFloat(row[2]) || 0),
               pendingWorks: parseInt(row[3]) || 0
             }));
           setDepartmentScores(parsedDeptScores);
@@ -446,9 +446,9 @@ const AdminDashboard = () => {
   };
 
   const handleRowClick = async (employee) => {
-    const personName = String(employee.name).trim();
+    const personName = String(employee.name).trim().toLowerCase();
     const matchingRows = dataSheetRows.filter(row => {
-      const dataName = row[4] ? String(row[4]).trim() : "";
+      const dataName = row[4] ? String(row[4]).trim().toLowerCase() : "";
       return dataName === personName;
     });
 
@@ -525,11 +525,27 @@ const AdminDashboard = () => {
       }));
 
       // Recalculate all totals for each task
+      const currentWeekStart = new Date(dateRange.start);
+      const currentWeekEnd = new Date(dateRange.end);
+      currentWeekEnd.setHours(23, 59, 59, 999);
+
+      const parseSheetDate = (dateStr) => {
+        if (!dateStr || String(dateStr).trim() === "---" || String(dateStr).trim() === "") return null;
+        const str = String(dateStr).trim().split(" ")[0];
+        const parts = str.split("/");
+        if (parts.length === 3) {
+          return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        }
+        const d = new Date(str);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
       const updatedTasks = tasks.map(task => {
         const taskUrl = String(task.scriptUrl || "").trim() || defaultScriptUrl;
         const nameParsed = parseSheetRef(task.nameColRef);
         const actualParsed = parseSheetRef(task.actualSheetRef);
         const delayParsed = parseSheetRef(task.delayColRef);
+        const plannedParsed = parseSheetRef(task.plannedSheetRef);
 
         if (!nameParsed || !nameParsed.sheetName || nameParsed.colIndex < 0) return task;
 
@@ -539,7 +555,7 @@ const AdminDashboard = () => {
         const matchingIndices = [];
         nameRowsFromStart.forEach((row, idx) => {
           const cellValue = String(row[nameParsed.colIndex] || "").trim();
-          if (cellValue.toLowerCase() === personName.toLowerCase()) {
+          if (cellValue.toLowerCase() === personName) {
             matchingIndices.push(idx);
           }
         });
@@ -548,17 +564,43 @@ const AdminDashboard = () => {
           const absIdx = nameParsed.startRowIndex + relIdx;
           const actualSheet = actualParsed ? cache[`${taskUrl}|${actualParsed.sheetName}`] : null;
           const delaySheet = delayParsed ? cache[`${taskUrl}|${delayParsed.sheetName}`] : null;
+          const plannedSheet = plannedParsed ? cache[`${taskUrl}|${plannedParsed.sheetName}`] : null;
           
           return {
             actual: actualSheet ? (actualSheet[absIdx] || [])[actualParsed.colIndex] : "",
-            delay: delaySheet ? (delaySheet[absIdx] || [])[delayParsed.colIndex] : ""
+            delay: delaySheet ? (delaySheet[absIdx] || [])[delayParsed.colIndex] : "",
+            planned: plannedSheet ? (plannedSheet[absIdx] || [])[plannedParsed.colIndex] : ""
           };
         });
 
-        const target = taskDetails.length;
-        const totalAchievement = taskDetails.filter(d => getStatus(d) !== "Pending").length;
-        const pendingCount = target - totalAchievement;
-        const delayCount = taskDetails.filter(d => getStatus(d) === "Delay").length;
+        let target = 0;
+        let totalAchievement = 0;
+        let pendingCount = 0;
+        let delayCount = 0;
+        let allPendingTillDate = 0;
+
+        taskDetails.forEach(d => {
+          const plannedDate = parseSheetDate(d.planned);
+          const status = getStatus(d);
+          const isPending = status === "Pending";
+          const isDelay = status === "Delay";
+
+          const isThisWeekTarget = plannedDate && plannedDate >= currentWeekStart && plannedDate <= currentWeekEnd;
+
+          if (isThisWeekTarget) {
+            target++;
+            if (!isPending) {
+              totalAchievement++;
+              if (isDelay) delayCount++;
+            } else {
+              pendingCount++;
+            }
+          }
+
+          if (isPending && (!plannedDate || plannedDate <= currentWeekEnd)) {
+            allPendingTillDate++;
+          }
+        });
 
         const workNotDone = target > 0 ? Math.round((pendingCount / target) * 100) + "%" : "0%";
         const workNotDoneOnTime = target > 0 ? Math.round(((pendingCount + delayCount) / target) * 100) + "%" : "0%";
@@ -569,7 +611,7 @@ const AdminDashboard = () => {
           totalAchievement,
           workNotDone,
           workNotDoneOnTime,
-          allPendingTillDate: pendingCount
+          allPendingTillDate
         };
       });
 
@@ -673,12 +715,43 @@ const AdminDashboard = () => {
       }
 
       if (matchingRowIndices) {
-        const rows = matchingRowIndices.map(idx => ({
-          taskName: taskNameParsed ? formatVal((sheetDataCache[taskNameParsed.sheetName]?.slice(taskNameParsed.startRowIndex)[idx] || [])[taskNameParsed.colIndex]) : "",
-          planned: plannedParsed ? formatVal((sheetDataCache[plannedParsed.sheetName]?.slice(plannedParsed.startRowIndex)[idx] || [])[plannedParsed.colIndex]) : "",
-          actual: actualParsed ? formatVal((sheetDataCache[actualParsed.sheetName]?.slice(actualParsed.startRowIndex)[idx] || [])[actualParsed.colIndex]) : "",
-          delay: delayParsed ? formatVal((sheetDataCache[delayParsed.sheetName]?.slice(delayParsed.startRowIndex)[idx] || [])[delayParsed.colIndex]) : ""
-        }));
+        const currentWeekStart = new Date(dateRange.start);
+        const currentWeekEnd = new Date(dateRange.end);
+        currentWeekEnd.setHours(23, 59, 59, 999);
+
+        const parseSheetDate = (dateStr) => {
+          if (!dateStr || String(dateStr).trim() === "---" || String(dateStr).trim() === "") return null;
+          const str = String(dateStr).trim().split(" ")[0];
+          const parts = str.split("/");
+          if (parts.length === 3) {
+            return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+          }
+          const d = new Date(str);
+          return isNaN(d.getTime()) ? null : d;
+        };
+
+        const rows = [];
+        matchingRowIndices.forEach(idx => {
+          const taskNameVal = taskNameParsed ? formatVal((sheetDataCache[taskNameParsed.sheetName]?.slice(taskNameParsed.startRowIndex)[idx] || [])[taskNameParsed.colIndex]) : "";
+          const plannedVal = plannedParsed ? formatVal((sheetDataCache[plannedParsed.sheetName]?.slice(plannedParsed.startRowIndex)[idx] || [])[plannedParsed.colIndex]) : "";
+          const actualVal = actualParsed ? formatVal((sheetDataCache[actualParsed.sheetName]?.slice(actualParsed.startRowIndex)[idx] || [])[actualParsed.colIndex]) : "";
+          const delayVal = delayParsed ? formatVal((sheetDataCache[delayParsed.sheetName]?.slice(delayParsed.startRowIndex)[idx] || [])[delayParsed.colIndex]) : "";
+          
+          const plannedDate = parseSheetDate(plannedVal);
+          const isPending = !actualVal || String(actualVal).trim() === "" || String(actualVal).trim() === "---";
+          
+          const isThisWeek = plannedDate && plannedDate >= currentWeekStart && plannedDate <= currentWeekEnd;
+          const isAllPending = isPending && (!plannedDate || plannedDate <= currentWeekEnd);
+          
+          if (isThisWeek || isAllPending) {
+            rows.push({
+              taskName: taskNameVal,
+              planned: plannedVal,
+              actual: actualVal,
+              delay: delayVal
+            });
+          }
+        });
         setActiveDrillDown(prev => ({ ...prev, rows, loading: false }));
       }
     } catch (error) {
