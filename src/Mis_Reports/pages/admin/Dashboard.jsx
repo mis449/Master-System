@@ -217,6 +217,30 @@ const AdminDashboard = () => {
             });
 
           setSheetEmployees(parsedData);
+
+          // Dynamically synchronize the dashboard's dateRange with the actual reporting week from the For Records sheet
+          if (result.data.length > 2) {
+            const firstRow = result.data[2];
+            const sheetStart = firstRow[0];
+            const sheetEnd = firstRow[1];
+            if (sheetStart && sheetEnd) {
+              const parseSheetDateToIso = (dateStr) => {
+                if (!dateStr) return "";
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return "";
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, "0");
+                const dd = String(d.getDate()).padStart(2, "0");
+                return `${yyyy}-${mm}-${dd}`;
+              };
+              const startIso = parseSheetDateToIso(sheetStart);
+              const endIso = parseSheetDateToIso(sheetEnd);
+              if (startIso && endIso) {
+                console.log("Synchronizing dateRange from sheet:", startIso, "to", endIso);
+                setDateRange({ start: startIso, end: endIso });
+              }
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching sheet data:", error);
@@ -446,6 +470,7 @@ const AdminDashboard = () => {
   };
 
   const handleRowClick = async (employee) => {
+    console.log("Selected Employee", employee);
     const personName = String(employee.name).trim().toLowerCase();
     const matchingRows = dataSheetRows.filter(row => {
       const dataName = row[4] ? String(row[4]).trim().toLowerCase() : "";
@@ -661,8 +686,8 @@ const AdminDashboard = () => {
     return "On Time";
   };
 
-  const handleDrillDown = async (task, type, value, event) => {
-    if (event) event.stopPropagation();
+  const handleDrillDown = async (task, type, value, empName, event) => {
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
     
     let scriptUrl = String(task.scriptUrl || "").trim();
     if (!scriptUrl) {
@@ -687,7 +712,8 @@ const AdminDashboard = () => {
     });
 
     try {
-      const employeeName = String(selectedUserDetails?.name || "").trim();
+      const employeeName = String(empName || selectedUserDetails?.name || "").trim().toLowerCase();
+      console.log("Selected Employee in drilldown:", employeeName);
       const sheetDataCache = {};
       const sheetsToFetch = new Set();
       if (plannedParsed?.sheetName) sheetsToFetch.add(plannedParsed.sheetName);
@@ -697,9 +723,15 @@ const AdminDashboard = () => {
       if (delayParsed?.sheetName) sheetsToFetch.add(delayParsed.sheetName);
 
       await Promise.all([...sheetsToFetch].map(async (name) => {
-        const res = await fetch(`${scriptUrl}?sheet=${encodeURIComponent(name)}`);
-        const result = await res.json();
-        sheetDataCache[name] = (result.success && Array.isArray(result.data)) ? result.data : [];
+        try {
+          const res = await fetch(`${scriptUrl}?sheet=${encodeURIComponent(name)}`);
+          const response = await res.json();
+          console.log("Popup API Response", response);
+          sheetDataCache[name] = (response.success && Array.isArray(response.data)) ? response.data : [];
+        } catch (err) {
+          console.error(`Failed to fetch ${name} from ${scriptUrl}:`, err);
+          sheetDataCache[name] = [];
+        }
       }));
 
       const formatVal = (val) => String(val || "");
@@ -710,7 +742,10 @@ const AdminDashboard = () => {
         const nameRowsFromStart = nameParsed.startRowIndex > 0 ? nameSheetRows.slice(nameParsed.startRowIndex) : nameSheetRows;
         matchingRowIndices = [];
         nameRowsFromStart.forEach((row, idx) => {
-          if (String(row[nameParsed.colIndex] || "").trim() === employeeName) matchingRowIndices.push(idx);
+          const cellValue = String(row[nameParsed.colIndex] || "").trim().toLowerCase();
+          if (cellValue === employeeName) {
+            matchingRowIndices.push(idx);
+          }
         });
       }
 
@@ -732,10 +767,11 @@ const AdminDashboard = () => {
 
         const rows = [];
         matchingRowIndices.forEach(idx => {
-          const taskNameVal = taskNameParsed ? formatVal((sheetDataCache[taskNameParsed.sheetName]?.slice(taskNameParsed.startRowIndex)[idx] || [])[taskNameParsed.colIndex]) : "";
-          const plannedVal = plannedParsed ? formatVal((sheetDataCache[plannedParsed.sheetName]?.slice(plannedParsed.startRowIndex)[idx] || [])[plannedParsed.colIndex]) : "";
-          const actualVal = actualParsed ? formatVal((sheetDataCache[actualParsed.sheetName]?.slice(actualParsed.startRowIndex)[idx] || [])[actualParsed.colIndex]) : "";
-          const delayVal = delayParsed ? formatVal((sheetDataCache[delayParsed.sheetName]?.slice(delayParsed.startRowIndex)[idx] || [])[delayParsed.colIndex]) : "";
+          const absIdx = nameParsed.startRowIndex + idx;
+          const taskNameVal = taskNameParsed ? formatVal((sheetDataCache[taskNameParsed.sheetName]?.[absIdx] || [])[taskNameParsed.colIndex]) : "";
+          const plannedVal = plannedParsed ? formatVal((sheetDataCache[plannedParsed.sheetName]?.[absIdx] || [])[plannedParsed.colIndex]) : "";
+          const actualVal = actualParsed ? formatVal((sheetDataCache[actualParsed.sheetName]?.[absIdx] || [])[actualParsed.colIndex]) : "";
+          const delayVal = delayParsed ? formatVal((sheetDataCache[delayParsed.sheetName]?.[absIdx] || [])[delayParsed.colIndex]) : "";
           
           const plannedDate = parseSheetDate(plannedVal);
           const isPending = !actualVal || String(actualVal).trim() === "" || String(actualVal).trim() === "---";

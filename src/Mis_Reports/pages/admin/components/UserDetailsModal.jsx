@@ -13,7 +13,8 @@ const UserDetailsModal = ({
     const [statusFilter, setStatusFilter] = React.useState("all");
 
     const getRowStatus = (row) => {
-        if (!row.actual || String(row.actual).trim() === "") return "Pending";
+        const actualStr = String(row.actual || "").trim();
+        if (!actualStr || actualStr === "" || actualStr === "---") return "Pending";
         
         // Parse delay (e.g. "32:21:33" or "00:00:00")
         const delayStr = String(row.delay || "0").trim();
@@ -180,7 +181,7 @@ const UserDetailsModal = ({
                                                     selectedUserDetails.tasks.map((task, idx) => (
                                                         <tr
                                                             key={idx}
-                                                            onClick={(e) => handleDrillDown(task, "Total Achievement", task.totalAchievement, e)}
+                                                            onClick={(e) => handleDrillDown(task, "Total Achievement", task.totalAchievement, selectedUserDetails?.name, e)}
                                                             className="hover:bg-blue-50 cursor-pointer transition-colors"
                                                         >
                                                             <td className="px-3 py-2 text-xs text-gray-900">{task.fmsName}</td>
@@ -215,7 +216,7 @@ const UserDetailsModal = ({
                                             selectedUserDetails.tasks.map((task, idx) => (
                                                 <div
                                                     key={idx}
-                                                    onClick={(e) => handleDrillDown(task, "Total Achievement", task.totalAchievement, e)}
+                                                    onClick={(e) => handleDrillDown(task, "Total Achievement", task.totalAchievement, selectedUserDetails?.name, e)}
                                                     className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm active:bg-blue-50 transition-colors"
                                                 >
                                                     <div className="flex justify-between items-start mb-2">
