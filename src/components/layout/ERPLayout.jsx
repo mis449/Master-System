@@ -33,7 +33,12 @@ import {
   AlertTriangle,
   Zap,
   CalendarCheck,
-  IndianRupee
+  IndianRupee,
+  TrendingUp,
+  LayoutGrid,
+  FileText,
+  ClipboardList,
+  PackageSearch
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import aceLogo from '../../assets/Ace_Logoo.jpg';
@@ -103,22 +108,21 @@ const ERPLayout = ({ children }) => {
       ]
     },
     {
-      id: 'sales',
-      label: 'Sales',
+      id: 'ims',
+      label: 'IMS Inventory Management System',
       icon: ShoppingCart,
-      path: '/sales',
+      path: '/ims',
       roles: ['admin', 'manager', 'hod'],
-      section: 'SCALES',
-      subItems: []
-    },
-    {
-      id: 'purchase',
-      label: 'Purchase',
-      icon: Package,
-      path: '/purchase',
-      roles: ['admin', 'manager'],
-      section: 'PURCHASE',
-      subItems: []
+      section: 'IMS Inventory Management System',
+      subItems: [
+        { label: 'Dashboard', path: '/ims/dashboard', icon: TrendingUp, roles: ['admin'] },
+        { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Item Details', path: '/ims/master', icon: LayoutGrid, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] }
+      ]
     },
     {
       id: 'users',
@@ -135,7 +139,7 @@ const ERPLayout = ({ children }) => {
     const path = location.pathname;
     const search = location.search;
 
-    if (path.startsWith('/sales')) return 'sales';
+    if (path.startsWith('/ims')) return 'ims';
     if (path.startsWith('/purchase')) return 'purchase';
     if (path.startsWith('/dashboard/user-management')) return 'users';
     if (path.startsWith('/dashboard/salary')) return 'salary';
@@ -157,7 +161,7 @@ const ERPLayout = ({ children }) => {
     const search = location.search;
     let newId = 'checklist';
 
-    if (path.startsWith('/sales')) newId = 'sales';
+    if (path.startsWith('/ims')) newId = 'ims';
     else if (path.startsWith('/purchase')) newId = 'purchase';
     else if (path.startsWith('/dashboard/user-management')) newId = 'users';
     else if (path.startsWith('/dashboard/salary')) newId = 'salary';
@@ -494,7 +498,7 @@ const ERPLayout = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-52' : 'md:ml-16'}`}>
+      <div id="erp-main-container" className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-52' : 'md:ml-16'} relative`}>
         {/* Navbar */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40 backdrop-blur-md bg-white/80">
           <div className="flex items-center gap-4">

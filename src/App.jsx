@@ -39,8 +39,9 @@ import MisPending from "./Mis_Reports/pages/admin/PendingTasks"
 import MisDept from "./Mis_Reports/pages/admin/Report"
 
 // --- New Module Imports ---
-import SalesDashboard from "./modules/sales/SalesDashboard"
 import PurchaseDashboard from "./modules/purchase/PurchaseDashboard"
+import ImsApp from "./Ims-Inventory-Management-System/src/App"
+import ERPLayout from "./components/layout/ERPLayout"
 
 // --- Components ---
 import RealtimeLogoutListener from "./components/RealtimeLogoutListener"
@@ -290,10 +291,12 @@ function App() {
 
                     {/* --- New ERP Modules --- */}
                     <Route
-                        path="/sales"
+                        path="/ims/*"
                         element={
-                            <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                                <SalesDashboard />
+                            <ProtectedRoute allowedRoles={["admin", "manager", "hod"]}>
+                                <ERPLayout>
+                                    <ImsApp />
+                                </ERPLayout>
                             </ProtectedRoute>
                         }
                     />

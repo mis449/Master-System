@@ -10,7 +10,7 @@ const SalesDashboard = () => {
         <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-6 animate-pulse">
           <ShoppingCart className="w-12 h-12" />
         </div>
-        <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Sales Module</h1>
+        <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">( IMS ) Inventory Management System</h1>
         <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 rounded-full text-sm font-bold mb-8">
           <Construction className="w-4 h-4" />
           UNDER DEVELOPMENT
