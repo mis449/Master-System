@@ -283,6 +283,15 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
         <style>
           {`
             @media print {
+              /* Remove height/overflow limits from global containers */
+              html, body, #root, #erp-main-container {
+                height: auto !important;
+                min-height: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
+                position: static !important;
+              }
+
               body * {
                 visibility: hidden;
               }
@@ -291,8 +300,8 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
                 visibility: visible;
               }
               
-              /* Make the modal overlay absolute at top left, and let it grow to full height */
-              .fixed.inset-0 {
+              /* Break out of the modal styling */
+              .absolute.inset-0 {
                 position: absolute !important;
                 top: 0 !important;
                 left: 0 !important;
@@ -304,7 +313,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
               }
               
               /* Let the container grow */
-              .fixed.inset-0 > div {
+              .absolute.inset-0 > div {
                 height: auto !important;
                 min-height: 0 !important;
                 max-height: none !important;
@@ -314,16 +323,19 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
                 border: none !important;
               }
               
-              /* Let the print area grow */
+              /* Let the print area grow and position at top */
               #sales-return-print-area {
                 height: auto !important;
                 min-height: 0 !important;
                 overflow: visible !important;
-                position: static !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
               }
               
               /* Hide the control bar */
-              .fixed.inset-0 > div > div:first-child {
+              .absolute.inset-0 > div > div:first-child {
                 display: none !important;
               }
               

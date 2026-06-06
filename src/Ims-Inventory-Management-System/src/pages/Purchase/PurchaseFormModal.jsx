@@ -316,10 +316,19 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
         <style>
           {`
             @media print {
+              /* Remove height/overflow limits from global containers */
+              html, body, #root, #erp-main-container {
+                height: auto !important;
+                min-height: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
+                position: static !important;
+              }
+
               body * { visibility: hidden; }
               #purchase-print-area, #purchase-print-area * { visibility: visible; }
               #purchase-print-area {
-                position: absolute; left: 0; top: 0;
+                position: absolute !important; left: 0 !important; top: 0 !important;
                 width: 100% !important; max-width: 100% !important;
                 margin: 0 !important; padding: 0 !important;
                 box-shadow: none !important; border: none !important;
