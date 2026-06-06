@@ -291,9 +291,9 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
             if (clearConversionContext) clearConversionContext();
           }}
           onSave={async (newInvoice) => {
+            const isEdit = selectedInvoice && selectedInvoice.id;
             try {
               let saved;
-              const isEdit = selectedInvoice && selectedInvoice.id;
               if (isEdit) {
                 saved = await updateInvoice(selectedInvoice.id, newInvoice);
                 setInvoices(prev => prev.map(inv => String(inv.id) === String(selectedInvoice.id) ? saved : inv));
