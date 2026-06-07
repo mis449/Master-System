@@ -225,7 +225,7 @@ export default function InventoryHistory() {
           </div>
 
           {/* Expanded dropdowns and date selectors */}
-          <div className={`${showMobileFilters ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row lg:flex-nowrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible`}>
+          <div className={`flex flex-wrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-start lg:justify-end pb-1 pt-1`}>
             
             {/* From Date picker */}
             <div className="flex-1 min-w-0 lg:min-w-[130px] relative">

@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import useDataStore from '../../store/dataStore';
+import SearchableDropdown from '../../components/SearchableDropdown';
 
 // Local storage services
 import { getQuotations } from '../../services/quotationService';
@@ -105,6 +106,11 @@ export default function ItemTracker() {
 
   // Handle Item Selection from search
   const handleItemSelect = (inputStr) => {
+    if (!inputStr) {
+      setSelectedItemCode('');
+      setSearchTerm('');
+      return;
+    }
     let code = inputStr;
     const found = items.find(i => 
       i.itemCode?.toLowerCase() === inputStr.toLowerCase() || 
@@ -343,22 +349,15 @@ export default function ItemTracker() {
           <div className="flex-[4] min-w-[280px] relative">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Search Item</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              <SearchableDropdown
+                options={items.map(i => ({ value: i.itemCode || i.code || i.ItemCode, label: `${i.itemCode || i.code || i.ItemCode} - ${i.description || i.name || i.ItemName}` }))}
+                value={selectedItemCode}
+                onChange={(val) => handleItemSelect(val)}
                 placeholder="Type Item Code or Name..."
-                className="w-full min-w-0 pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all font-medium"
-                list="items-list"
+                className="w-full"
+                height="h-[44px]"
+                rounded="rounded-lg"
               />
-              <datalist id="items-list">
-                {items.map(item => (
-                  <option key={item.itemCode} value={item.itemCode}>
-                    {item.description}
-                  </option>
-                ))}
-              </datalist>
             </div>
             {searchTerm && !selectedItemCode && (
               <p className="absolute -bottom-5 left-0 text-xs text-amber-600 font-medium whitespace-nowrap">Please select an item from the list to view history.</p>
@@ -407,7 +406,7 @@ export default function ItemTracker() {
           <div className="flex-1 min-w-[140px]">
             <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
             <button 
-              onClick={() => handleItemSelect(searchTerm)}
+              onClick={() => handleItemSelect(selectedItemCode)}
               className="w-full py-2.5 px-4 bg-sky-600 text-white rounded-lg hover:bg-sky-700 font-bold transition-colors shadow-sm shadow-sky-200 whitespace-nowrap"
             >
               Track Item

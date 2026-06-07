@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Eye, Trash2 } from 'lucide-react';
+import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Eye, Trash2, FileText } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import PurchaseReturnFormModal from './PurchaseReturnFormModal';
 import { getPurchaseReturns, deletePurchaseReturn } from '../../services/PurchaseReturnService';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function PurchaseReturnList({ conversionContext, clearConversionContext }) {
   const [purchaseReturns, setPurchaseReturns] = useState([]);
@@ -71,8 +72,28 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
     }
   };
 
-  const handleExport = () => {
-    toast.success('Export feature coming soon!');
+  const getExportData = () => {
+    return filteredReturns.map(item => [
+      item.returnNo || '-',
+      item.date || '-',
+      item.vendor || '-',
+      item.mobile || '-',
+      item.state || '-',
+      `Rs. ${Number(item.amount || 0).toLocaleString('en-IN')}`,
+      item.status || 'Draft'
+    ]);
+  };
+
+  const exportHeaders = ["Return No", "Date", "Vendor", "Mobile", "State", "Amount", "Status"];
+
+  const handleExportPdf = () => {
+    exportToPDF(getExportData(), exportHeaders, 'Purchase Returns', 'purchase_returns');
+    toast.success('Exported to PDF successfully!');
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(getExportData(), exportHeaders, 'purchase_returns');
+    toast.success('Exported to Excel successfully!');
   };
 
   const filteredReturns = useMemo(() => {
@@ -199,7 +220,7 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
               <Plus size={18} />
             </button>
           </div>
-          <div className={`${showMobileFilters ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row lg:flex-nowrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-end`}>
+          <div className={`flex flex-wrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-start lg:justify-end pb-1 pt-1`}>
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
@@ -208,10 +229,13 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
               <option value="All">All ({purchaseReturns.length})</option>
             </select>
             <button onClick={handleRefresh} className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
-              <RefreshCw size={14} /> <span className="hidden md:inline">Refresh</span>
+              <RefreshCw size={14} /> <span className="inline">Refresh</span>
             </button>
-            <button onClick={handleExport} className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
-              <Download size={14} /> <span className="hidden md:inline">Export</span>
+            <button onClick={handleExportPdf} className="flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
+              <FileText size={14} /> <span className="inline">PDF</span>
+            </button>
+            <button onClick={handleExportExcel} className="flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
+              <Download size={14} /> <span className="inline">Excel</span>
             </button>
           </div>
         </div>

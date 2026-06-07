@@ -4,6 +4,7 @@ import { Search, RotateCcw, Box, Tag, Layers, DollarSign, Filter, RefreshCw, Plu
 import DataTable from '../../components/DataTable';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import ModalView from '../../components/ModalView';
+import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
 
 export default function ItemDetails() {
@@ -291,7 +292,7 @@ export default function ItemDetails() {
           </div>
 
           {/* Filtering dropdowns */}
-          <div className={`${showMobileFilters ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row lg:flex-nowrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible`}>
+          <div className={`flex flex-wrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-start lg:justify-end pb-1 pt-1`}>
             
 
 
@@ -374,13 +375,15 @@ export default function ItemDetails() {
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <ModalView
+        <ModalForm
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           title="Add New Product"
+          onSubmit={handleAddProduct}
+          submitText={isSubmitting ? 'Saving...' : 'Save Product'}
           maxWidth="max-w-md"
         >
-          <form onSubmit={handleAddProduct} className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Item Code *</label>
               <input
@@ -454,35 +457,21 @@ export default function ItemDetails() {
               <p className="text-[10px] text-slate-400 mt-1.5 ml-12">Currently supports image URLs. Storage bucket configuration required for direct file uploads.</p>
             </div>
 
-            <div className="pt-4 flex gap-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isSubmitting ? <RefreshCw className="animate-spin" size={18} /> : 'Save Product'}
-              </button>
-            </div>
-          </form>
-        </ModalView>
+          </div>
+        </ModalForm>
       )}
 
       {/* Edit Product Modal */}
       {isEditModalOpen && (
-        <ModalView
+        <ModalForm
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           title="Edit Product"
+          onSubmit={handleUpdateProduct}
+          submitText={isSubmitting ? 'Updating...' : 'Update Product'}
           maxWidth="max-w-md"
         >
-          <form onSubmit={handleUpdateProduct} className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Item Code *</label>
               <input
@@ -555,24 +544,8 @@ export default function ItemDetails() {
               </div>
             </div>
 
-            <div className="pt-4 flex gap-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isSubmitting ? <RefreshCw className="animate-spin" size={18} /> : 'Update Product'}
-              </button>
-            </div>
-          </form>
-        </ModalView>
+          </div>
+        </ModalForm>
       )}
 
     </div>

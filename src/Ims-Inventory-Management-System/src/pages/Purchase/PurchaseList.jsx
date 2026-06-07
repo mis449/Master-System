@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Eye, Trash2, ArrowLeftRight } from 'lucide-react';
+import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Eye, Trash2, ArrowLeftRight, FileText } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import PurchaseFormModal from './PurchaseFormModal';
 import { getPurchases, deletePurchase } from '../../services/PurchaseService';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function PurchaseList({ conversionContext, clearConversionContext, onCreatePurchaseReturn }) {
   const [purchases, setPurchases] = useState([]);
@@ -67,8 +68,30 @@ export default function PurchaseList({ conversionContext, clearConversionContext
     }
   };
 
-  const handleExport = () => {
-    toast.success('Export feature coming soon!');
+  const getExportData = () => {
+    return filteredPurchases.map(item => [
+      item.docNo || '-',
+      item.docDate || '-',
+      item.vendor || '-',
+      item.state || '-',
+      item.mobile || '-',
+      item.billNo || '-',
+      item.billDate || '-',
+      `Rs. ${Number(item.amount || 0).toLocaleString('en-IN')}`,
+      item.acPostStatus || '0.00'
+    ]);
+  };
+
+  const exportHeaders = ["Doc #", "Doc Date", "Vendor", "State", "Mobile", "Bill #", "Bill Date", "Amount", "A/c Post"];
+
+  const handleExportPdf = () => {
+    exportToPDF(getExportData(), exportHeaders, 'Purchases', 'purchases');
+    toast.success('Exported to PDF successfully!');
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(getExportData(), exportHeaders, 'purchases');
+    toast.success('Exported to Excel successfully!');
   };
 
   const handleView = (item) => {
@@ -200,7 +223,7 @@ export default function PurchaseList({ conversionContext, clearConversionContext
               <Plus size={18} />
             </button>
           </div>
-          <div className={`${showMobileFilters ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row lg:flex-nowrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-end`}>
+          <div className={`flex flex-wrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-start lg:justify-end pb-1 pt-1`}>
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
@@ -209,10 +232,13 @@ export default function PurchaseList({ conversionContext, clearConversionContext
               <option value="All">All ({purchases.length})</option>
             </select>
             <button onClick={handleRefresh} className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
-              <RefreshCw size={14} /> <span className="hidden md:inline">Refresh</span>
+              <RefreshCw size={14} /> <span className="inline">Refresh</span>
             </button>
-            <button onClick={handleExport} className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
-              <Download size={14} /> <span className="hidden md:inline">Export</span>
+            <button onClick={handleExportPdf} className="flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
+              <FileText size={14} /> <span className="inline">PDF</span>
+            </button>
+            <button onClick={handleExportExcel} className="flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
+              <Download size={14} /> <span className="inline">Excel</span>
             </button>
           </div>
         </div>

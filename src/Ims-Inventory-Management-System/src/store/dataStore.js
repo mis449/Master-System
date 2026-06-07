@@ -93,7 +93,8 @@ const useDataStore = create((set, get) => ({
   // Add a new customer to Supabase
   addCustomer: async (customerData) => {
     if (!customerData) return;
-    const custName = customerData.company || customerData.customer || customerData.name || 'New Customer';
+    // Prefer customer/name over company for the 'name' column
+    const custName = customerData.customer || customerData.name || customerData.company || 'New Customer';
     
     const newCustomer = {
       name: custName,
@@ -136,7 +137,8 @@ const useDataStore = create((set, get) => ({
   // Add a new vendor to Supabase
   addVendor: async (vendorData) => {
     if (!vendorData) return;
-    const vendorName = vendorData.company || vendorData.vendorName || vendorData.name || 'New Vendor';
+    // Prefer vendorName/name over company for the 'name' column
+    const vendorName = vendorData.vendorName || vendorData.name || vendorData.company || 'New Vendor';
     
     const newVendor = {
       name: vendorName,

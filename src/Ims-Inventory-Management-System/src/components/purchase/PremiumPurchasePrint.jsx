@@ -6,7 +6,7 @@ import secondImg from '../../Assets/second.png';
 import thirdImg from '../../Assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 
-export default function PremiumQuotationPrint({ 
+export default function PremiumPurchasePrint({ 
   initialData, 
   basicInfo, 
   otherInfo, 
@@ -14,14 +14,15 @@ export default function PremiumQuotationPrint({
   summary, 
   notes, 
   inventoryItems,
-  documentTitle = "Quotation"
+  headerInfo,
+  documentTitle = "Purchase"
 }) {
   const coverImage = firstImg;
   const verticalImage = secondImg;
   const qrCode = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=parekh@upi&pn=Parekh%20Gallerium";
 
-  const quotationNo = initialData?.quotationNo || initialData?.docNo || 'Draft';
-  const createdOn = initialData?.date || initialData?.docDate || new Date().toISOString().split('T')[0];
+  const purchaseNo = initialData?.docNo || headerInfo?.billNo || 'Draft';
+  const createdOn = initialData?.docDate || initialData?.date || new Date().toISOString().split('T')[0];
   const salesperson = otherInfo?.salesPerson || initialData?.salesPerson || 'Admin';
 
   // Format date nicely
@@ -47,9 +48,9 @@ export default function PremiumQuotationPrint({
   );
 
   return (
-    <div className="w-full text-slate-800 font-sans print:!p-0 print:!bg-transparent" id="premium-quotation-print" style={{ backgroundColor: '#f8fafc', padding: '20px' }}>
+    <div className="w-full text-slate-800 font-sans print:!p-0 print:!bg-transparent" id="premium-purchase-print" style={{ backgroundColor: '#f8fafc', padding: '20px' }}>
       
-      {/* Page 1: Merged Cover & Client Info Page */}
+      {/* Page 1: Merged Cover & Vendor Info Page */}
       <PageWrapper className="print:!p-0">
         {/* Header Section (Logo Top Left, Details Top Right) */}
         <div className="flex justify-between items-center mb-6 print:mb-2">
@@ -59,7 +60,7 @@ export default function PremiumQuotationPrint({
             </div>
           </div>
           <div className="text-sm print:text-xs space-y-1.5 text-slate-600 text-right">
-            <div><span className="font-medium mr-2">Document # :</span> {quotationNo}</div>
+            <div><span className="font-medium mr-2">Document # :</span> {purchaseNo}</div>
             <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
           </div>
         </div>
@@ -74,22 +75,21 @@ export default function PremiumQuotationPrint({
           <h1 className="text-4xl print:text-3xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
         </div>
 
-        {/* Client Info Split Section */}
+        {/* Vendor Info Split Section */}
         <div className="flex gap-12 print:gap-8 flex-1">
           <div className="w-[50%] rounded-lg overflow-hidden">
             <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" />
           </div>
           <div className="w-[50%] flex flex-col py-2">
             <div className="space-y-4 print:space-y-2 text-sm text-slate-800 mb-8 print:mb-4">
-              <div className="flex"><span className="w-36 font-semibold">Client Name</span> <span className="uppercase">: {basicInfo?.customer || 'Walk-in Customer'}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Vendor Name</span> <span className="uppercase">: {basicInfo?.vendor || basicInfo?.vendorName || '-'}</span></div>
               {basicInfo?.areaPinCode && <div className="flex"><span className="w-36"></span> <span>  {basicInfo.areaPinCode}</span></div>}
               {basicInfo?.address && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.address}</span></div>}
               {basicInfo?.cityState && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.cityState}, India</span></div>}
-              <div className="flex mt-4"><span className="w-36 font-semibold">Client Number</span> <span>: {basicInfo?.mobile || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Client Location</span> <span className="uppercase">: {basicInfo?.cityState?.split('/')[0] || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Architect Name</span> <span className="uppercase">: {otherInfo?.architectName || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Salesperson</span> <span className="uppercase">: {salesperson}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Sales Number</span> <span>: {otherInfo?.salesNumber || '-'}</span></div>
+              <div className="flex mt-4"><span className="w-36 font-semibold">Vendor Number</span> <span>: {basicInfo?.mobile || '-'}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Vendor Location</span> <span className="uppercase">: {basicInfo?.cityState?.split('/')[0] || '-'}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Reference No</span> <span className="uppercase">: {otherInfo?.referenceNumber || '-'}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Buyer</span> <span className="uppercase">: {salesperson}</span></div>
             </div>
 
             <div className="mt-auto space-y-2">
@@ -121,7 +121,7 @@ export default function PremiumQuotationPrint({
               <th className="py-3 px-2 text-center w-32">Image</th>
               <th className="py-3 px-2 text-left w-[35%]">Product Details</th>
               <th className="py-3 px-2 text-center w-12">Qty</th>
-              <th className="py-3 px-2 text-right w-20">MRP</th>
+              <th className="py-3 px-2 text-right w-20">Rate</th>
               <th className="py-3 px-2 text-right w-16">Dis %</th>
               <th className="py-3 px-2 text-right w-20">Net rate</th>
               <th className="py-3 px-2 text-right w-24">Amount</th>
@@ -213,7 +213,7 @@ export default function PremiumQuotationPrint({
 
           <div>
             <h3 className="font-bold text-slate-800 mb-2 uppercase">Price Validity</h3>
-            <p className="text-slate-700">{basicInfo?.validityDate ? formatDate(basicInfo.validityDate) : '30 Days from Quotation Date'}</p>
+            <p className="text-slate-700">{basicInfo?.validityDate ? formatDate(basicInfo.validityDate) : '30 Days from Purchase Date'}</p>
           </div>
 
           <div className="flex justify-between items-start mt-12">

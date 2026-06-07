@@ -210,9 +210,9 @@ export default function DispatchList({ onConvertToInvoice }) {
             </button>
           </div>
 
-          <div className={`${showMobileFilters ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row lg:flex-nowrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-end`}>
+          <div className={`flex flex-wrap gap-2 w-full lg:w-auto lg:flex-[6] overflow-visible justify-start lg:justify-end pb-1 pt-1`}>
             <button onClick={handleRefresh} className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold">
-              <RefreshCw size={14} /> <span className="hidden md:inline">Refresh</span>
+              <RefreshCw size={14} /> <span className="inline">Refresh</span>
             </button>
             <button onClick={handleClearFilters} className="hidden lg:flex items-center justify-center bg-slate-50 text-slate-500 border border-slate-200 rounded-xl w-[38px] h-[38px] hover:bg-slate-150 transition-colors shadow-sm">
               <RotateCcw size={16} />

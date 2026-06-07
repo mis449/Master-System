@@ -717,15 +717,18 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               }
               
               setIsSubmitting(true);
-              const toastId = toast.loading("Sending email to " + emailForm.to + "...");
+              const toastId = toast.loading("Preparing email...");
               
               try {
-                // Simulate email send
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                toast.success("Email sent successfully!", { id: toastId });
+                const mailtoLink = `mailto:${emailForm.to}?subject=${encodeURIComponent(emailForm.subject)}&body=${encodeURIComponent(emailForm.body)}`;
+                
+                // Use window.location instead of a new tab to prevent the blank page issue
+                window.location.href = mailtoLink;
+                
+                toast.success("Email client opened!", { id: toastId });
                 setIsEmailModalOpen(false);
               } catch (err) {
-                toast.error("Failed to send email.", { id: toastId });
+                toast.error("Failed to prepare email.", { id: toastId });
               } finally {
                 setIsSubmitting(false);
               }

@@ -11,6 +11,7 @@ import ItemLinesTable from '../../components/sales/ItemLinesTable';
 import SummaryCard from '../../components/sales/SummaryCard';
 import OtherInformationTab from '../../components/OtherInformationTab';
 import CatalogModal from '../QuotationForm/CatalogModal';
+import PremiumPurchasePrint from '../../components/purchase/PremiumPurchasePrint';
 import { Printer, UploadCloud, MessageSquare, StickyNote, Activity, Image as ImageIcon } from 'lucide-react';
 
 export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData, isConversion = false }) {
@@ -250,10 +251,7 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
               <span className="text-[10px] md:text-xs font-bold text-slate-700 uppercase md:normal-case">Bill #</span>
               <input type="text" value={headerInfo.billNo} onChange={e => setHeaderInfo({...headerInfo, billNo: e.target.value})} className="px-2 py-1.5 md:py-1 border border-slate-200 rounded text-xs outline-none w-full md:w-24" placeholder="Bill No" />
             </div>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 w-[45%] md:w-auto">
-              <span className="text-[10px] md:text-xs font-bold text-slate-700 uppercase md:normal-case">Vendor Bill #</span>
-              <input type="text" value={headerInfo.vendorBillNo} onChange={e => setHeaderInfo({...headerInfo, vendorBillNo: e.target.value})} className="px-2 py-1.5 md:py-1 border border-slate-200 rounded text-xs outline-none w-full md:w-24" placeholder="Vendor Bill" />
-            </div>
+
             <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 w-[45%] md:w-auto">
               <span className="text-[10px] md:text-xs font-bold text-slate-700 uppercase md:normal-case">Bill Date</span>
               <input type="date" value={headerInfo.billDate} onChange={e => setHeaderInfo({...headerInfo, billDate: e.target.value})} className="px-2 py-1.5 md:py-1 border border-slate-200 rounded text-xs outline-none w-full md:w-auto" />
@@ -324,18 +322,62 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
                 overflow: visible !important;
                 position: static !important;
               }
-
-              body * { visibility: hidden; }
-              #purchase-print-area, #purchase-print-area * { visibility: visible; }
-              #purchase-print-area {
-                position: absolute !important; left: 0 !important; top: 0 !important;
-                width: 100% !important; max-width: 100% !important;
-                margin: 0 !important; padding: 0 !important;
-                box-shadow: none !important; border: none !important;
+              
+              body * {
+                visibility: hidden;
               }
+              
+              #purchase-print-area, #purchase-print-area * {
+                visibility: visible;
+              }
+              
+              /* Break out of the modal styling */
+              .absolute.inset-0 {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                height: auto !important;
+                min-height: 100% !important;
+                overflow: visible !important;
+                background: none !important;
+                padding: 0 !important;
+              }
+              
+              /* Let the container grow */
+              .absolute.inset-0 > div {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                border: none !important;
+              }
+              
+              /* Let the print area grow and position at top */
+              #purchase-print-area {
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+              }
+              
+              /* Hide the control bar */
+              .absolute.inset-0 > div > div:first-child {
+                display: none !important;
+              }
+              
+              .break-after-page {
+                page-break-after: always;
+                break-after: page;
+              }
+              
               @page {
                 size: ${printOrientation === 'Horizontal' ? 'landscape' : 'portrait'};
-                margin: 15mm;
+                margin: 10mm;
               }
             }
           `}
@@ -374,137 +416,18 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
             </div>
           </div>
           
-          <div className="flex-1 w-full overflow-y-auto min-h-0 rounded-b-2xl">
-            <div id="purchase-print-area" className="bg-white p-8 border border-t-0 border-slate-150 text-slate-800 rounded-b-2xl w-full">
-              <div className="flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-8">
-                <div>
-                  <h1 className="text-3xl font-black text-slate-900 uppercase tracking-widest">PAREKH GALLERIUM</h1>
-                  <p className="text-[10px] text-sky-700 font-bold tracking-widest uppercase mt-1">Premium Inventory Management System</p>
-                  <div className="mt-3 text-xs text-slate-600 space-y-0.5">
-                    <p>VIP Road, Raipur, Chhattisgarh - 492001</p>
-                    <p>Phone: +91 98765 43210</p>
-                    <p>Email: contact@parekhgallerium.com</p>
-                    <p className="font-bold text-slate-800 mt-1.5">GSTIN: 22AAAAA0000A1Z2</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <h2 className="text-4xl font-light text-slate-400 tracking-widest uppercase mb-4">Purchase</h2>
-                  <div className="text-xs text-slate-600 space-y-1.5">
-                    <p><span className="font-bold text-slate-900 w-28 inline-block">Bill No:</span> {headerInfo.billNo || '-'}</p>
-                    <p><span className="font-bold text-slate-900 w-28 inline-block">Bill Date:</span> {headerInfo.billDate || '-'}</p>
-                    <p><span className="font-bold text-slate-900 w-28 inline-block">Mat.Rcvd Date:</span> {headerInfo.materialRcvdDate || '-'}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-12 mb-10 text-xs">
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-800 border-b border-slate-300 pb-2 mb-3 uppercase tracking-widest text-[10px]">Vendor Details</h3>
-                  <div className="space-y-1">
-                    <p className="font-black text-slate-900 text-sm mb-2">{basicInfo.vendor || 'N/A'}</p>
-                    {basicInfo.address && <p className="text-slate-700">{basicInfo.address}</p>}
-                    {basicInfo.mobile && <p className="text-slate-700"><span className="font-semibold text-slate-500">Ph:</span> {basicInfo.mobile}</p>}
-                    {basicInfo.email && <p className="text-slate-700"><span className="font-semibold text-slate-500">Email:</span> {basicInfo.email}</p>}
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-800 border-b border-slate-300 pb-2 mb-3 uppercase tracking-widest text-[10px]">Purchase Details</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-semibold text-slate-500">Payment Terms:</span> 
-                      <span className="font-bold text-slate-800">{basicInfo.paymentTerms || '-'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-800 text-white font-bold uppercase tracking-widest text-[9px]">
-                      <th className="py-2 px-1 text-center w-8">SN</th>
-                      <th className="py-2 px-1 text-center w-12">Image</th>
-                      <th className="py-2 px-1 text-left w-[40%]">Product Details</th>
-                      <th className="py-2 px-1 text-center w-12">Qty</th>
-                      <th className="py-2 px-1 text-right w-24">Unit Price</th>
-                      <th className="py-2 px-1 text-center w-16">Disc %</th>
-                      <th className="py-2 px-1 text-center w-16">Tax %</th>
-                      <th className="py-2 px-1 text-right w-28">Net Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.filter(i => i.itemCode || i.description).map((item, idx) => {
-                      const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
-                      const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-                      const afterDiscount = rowGross - rowDiscount;
-                      const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
-                      const netAmt = item.netAmount || (afterDiscount + rowTax);
-                      
-                      const matchedInventoryItem = inventoryItems?.find(inv => (inv.ItemCode || inv.code) === item.itemCode);
-                      const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
-
-                      return (
-                        <tr key={idx} className="border-b border-slate-200 bg-white">
-                          <td className="py-2 px-1 text-center text-slate-500 font-medium">{idx + 1}</td>
-                          <td className="py-2 px-1 text-center">
-                            {imageUrl ? (
-                              <img src={imageUrl} alt="product" className="w-10 h-10 object-cover mx-auto rounded border border-slate-200" />
-                            ) : (
-                              <div className="w-10 h-10 bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto rounded">
-                                 <ImageIcon size={14} />
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-2 px-1 text-left">
-                            <div className="font-bold text-slate-800">{item.itemCode || '-'}</div>
-                            <div className="text-slate-600 capitalize mt-0.5 leading-snug text-justify pr-2">{item.description || '-'}</div>
-                          </td>
-                          <td className="py-2 px-1 text-center font-bold text-slate-800">{item.quantity}</td>
-                          <td className="py-2 px-1 text-right text-slate-700">₹{Number(item.unitPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                          <td className="py-2 px-1 text-center text-slate-500">{item.discountPercent || 0}%</td>
-                          <td className="py-2 px-1 text-center text-slate-500">{item.taxPercent || 0}%</td>
-                          <td className="py-2 px-1 text-right font-black text-slate-900">₹{Number(netAmt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="flex gap-12 text-xs mb-16">
-                <div className="flex-1 space-y-6">
-                  {notes.termsAndConditions && (
-                    <div>
-                      <h4 className="font-bold text-slate-800 uppercase tracking-widest text-[9px] mb-2">Terms & Conditions</h4>
-                      <p className="text-slate-600 whitespace-pre-line leading-relaxed">{notes.termsAndConditions}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="w-80 space-y-3">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Gross Amount:</span>
-                    <span className="font-medium">₹{Number(summary.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Discount Amount:</span>
-                    <span className="font-medium">- ₹{Number(summary.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Tax Amount:</span>
-                    <span className="font-medium">+ ₹{Number(summary.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600 border-b border-slate-200 pb-3">
-                    <span>Round Off:</span>
-                    <span className="font-medium">{summary.roundOffAmount >= 0 ? '+' : '-'} ₹{Math.abs(summary.roundOffAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-900 font-black text-base pt-1">
-                    <span>Grand Total:</span>
-                    <span>₹{Number(summary.totalAmount || 0).toLocaleString('en-IN')}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex-1 w-full overflow-y-auto min-h-0 rounded-b-2xl" id="purchase-print-area">
+            <PremiumPurchasePrint
+              initialData={initialData}
+              basicInfo={basicInfo}
+              otherInfo={otherInfo}
+              items={items}
+              summary={summary}
+              notes={notes}
+              inventoryItems={inventoryItems}
+              headerInfo={headerInfo}
+              documentTitle="Purchase"
+            />
           </div>
         </div>
       </div>,
