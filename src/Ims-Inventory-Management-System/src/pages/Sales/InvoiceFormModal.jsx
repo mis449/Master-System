@@ -35,7 +35,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
     customer: '', address: '', validityDate: '', priceList: '>->MRP:01-Apr-2025', paymentTerms: 'Net 30', areaPinCode: '', cityState: '', email: '', mobile: ''
   });
 
-  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 0, netAmount: 0 });
+  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 18, netAmount: 0 });
   const [items, setItems] = useState([getEmptyItem()]);
 
   const [otherInfo, setOtherInfo] = useState({
@@ -134,7 +134,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
       let insertIndex = newItems.findIndex(i => i.type === 'item' && !i.itemCode);
       cartItems.forEach(cartItem => {
         const newItem = {
-          id: Date.now() + Math.random(), type: 'item', itemCode: cartItem.ItemCode || cartItem.code, description: cartItem.ItemName || cartItem.name || '', quantity: cartItem.selectedQty, unitPrice: Number(cartItem.MRP || cartItem.price || 0), discountPercent: 0, taxPercent: 0, netAmount: 0
+          id: Date.now() + Math.random(), type: 'item', itemCode: cartItem.ItemCode || cartItem.code, description: cartItem.ItemName || cartItem.name || '', quantity: cartItem.selectedQty, unitPrice: Number(cartItem.MRP || cartItem.price || 0), discountPercent: 0, taxPercent: 18, netAmount: 0
         };
         if (insertIndex !== -1) { newItems[insertIndex] = newItem; insertIndex = -1; } 
         else { newItems.push(newItem); }
@@ -260,10 +260,15 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
 
         {/* Custom Footer */}
         <div className="border-t border-slate-200 mt-auto flex justify-between items-center">
-          <div className="py-4">
+          <div className="py-4 flex gap-3">
              <button onClick={handleSubmit} disabled={isSubmitting} className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition">
-               {isSubmitting ? 'Saving...' : 'Save Invoice'}
+               {isSubmitting ? (initialData?.invoiceNo ? 'Updating...' : 'Saving...') : (initialData?.invoiceNo ? 'Update Invoice' : 'Save Invoice')}
              </button>
+             {initialData?.invoiceNo && (
+               <button onClick={onClose} disabled={isSubmitting} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-sm transition">
+                 Cancel
+               </button>
+             )}
           </div>
         </div>
 

@@ -122,7 +122,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   });
 
   // Item Lines State
-  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 0, netAmount: 0 });
+  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 18, netAmount: 0 });
   const [items, setItems] = useState([getEmptyItem()]);
 
   // Other Info State
@@ -232,7 +232,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           quantity: cartItem.selectedQty,
           unitPrice: Number(cartItem.MRP || cartItem.price || 0),
           discountPercent: 0,
-          taxPercent: 0,
+          taxPercent: 18,
           netAmount: 0
         };
 

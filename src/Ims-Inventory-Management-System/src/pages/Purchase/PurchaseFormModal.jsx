@@ -50,7 +50,7 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
     paymentTerms: 'Net 30'
   });
 
-  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 0, netAmount: 0 });
+  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 18, netAmount: 0 });
   const [items, setItems] = useState([getEmptyItem()]);
 
   const [otherInfo, setOtherInfo] = useState({
