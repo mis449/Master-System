@@ -185,7 +185,8 @@ const useDataStore = create((set, get) => ({
         ItemName: itemData.ItemName,
         ITMBrandName: itemData.BrandName,
         ItmQtyRate: Number(itemData.MRP) || 0,
-        product_image_url: itemData.ImageURL || null
+        product_image_url: itemData.ImageURL || null,
+        stock: Number(itemData.StockQty) || 0
       };
       
       // Attempt to save to Supabase
@@ -202,6 +203,7 @@ const useDataStore = create((set, get) => ({
         BrandName: newItem.ITMBrandName || '',
         MRP: Number(newItem.ItmQtyRate) || 0,
         Thumbnail: newItem.product_image_url || null,
+        StockQty: Number(newItem.stock) || 0,
       };
       set({ items: [formattedItem, ...get().items] });
 
@@ -220,7 +222,8 @@ const useDataStore = create((set, get) => ({
         ItemName: itemData.ItemName,
         ITMBrandName: itemData.BrandName,
         ItmQtyRate: Number(itemData.MRP) || 0,
-        product_image_url: itemData.ImageURL || null
+        product_image_url: itemData.ImageURL || null,
+        stock: Number(itemData.StockQty) || 0
       };
       
       const { data, error } = await supabase.from('item').update(payload).eq('id', id).select();
@@ -238,6 +241,7 @@ const useDataStore = create((set, get) => ({
               BrandName: updatedItem.ITMBrandName || '',
               MRP: Number(updatedItem.ItmQtyRate) || 0,
               Thumbnail: updatedItem.product_image_url || null,
+              StockQty: Number(updatedItem.stock) || 0,
             };
           }
           return item;
@@ -259,26 +263,35 @@ const useDataStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       let allData = [];
-      let fetchMore = true;
-      let from = 0;
-      const step = 1000;
+      // First, get the exact count to parallelize fetching
+      const { count, error: countError } = await supabase
+        .from('item')
+        .select('*', { count: 'exact', head: true });
 
-      while (fetchMore) {
-        const { data, error } = await supabase
-          .from('item')
-          .select('*')
-          .range(from, from + step - 1);
+      if (countError) throw countError;
 
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          allData = [...allData, ...data];
-          from += step;
+      if (count > 0) {
+        const step = 1000;
+        const pages = Math.ceil(count / step);
+        const promises = [];
+        
+        for (let i = 0; i < pages; i++) {
+          promises.push(
+            supabase
+              .from('item')
+              .select('*')
+              .range(i * step, (i + 1) * step - 1)
+          );
         }
-
-        if (!data || data.length < step) {
-          fetchMore = false;
-        }
+        
+        const results = await Promise.all(promises);
+        
+        results.forEach(res => {
+          if (res.error) throw res.error;
+          if (res.data) {
+            allData = [...allData, ...res.data];
+          }
+        });
       }
 
       console.log(`Total records fetched from item table: ${allData.length}`);
@@ -304,7 +317,7 @@ const useDataStore = create((set, get) => ({
         Thumbnail: item.product_image_url || item.ItmThmbnl || item.Thumbnail || item.thumbnail || '',
         Notes: item.ItmNotes || item.Notes || item.notes || '',
         MRP: Number(item.ItmQtyRate || item.ItmMRP || item.MRP || item.mrp || item.price || 0),
-        StockQty: Number(item.ItmStdStkQty || item.StockQty || item.stock_qty || 0),
+        StockQty: Number(item.stock || item.ItmStdStkQty || item.StockQty || item.stock_qty || 0),
         DisplayQty: Number(item.ItmDispQty || item.DisplayQty || item.display_qty || 0),
         ReservedQty: Number(item.ItmRsrvStkQty || item.ReservedQty || item.reserved_qty || 0),
         OpeningQty: Number(item.OpeningQty || item.opening_qty || 0)

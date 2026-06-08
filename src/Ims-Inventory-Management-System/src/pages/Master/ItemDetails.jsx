@@ -150,7 +150,7 @@ export default function ItemDetails() {
   );
 
   const tableHeaders = [
-    "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", "Actions"
+    "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", "Stock", "Actions"
   ];
 
   const renderRow = ( item, idx) => {
@@ -172,6 +172,7 @@ export default function ItemDetails() {
         <td className="px-4 py-3 text-justify text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-700 whitespace-nowrap">{item.BrandName}</td>
         <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
+        <td className="px-4 py-3 text-center text-xs text-sky-600 font-black whitespace-nowrap">{item.StockQty || 0}</td>
         <td className="px-4 py-3 text-center whitespace-nowrap">
           <button 
             onClick={() => handleEditClick(item)}
@@ -207,6 +208,10 @@ export default function ItemDetails() {
           <div>
             <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Brand</span>
             <span className="text-gray-700 font-medium">{item.BrandName}</span>
+          </div>
+          <div>
+            <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Stock</span>
+            <span className="text-sky-600 font-bold">{item.StockQty || 0}</span>
           </div>
           <div className="col-span-2 pt-1 border-t border-slate-200/30 flex justify-between items-center">
             <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Unit Price / MRP</span>
@@ -434,6 +439,19 @@ export default function ItemDetails() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Initial Stock</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={newItemData.StockQty || ''}
+                onChange={(e) => setNewItemData({ ...newItemData, StockQty: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                placeholder="0"
+              />
             </div>
 
             <div>

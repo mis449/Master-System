@@ -56,27 +56,26 @@ export default function Dasboard() {
 
   // Compute live stock summary metrics crossing master items catalog with transaction logs
   const computedStocks = useMemo(() => {
+    // Build a lookup map of transactions by item code to avoid O(N*M) loops
+    const txMap = {};
+    transactions.forEach(t => {
+      const code = t.itemCode;
+      if (!txMap[code]) {
+        txMap[code] = { purchaseQty: 0, salesQty: 0, purchaseReturnQty: 0, salesReturnQty: 0 };
+      }
+      const qty = Number(t.qty) || 0;
+      if (t.type === 'Purchase') txMap[code].purchaseQty += qty;
+      if (t.type === 'Sales') txMap[code].salesQty += qty;
+      if (t.type === 'Purchase Return') txMap[code].purchaseReturnQty += qty;
+      if (t.type === 'Sales Return') txMap[code].salesReturnQty += qty;
+    });
+
     return items.map(item => {
       const openingQty = 0; // Opening Qty must ALWAYS default to 0
+      const code = item.ItemCode || item.code;
+      const tx = txMap[code] || { purchaseQty: 0, salesQty: 0, purchaseReturnQty: 0, salesReturnQty: 0 };
 
-      // Extract transaction aggregates
-      const itemTx = transactions.filter(t => t.itemCode === item.ItemCode || t.itemCode === item.code);
-
-      const purchaseQty = itemTx
-        .filter(t => t.type === 'Purchase')
-        .reduce((sum, t) => sum + (Number(t.qty) || 0), 0);
-
-      const salesQty = itemTx
-        .filter(t => t.type === 'Sales')
-        .reduce((sum, t) => sum + (Number(t.qty) || 0), 0);
-
-      const purchaseReturnQty = itemTx
-        .filter(t => t.type === 'Purchase Return')
-        .reduce((sum, t) => sum + (Number(t.qty) || 0), 0);
-
-      const salesReturnQty = itemTx
-        .filter(t => t.type === 'Sales Return')
-        .reduce((sum, t) => sum + (Number(t.qty) || 0), 0);
+      const { purchaseQty, salesQty, purchaseReturnQty, salesReturnQty } = tx;
 
       // Current Qty = StockQty (Available Stock) + Opening + Purchase - Sales - Purchase Return + Sales Return
       const currentQty = (item.StockQty || 0) + openingQty + purchaseQty - salesQty - purchaseReturnQty + salesReturnQty;

@@ -42,8 +42,15 @@ export default function InventoryForm() {
 
   // Merge items with DB trigger-driven inventory summary
   const computedStocks = useMemo(() => {
+    // Build a lookup map to avoid O(N*M) loops
+    const summaryMap = {};
+    inventorySummary.forEach(s => {
+      summaryMap[s.item_code] = s;
+    });
+
     return items.map(item => {
-      const summary = inventorySummary.find(s => s.item_code === item.ItemCode || s.item_code === item.code) || {};
+      const code = item.ItemCode || item.code;
+      const summary = summaryMap[code] || {};
 
       const openingQty = summary.opening_qty || 0;
       const purchaseQty = summary.purchase_qty || 0;
@@ -51,7 +58,7 @@ export default function InventoryForm() {
       const purchaseReturnQty = summary.purchase_return_qty || 0;
       const salesReturnQty = summary.sales_return_qty || 0;
 
-      const currentQty = summary.closing_qty || 0;
+      const currentQty = (item.StockQty || 0) + (summary.closing_qty || 0);
       const stockLevel = currentQty >= 50 ? 'Stock Full' : 'Stock Low';
 
       return {
