@@ -514,7 +514,7 @@ export default function ItemDetails() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand</label>
                 <input
@@ -526,7 +526,7 @@ export default function ItemDetails() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Unit Price / MRP</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Unit Price</label>
                 <div className="relative">
                   <span className="absolute left-3 top-[11px] text-slate-500 font-bold text-sm">₹</span>
                   <input
@@ -539,6 +539,18 @@ export default function ItemDetails() {
                     placeholder="0.00"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Stock</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editFormData.StockQty || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, StockQty: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  placeholder="0"
+                />
               </div>
             </div>
 
