@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, FileText, Image as ImageIcon } from 'lucide-react';
 import SearchableDropdown from '../SearchableDropdown';
+import useDataStore from '../../store/dataStore';
 
 export default function ItemLinesTable({
   items,
@@ -15,6 +16,9 @@ export default function ItemLinesTable({
   showStatus = false,
   showUploadAndRemark = false
 }) {
+  const updateItemPrice = useDataStore(state => state.updateItemPrice);
+  const updateItemImage = useDataStore(state => state.updateItemImage);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 mb-2">
@@ -36,7 +40,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Rem Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
-            <div className="col-span-1">Tax %</div>
+            <div className="col-span-1 text-right">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-2 text-center">Status</div>
             <div className="col-span-1">Action</div>
@@ -93,7 +97,8 @@ export default function ItemLinesTable({
         const remaining = Math.max(0, ordered - dispatched);
 
         const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
-        const imageUrl = item.thumbnail || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
+        const defaultImageUrl = matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '';
+        const imageUrl = item.thumbnail !== undefined ? item.thumbnail : defaultImageUrl;
 
         return (
           <div key={item.id} className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : 'md:grid-cols-[repeat(13,minmax(0,1fr))]'}`}>
@@ -111,7 +116,18 @@ export default function ItemLinesTable({
               />
             </div>
 
-            <div className="col-span-1 md:col-span-1 flex flex-col items-center justify-center space-y-1">
+            <div 
+              className="col-span-1 md:col-span-1 flex flex-col items-center justify-center space-y-1 cursor-pointer hover:opacity-80 transition-opacity"
+              title="Click to update image URL"
+              onClick={() => {
+                if (!item.itemCode) return;
+                const newUrl = prompt("Enter new Image URL for " + item.itemCode + " (leave empty to remove):", imageUrl);
+                if (newUrl !== null) {
+                  handleItemChange(item.id, 'thumbnail', newUrl.trim());
+                  updateItemImage(item.itemCode, newUrl.trim());
+                }
+              }}
+            >
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase w-full text-center">Image</div>
               {imageUrl ? (
                 <img src={imageUrl} alt="product" className="w-12 h-12 rounded object-cover border border-slate-200 bg-slate-50" />
@@ -148,7 +164,13 @@ export default function ItemLinesTable({
 
             <div className={`col-span-1 ${showStatus ? 'md:col-span-1' : showUploadAndRemark ? 'md:col-span-1' : 'md:col-span-2'} space-y-1 text-center md:text-center`}>
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Unit Price</div>
-              <input type="number" value={item.unitPrice} onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" />
+              <input 
+                type="number" 
+                value={item.unitPrice} 
+                onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} 
+                onBlur={(e) => { if (item.itemCode && e.target.value) updateItemPrice(item.itemCode, e.target.value); }}
+                className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" 
+              />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Disc %</div>
@@ -158,9 +180,36 @@ export default function ItemLinesTable({
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Tax %</div>
               <input type="number" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" />
             </div>
-            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-600 text-xs md:pr-2 pt-1 md:pt-0">
+            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-600 text-xs md:pr-1 pt-1 md:pt-0">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Net Amount</div>
-              ₹{net.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              <div className="flex items-center justify-end">
+                <span className="mr-1">₹</span>
+                <input 
+                  type="number" 
+                  value={net ? Number(net).toFixed(2) : ''} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const qty = Number(item.quantity) || 1;
+                    const disc = (Number(item.discountPercent) || 0) / 100;
+                    const tax = (Number(item.taxPercent) || 0) / 100;
+                    const netVal = Number(val) || 0;
+                    const denom = qty * (1 - disc) * (1 + tax);
+                    const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                    handleItemChange(item.id, 'unitPrice', Number(newUnitPrice).toFixed(4));
+                  }} 
+                  onBlur={(e) => { 
+                    const qty = Number(item.quantity) || 1;
+                    const disc = (Number(item.discountPercent) || 0) / 100;
+                    const tax = (Number(item.taxPercent) || 0) / 100;
+                    const netVal = Number(e.target.value) || 0;
+                    const denom = qty * (1 - disc) * (1 + tax);
+                    const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                    if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice); 
+                  }}
+                  className="w-full max-w-[90px] border border-emerald-200 text-xs px-1 py-1 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                  placeholder="0.00"
+                />
+              </div>
             </div>
             
             {showUploadAndRemark && (

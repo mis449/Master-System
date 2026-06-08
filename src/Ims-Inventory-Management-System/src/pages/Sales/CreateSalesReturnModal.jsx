@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, RefreshCcw } from 'lucide-react';
 import ModalForm from '../../components/ModalForm';
+import useDataStore from '../../store/dataStore';
 
 export default function CreateSalesReturnModal({ isOpen, onClose, initialData, onSave }) {
   const [items, setItems] = useState([]);
+  const updateItemPrice = useDataStore(state => state.updateItemPrice);
   
   useEffect(() => {
     if (initialData && initialData.details && initialData.details.items) {
@@ -171,7 +173,39 @@ export default function CreateSalesReturnModal({ isOpen, onClose, initialData, o
                     <td className="p-3 text-right">{Math.round(discAmt).toLocaleString()}</td>
                     <td className="p-3 text-center">{taxPct}</td>
                     <td className="p-3 text-right">{Math.round(taxAmt).toLocaleString()}</td>
-                    <td className="p-3 text-right font-black text-slate-900">{Math.round(netAmt).toLocaleString()}</td>
+                    <td className="p-3 text-right font-black text-slate-900">
+                      <div className="flex items-center justify-end">
+                        <span className="mr-1">₹</span>
+                        <input 
+                          type="number" 
+                          value={netAmt ? Math.round(netAmt) : ''} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const qty = Number(item.returnQty) || 1;
+                            const disc = (Number(item.discountPercent) || 0) / 100;
+                            const tax = (Number(item.taxPercent) || 0) / 100;
+                            const netVal = Number(val) || 0;
+                            const denom = qty * (1 - disc) * (1 + tax);
+                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                            const newItems = [...items];
+                            newItems[idx] = { ...newItems[idx], unitPrice: Number(newUnitPrice).toFixed(4) };
+                            setItems(newItems);
+                          }} 
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            const qty = Number(item.returnQty) || 1;
+                            const disc = (Number(item.discountPercent) || 0) / 100;
+                            const tax = (Number(item.taxPercent) || 0) / 100;
+                            const netVal = Number(val) || 0;
+                            const denom = qty * (1 - disc) * (1 + tax);
+                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                            if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice);
+                          }}
+                          className="w-full max-w-[80px] border border-emerald-200 text-xs px-1 py-1 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                          placeholder="0"
+                        />
+                      </div>
+                    </td>
                   </tr>
                 );
               })}

@@ -11,7 +11,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
   const [activeDispatchItem, setActiveDispatchItem] = useState(null);
   const [tempQty, setTempQty] = useState(0);
 
-  const { items: inventoryItems, fetchItems } = useDataStore();
+  const { items: inventoryItems, fetchItems, updateItemPrice } = useDataStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -30,9 +30,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
 
           // Find corresponding inventory item to get live stock
           const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
-          const hasRealStock = invItem && Number(invItem.StockQty || 0) > 0;
-          const stock = hasRealStock ? Number(invItem.StockQty) : 99;
-          const isDemoStock = !hasRealStock;
+          const stock = invItem ? Number(invItem.StockQty || 0) : 0;
 
           // Preserve user-modified dispatchQty if the item already exists in state
           const existingItem = prevItems.find(i => i.id === item.id);
@@ -45,8 +43,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
             orderedQty: ordered,
             dispatchedQty: dispatched,
             dispatchQty: currentDispatchQty,
-            stock: stock,
-            isDemoStock: isDemoStock
+            stock: stock
           };
         });
       });
@@ -292,8 +289,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                       </td>
                     )}
                     <td className="p-3 text-center">{item.orderedQty || item.quantity || 0}</td>
-                    <td className="p-3 text-center text-slate-400 font-normal">
-                      {item.stock}{item.isDemoStock ? ' (Demo)' : ''}
+                    <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap bg-sky-50/30">
+                      {item.stock}
                     </td>
                     
                     {/* Dispatch Qty Controls */}
@@ -317,7 +314,37 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                     <td className="p-3 text-right">{Math.round(discAmt).toLocaleString()}</td>
                     <td className="p-3 text-center">{taxPct}</td>
                     <td className="p-3 text-right">{Math.round(taxAmt).toLocaleString()}</td>
-                    <td className="p-3 text-right font-black text-slate-900">{Math.round(netAmt).toLocaleString()}</td>
+                    <td className="p-3 text-right font-black text-slate-900">
+                      <div className="flex items-center justify-end">
+                        <span className="mr-1">₹</span>
+                        <input 
+                          type="number" 
+                          value={netAmt ? Math.round(netAmt) : ''} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const qty = Number(item.dispatchQty) || 1;
+                            const disc = (Number(item.discountPercent) || 0) / 100;
+                            const tax = (Number(item.taxPercent) || 0) / 100;
+                            const netVal = Number(val) || 0;
+                            const denom = qty * (1 - disc) * (1 + tax);
+                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                            setItems(prev => prev.map(p => p.id === item.id ? { ...p, unitPrice: Number(newUnitPrice).toFixed(4) } : p));
+                          }} 
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            const qty = Number(item.dispatchQty) || 1;
+                            const disc = (Number(item.discountPercent) || 0) / 100;
+                            const tax = (Number(item.taxPercent) || 0) / 100;
+                            const netVal = Number(val) || 0;
+                            const denom = qty * (1 - disc) * (1 + tax);
+                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
+                            if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice);
+                          }}
+                          className="w-full max-w-[80px] border border-emerald-200 text-xs px-1 py-1 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                          placeholder="0"
+                        />
+                      </div>
+                    </td>
                     <td className="p-3 text-center">
                       <button
                         type="button"
@@ -386,8 +413,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                 </div>
                 <div>
                   <span className="text-slate-400 block uppercase font-black text-[8px] tracking-wider">Available Stock</span>
-                  <span className="text-slate-800 font-bold text-xs">
-                    {activeDispatchItem.stock}{activeDispatchItem.isDemoStock ? ' (Demo)' : ''}
+                  <span className="text-sm font-black text-slate-800">
+                    {activeDispatchItem.stock}
                   </span>
                 </div>
               </div>

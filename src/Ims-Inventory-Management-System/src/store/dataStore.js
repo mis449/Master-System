@@ -256,6 +256,59 @@ const useDataStore = create((set, get) => ({
     }
   },
 
+  // Update only the item price directly
+  updateItemPrice: async (itemCode, newPrice) => {
+    try {
+      const price = Number(newPrice);
+      if (isNaN(price)) return;
+      
+      const { data, error } = await supabase
+        .from('item')
+        .update({ ItmQtyRate: price })
+        .eq('ItemCode', itemCode)
+        .select();
+        
+      if (error) throw error;
+      
+      // Update local state directly
+      const updatedItemsList = get().items.map(item => {
+        if (item.ItemCode === itemCode || item.code === itemCode) {
+          return { ...item, MRP: price, ItmQtyRate: price };
+        }
+        return item;
+      });
+      set({ items: updatedItemsList });
+    } catch (err) {
+      console.error('Error updating item price:', err);
+    }
+  },
+
+  // Update only the item image directly
+  updateItemImage: async (itemCode, newImageUrl) => {
+    try {
+      if (typeof newImageUrl !== 'string') return;
+      
+      const { data, error } = await supabase
+        .from('item')
+        .update({ product_image_url: newImageUrl || null })
+        .eq('ItemCode', itemCode)
+        .select();
+        
+      if (error) throw error;
+      
+      // Update local state directly
+      const updatedItemsList = get().items.map(item => {
+        if (item.ItemCode === itemCode || item.code === itemCode) {
+          return { ...item, Thumbnail: newImageUrl, product_image_url: newImageUrl };
+        }
+        return item;
+      });
+      set({ items: updatedItemsList });
+    } catch (err) {
+      console.error('Error updating item image:', err);
+    }
+  },
+
   // Fetch items from the Supabase item table
   fetchItems: async (force = false) => {
     if (get().items.length > 0 && !force) return;
