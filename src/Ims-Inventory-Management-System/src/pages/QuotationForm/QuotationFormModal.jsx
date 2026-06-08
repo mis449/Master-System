@@ -15,7 +15,7 @@ import SummaryCard from '../../components/sales/SummaryCard';
 import DispatchFormModal from '../Sales/DispatchFormModal';
 import { ShoppingCart } from 'lucide-react';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
-
+import emailjs from '@emailjs/browser';
 export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy }) {
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -720,15 +720,24 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               const toastId = toast.loading("Preparing email...");
               
               try {
-                const mailtoLink = `mailto:${emailForm.to}?subject=${encodeURIComponent(emailForm.subject)}&body=${encodeURIComponent(emailForm.body)}`;
+                const templateParams = {
+                  to_email: emailForm.to,
+                  subject: emailForm.subject,
+                  message: emailForm.body,
+                };
                 
-                // Use window.location instead of a new tab to prevent the blank page issue
-                window.location.href = mailtoLink;
+                await emailjs.send(
+                  'service_epijhnc',
+                  'template_no2qi7d',
+                  templateParams,
+                  'ETji2pBwCS52Ja0OU'
+                );
                 
-                toast.success("Email client opened!", { id: toastId });
+                toast.success("Email sent successfully!", { id: toastId });
                 setIsEmailModalOpen(false);
               } catch (err) {
-                toast.error("Failed to prepare email.", { id: toastId });
+                console.error("Email send failed:", err);
+                toast.error("Failed to send email. Ensure API keys are set.", { id: toastId });
               } finally {
                 setIsSubmitting(false);
               }

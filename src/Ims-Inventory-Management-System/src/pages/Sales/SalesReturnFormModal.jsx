@@ -8,7 +8,7 @@ import SalesTabs from '../../components/sales/SalesTabs';
 import ItemLinesTable from '../../components/sales/ItemLinesTable';
 import SummaryCard from '../../components/sales/SummaryCard';
 import SalesHeader from '../../components/sales/SalesHeader';
-import FooterActions from '../../components/sales/FooterActions';
+
 import NewCustomerModal from '../QuotationForm/NewCustomerModal';
 import CatalogModal from '../QuotationForm/CatalogModal';
 import OtherInformationTab from '../../components/OtherInformationTab';
@@ -248,7 +248,6 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
 
         {/* Custom Footer */}
         <div className="border-t border-slate-200 mt-auto flex justify-between items-center">
-          <FooterActions />
           <div className="py-4">
              <button onClick={handleSubmit} disabled={isSubmitting} className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition">
                {isSubmitting ? 'Saving...' : 'Save Sales Return'}

@@ -284,18 +284,7 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
           />
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex gap-6 border-t border-slate-100 pt-4 mt-4">
-          <button type="button" className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-teal-600 transition">
-            <MessageSquare size={16} /> Send Message
-          </button>
-          <button type="button" className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-teal-600 transition">
-            <StickyNote size={16} /> Log Note
-          </button>
-          <button type="button" className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-teal-600 transition">
-            <Activity size={16} /> Activities
-          </button>
-        </div>
+
       </div>
     </ModalForm>
     <CatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} onSubmitCart={handleCatalogSubmit} />
