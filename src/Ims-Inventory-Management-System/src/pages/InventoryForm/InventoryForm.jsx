@@ -135,44 +135,60 @@ export default function InventoryForm() {
     const priceVal = Number(item.MRP || 0);
 
     return (
-      <div key={item.ItmID || item.ItemCode} className="bg-white rounded-lg border border-slate-100 shadow-sm p-2.5 space-y-1.5 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer">
-        <div className="flex justify-between items-center pb-1.5 border-b border-slate-50">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="w-4 h-4 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[8px] font-black text-slate-500 flex-shrink-0">
+      <div key={item.ItmID || item.ItemCode} className="max-w-sm sm:max-w-md w-full mx-auto bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-2 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer">
+        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 flex-shrink-0">
               {globalIdx}
             </span>
-            <span className="text-[10px] font-bold text-slate-900 uppercase truncate">{item.ItemName}</span>
+            <span className="text-xs md:text-sm font-bold text-slate-900 uppercase truncate">{item.ItemName}</span>
           </div>
-          <span className="bg-slate-50 text-slate-800 border border-slate-200 px-1.5 py-0.5 rounded text-[7px] font-black uppercase flex-shrink-0 ml-1">
+          <span className="bg-slate-100 text-slate-800 border border-slate-200 px-2 py-1 rounded text-[9px] md:text-[10px] font-black uppercase flex-shrink-0 ml-2">
             {item.ItemCode}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-1.5 text-[10px] bg-slate-50 rounded-md p-1.5 border border-slate-100/50">
-          <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Brand</span>
-            <span className="text-slate-700 font-medium truncate block">{item.BrandName}</span>
+        <div className="flex flex-col gap-2 text-xs md:text-sm bg-slate-50 rounded-md p-3 border border-slate-100 mt-2 shadow-sm">
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Brand</span>
+            <span className="text-slate-800 font-semibold">{item.BrandName || '-'}</span>
           </div>
-          <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Unit Price</span>
-            <span className="text-slate-700 font-medium">₹{priceVal.toLocaleString('en-IN')}</span>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Unit Price / MRP</span>
+            <span className="text-slate-800 font-semibold">₹{priceVal.toLocaleString('en-IN')}</span>
           </div>
-          <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Purchase / Sales</span>
-            <span className="text-slate-700 font-medium"><span className="text-emerald-600 font-bold">+{item.purchaseQty}</span> / <span className="text-rose-600 font-bold">-{item.salesQty}</span></span>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Opening Qty</span>
+            <span className="text-slate-800 font-bold">{item.openingQty}</span>
           </div>
-          <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Current Qty</span>
-            <span className="text-sky-600 font-bold">{item.currentQty}</span>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Purchase Qty</span>
+            <span className="text-emerald-600 font-bold">+{item.purchaseQty}</span>
           </div>
-        </div>
-
-        <div className="flex justify-end items-center border-t border-slate-100 pt-1.5 text-[10px]">
-          <span className={`px-1.5 py-0.5 rounded text-[7px] uppercase font-black ${
-            isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
-          }`}>
-            {item.stockLevel}
-          </span>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Sales Qty</span>
+            <span className="text-rose-600 font-bold">-{item.salesQty}</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Purchase Return Qty</span>
+            <span className="text-amber-600 font-bold">-{item.purchaseReturnQty}</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Sales Return Qty</span>
+            <span className="text-emerald-500 font-bold">+{item.salesReturnQty}</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 bg-sky-50/50 -mx-1.5 px-1.5 rounded">
+            <span className="text-sky-700 uppercase tracking-wider font-black text-[10px] md:text-xs">Current Qty</span>
+            <span className="text-sky-700 font-black text-sm md:text-base">{item.currentQty}</span>
+          </div>
+          <div className="flex justify-between items-center pt-1">
+            <span className="text-slate-500 uppercase tracking-wider font-bold text-[10px] md:text-xs">Stock Level</span>
+            <span className={`px-2 py-1 rounded text-[9px] md:text-[10px] uppercase font-black shadow-sm ${
+              isFull ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'
+            }`}>
+              {item.stockLevel}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -197,10 +213,11 @@ export default function InventoryForm() {
   };
 
   return (
-    <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
+    <div className="p-3 sm:p-4 md:p-6 h-full flex flex-col min-h-0 bg-slate-50 md:bg-transparent w-full overflow-hidden box-border">
+      <div className="max-w-7xl w-full mx-auto flex flex-col h-full min-h-0 space-y-4 md:space-y-6">
       
       {/* Filters Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4 w-full px-2 sm:px-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4 w-full">
         
         <div className="flex flex-col lg:flex-row w-full lg:flex-[2] gap-2 lg:gap-3 items-center justify-end">
           
@@ -343,7 +360,8 @@ export default function InventoryForm() {
           />
         )}
       </div>
-
+      
+      </div>
     </div>
   );
 }
