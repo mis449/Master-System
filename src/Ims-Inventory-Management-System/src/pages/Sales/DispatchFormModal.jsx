@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Search, ChevronDown, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ModalForm from '../../components/ModalForm';
@@ -342,8 +343,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
       </ModalForm>
 
       {/* Centered Sub-modal for Partial Dispatch to avoid table overflow clipping and z-index issues */}
-      {activeDispatchItem && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4 animate-in fade-in duration-200">
+      {activeDispatchItem && createPortal(
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" style={{ zIndex: 10000 }}>
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4 animate-in zoom-in-95 duration-200">
             
             {/* Header */}
@@ -447,7 +448,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.getElementById('erp-main-container') || document.body
       )}
     </>
   );
