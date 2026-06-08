@@ -16,6 +16,27 @@ export default function VendorDetailsSection({
     fetchVendors();
   }, [fetchVendors]);
 
+  // Auto-fill missing state and other details if vendor is already selected (e.g. in Edit mode)
+  React.useEffect(() => {
+    if (vendors && vendors.length > 0 && basicInfo.vendor && !basicInfo.state) {
+      const matchedVendor = vendors.find(v => v.name === basicInfo.vendor);
+      if (matchedVendor) {
+        const rawCityState = matchedVendor.cityState || '';
+        let extractedState = matchedVendor.state || '';
+        if (!extractedState && rawCityState.includes('/')) {
+          extractedState = rawCityState.split('/')[1].trim();
+        } else if (!extractedState) {
+          extractedState = rawCityState;
+        }
+
+        setBasicInfo(prev => ({
+          ...prev,
+          state: extractedState || prev.state
+        }));
+      }
+    }
+  }, [vendors, basicInfo.vendor, basicInfo.state, setBasicInfo]);
+
   return (
     <div className="bg-teal-50/40 p-5 rounded-2xl border border-teal-100">
       <div className="flex justify-between items-center mb-4 border-b border-teal-100 pb-2">
@@ -38,13 +59,21 @@ export default function VendorDetailsSection({
               
               const matchedVendor = vendors.find(v => v.name === val);
               if (matchedVendor) {
+                const rawCityState = matchedVendor.cityState || '';
+                let extractedState = matchedVendor.state || '';
+                if (!extractedState && rawCityState.includes('/')) {
+                  extractedState = rawCityState.split('/')[1].trim();
+                } else if (!extractedState) {
+                  extractedState = rawCityState;
+                }
+
                 setBasicInfo({
                   ...basicInfo,
                   vendor: val,
                   address: matchedVendor.address || basicInfo.address,
                   areaPinCode: matchedVendor.areaPinCode || basicInfo.areaPinCode,
                   cityState: matchedVendor.cityState || basicInfo.cityState,
-                  state: matchedVendor.state || matchedVendor.cityState || basicInfo.state,
+                  state: extractedState || basicInfo.state,
                   email: matchedVendor.email || basicInfo.email,
                   mobile: matchedVendor.mobile || basicInfo.mobile,
                   priceList: matchedVendor.priceList || basicInfo.priceList

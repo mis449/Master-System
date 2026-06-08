@@ -11,7 +11,7 @@ import ModalView from '../../components/ModalView';
 import useDataStore from '../../store/dataStore';
 
 export default function Dasboard() {
-  const { items, isLoading, error, fetchItems, transactions, fetchTransactions } = useDataStore();
+  const { items, isLoading, error, fetchItems, transactions, fetchTransactions, inventorySummary, fetchInventorySummary } = useDataStore();
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -36,7 +36,8 @@ export default function Dasboard() {
   useEffect(() => {
     fetchItems(true);
     fetchTransactions();
-  }, [fetchItems, fetchTransactions]);
+    fetchInventorySummary();
+  }, [fetchItems, fetchTransactions, fetchInventorySummary]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -54,31 +55,26 @@ export default function Dasboard() {
     return Array.from(new Set(items.map(i => i.BrandName || i.brand))).filter(Boolean).sort();
   }, [items]);
 
-  // Compute live stock summary metrics crossing master items catalog with transaction logs
+  // Compute live stock summary metrics crossing master items catalog with inventorySummary
   const computedStocks = useMemo(() => {
-    // Build a lookup map of transactions by item code to avoid O(N*M) loops
-    const txMap = {};
-    transactions.forEach(t => {
-      const code = t.itemCode;
-      if (!txMap[code]) {
-        txMap[code] = { purchaseQty: 0, salesQty: 0, purchaseReturnQty: 0, salesReturnQty: 0 };
-      }
-      const qty = Number(t.qty) || 0;
-      if (t.type === 'Purchase') txMap[code].purchaseQty += qty;
-      if (t.type === 'Sales') txMap[code].salesQty += qty;
-      if (t.type === 'Purchase Return') txMap[code].purchaseReturnQty += qty;
-      if (t.type === 'Sales Return') txMap[code].salesReturnQty += qty;
-    });
+    const summaryMap = {};
+    if (inventorySummary) {
+      inventorySummary.forEach(s => {
+        summaryMap[s.item_code] = s;
+      });
+    }
 
     return items.map(item => {
-      const openingQty = 0; // Opening Qty must ALWAYS default to 0
       const code = item.ItemCode || item.code;
-      const tx = txMap[code] || { purchaseQty: 0, salesQty: 0, purchaseReturnQty: 0, salesReturnQty: 0 };
+      const summary = summaryMap[code] || {};
 
-      const { purchaseQty, salesQty, purchaseReturnQty, salesReturnQty } = tx;
+      const openingQty = summary.opening_qty || 0;
+      const purchaseQty = summary.purchase_qty || 0;
+      const salesQty = summary.sales_qty || 0;
+      const purchaseReturnQty = summary.purchase_return_qty || 0;
+      const salesReturnQty = summary.sales_return_qty || 0;
 
-      // Current Qty = StockQty (Available Stock) + Opening + Purchase - Sales - Purchase Return + Sales Return
-      const currentQty = (item.StockQty || 0) + openingQty + purchaseQty - salesQty - purchaseReturnQty + salesReturnQty;
+      const currentQty = (item.StockQty || 0) + (summary.closing_qty || 0);
       const stockLevel = currentQty >= 50 ? 'Stock Full' : 'Stock Low';
 
       return {
@@ -92,7 +88,7 @@ export default function Dasboard() {
         stockLevel
       };
     });
-  }, [items, transactions]);
+  }, [items, inventorySummary]);
 
   // Apply filters
   const filteredStocks = useMemo(() => {
