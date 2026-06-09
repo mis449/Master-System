@@ -129,6 +129,17 @@ export default function PremiumQuotationPrint({
           </thead>
           <tbody>
             {items?.filter(item => item.itemCode || item.description).map((item, idx) => {
+              if (item.type === 'section' || item.type === 'subsection') {
+                const isSection = item.type === 'section';
+                return (
+                  <tr key={idx} className={`${isSection ? 'bg-slate-100' : 'bg-slate-50/50'} border-b border-slate-200`}>
+                    <td colSpan="7" className={`py-4 px-4 text-left ${isSection ? 'font-black text-slate-800 text-[13px] uppercase tracking-wider' : 'font-bold text-slate-700 text-xs italic'}`}>
+                      {item.description}
+                    </td>
+                  </tr>
+                );
+              }
+
               const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
               const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
               const unitPrice = Number(item.unitPrice || 0);
