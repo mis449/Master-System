@@ -1,8 +1,9 @@
-import React from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box } from 'lucide-react';
 import SearchableDropdown from '../SearchableDropdown';
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
+import AddProductModal from '../AddProductModal';
 
 export default function ItemLinesTable({
   items,
@@ -13,25 +14,28 @@ export default function ItemLinesTable({
   addItemLine,
   addSection,
   addSubSection,
+  copySection,
   setIsCatalogOpen,
   showStatus = false,
   showUploadAndRemark = false
 }) {
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 mb-2">
-         <button type="button" onClick={addItemLine} className="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-100"><Plus size={14}/> Add Item Line</button>
-         <button type="button" onClick={addSection} className="text-xs font-bold bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-100 border border-slate-200"><Plus size={14}/> Add Section</button>
-         <button type="button" onClick={addSubSection} className="text-xs font-bold bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-100 border border-slate-200"><Plus size={14}/> Add Sub-Section</button>
-         <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-xs font-bold bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-100 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
+      <div className="sticky top-0 z-30 flex flex-wrap gap-2 mb-2 bg-white/95 backdrop-blur-sm py-2 md:py-3 -mt-2 -mx-2 px-2 border-b border-slate-100 shadow-sm rounded-t-lg">
+         <button type="button" onClick={addItemLine} className="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-100 shadow-sm"><Plus size={14}/> Add Item Line</button>
+         <button type="button" onClick={addSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Section</button>
+         <button type="button" onClick={addSubSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Sub-Section</button>
+         <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
+         <button type="button" onClick={() => setIsAddProductOpen(true)} className="text-xs font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
       </div>
 
       {/* Header */}
-      <div className={`hidden md:grid gap-2 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(15,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(15,minmax(0,1fr))]' : 'grid-cols-[repeat(13,minmax(0,1fr))]'}`}>
-        <div className="col-span-2 text-left">Item Code</div>
+      <div className={`hidden md:grid gap-2 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(16,minmax(0,1fr))]' : 'grid-cols-[repeat(14,minmax(0,1fr))]'}`}>
+        <div className="col-span-3 text-left">Item Code</div>
         <div className="col-span-1 text-center">Image</div>
         {showStatus ? (
           <>
@@ -79,6 +83,11 @@ export default function ItemLinesTable({
               <div className="flex-1 pl-2">
                 <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className={`w-full bg-transparent outline-none font-bold placeholder-slate-400 ${isSub ? 'text-slate-600 text-xs' : 'text-sky-800 text-sm'}`} placeholder={isSub ? "Enter Sub-Section Title..." : "Enter Section Title..."} />
               </div>
+              {copySection && (
+                <button type="button" onClick={() => copySection(item.id)} className="p-1.5 text-sky-500 hover:text-sky-700 hover:bg-sky-100 rounded transition-colors" title="Duplicate">
+                  <Copy size={14} />
+                </button>
+              )}
               <button type="button" onClick={() => removeItemLine(item.id)} className="p-1.5 text-red-400 hover:text-red-650 hover:bg-red-50 rounded transition-colors">
                 <Trash2 size={14} />
               </button>
@@ -102,8 +111,8 @@ export default function ItemLinesTable({
         const imageUrl = item.thumbnail !== undefined ? item.thumbnail : defaultImageUrl;
 
         return (
-          <div key={item.id} className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : 'md:grid-cols-[repeat(13,minmax(0,1fr))]'}`}>
-            <div className="col-span-2 md:col-span-2 space-y-1">
+          <div key={item.id} className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : 'md:grid-cols-[repeat(14,minmax(0,1fr))]'}`}>
+            <div className="col-span-2 md:col-span-3 space-y-1">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Item Code</div>
               <div className="flex gap-1 items-center">
                 <div className="flex-1 min-w-0">
@@ -271,6 +280,8 @@ export default function ItemLinesTable({
           </div>
         );
       })}
+      {/* Add Product Modal */}
+      <AddProductModal isOpen={isAddProductOpen} onClose={() => setIsAddProductOpen(false)} />
     </div>
   );
 }

@@ -147,6 +147,30 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
   const addItemLine = () => setItems(prev => [...prev, getEmptyItem('item')]);
   const addSection = () => setItems(prev => [...prev, getEmptyItem('section')]);
   const addSubSection = () => setItems(prev => [...prev, getEmptyItem('subsection')]);
+  const copySection = (sectionId) => {
+    setItems(prev => {
+      const sectionIndex = prev.findIndex(i => i.id === sectionId);
+      if (sectionIndex === -1) return prev;
+
+      const sectionType = prev[sectionIndex].type;
+      let endIndex = sectionIndex + 1;
+      while (endIndex < prev.length) {
+        if (sectionType === 'section' && prev[endIndex].type === 'section') break;
+        if (sectionType === 'subsection' && (prev[endIndex].type === 'section' || prev[endIndex].type === 'subsection')) break;
+        endIndex++;
+      }
+
+      const itemsToCopy = prev.slice(sectionIndex, endIndex).map(item => ({
+        ...item,
+        id: Date.now() + Math.random(),
+        description: item.id === sectionId ? `${item.description} (Copy)` : item.description
+      }));
+
+      const newItems = [...prev];
+      newItems.splice(endIndex, 0, ...itemsToCopy);
+      return newItems;
+    });
+  };
   const removeItemLine = (id) => { if (items.length > 1) setItems(prev => prev.filter(item => item.id !== id)); };
 
   const handleSubmit = async (e) => {
@@ -249,7 +273,16 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
 
           <div className="min-h-[250px] py-4">
             <ItemLinesTable 
-              items={items} inventoryItems={inventoryItems} handleItemChange={handleItemChange} handleItemCodeSelect={handleItemCodeSelect} removeItemLine={removeItemLine} addItemLine={addItemLine} addSection={addSection} addSubSection={addSubSection} setIsCatalogOpen={setIsCatalogOpen}
+              items={items} 
+              inventoryItems={inventoryItems} 
+              handleItemChange={handleItemChange} 
+              handleItemCodeSelect={handleItemCodeSelect} 
+              removeItemLine={removeItemLine} 
+              addItemLine={addItemLine} 
+              addSection={addSection} 
+              addSubSection={addSubSection}
+              copySection={copySection}
+              setIsCatalogOpen={setIsCatalogOpen} 
             />
             <SummaryCard 
             summary={summary} 
