@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box } from 'lucide-react';
-import SearchableDropdown from '../SearchableDropdown';
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move } from 'lucide-react';
+
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
 import AddProductModal from '../AddProductModal';
@@ -16,15 +16,60 @@ export default function ItemLinesTable({
   addSubSection,
   copySection,
   setIsCatalogOpen,
+  reorderItemLines,
   showStatus = false,
   showUploadAndRemark = false
 }) {
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
+  const [searchTerms, setSearchTerms] = useState({});
+  const dropdownRefs = useRef({});
+
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index);
+  };
+
+  const handleDragEnter = (e, index) => {
+    if (!reorderItemLines || draggedIndex === null || draggedIndex === index) return;
+    reorderItemLines(draggedIndex, index);
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (activeDropdownId !== null) {
+        const ref = dropdownRefs.current[activeDropdownId];
+        if (ref && !ref.contains(e.target)) {
+          setActiveDropdownId(null);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [activeDropdownId]);
 
   return (
     <div className="space-y-4">
+      <style>{`
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="sticky top-0 z-30 flex flex-wrap gap-2 mb-2 bg-white/95 backdrop-blur-sm py-2 md:py-3 -mt-2 -mx-2 px-2 border-b border-slate-100 shadow-sm rounded-t-lg">
          <button type="button" onClick={addItemLine} className="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-100 shadow-sm"><Plus size={14}/> Add Item Line</button>
          <button type="button" onClick={addSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Section</button>
@@ -79,7 +124,20 @@ export default function ItemLinesTable({
         if (item.type === 'section' || item.type === 'subsection') {
           const isSub = item.type === 'subsection';
           return (
-            <div key={item.id} className={`flex items-center gap-2 p-2 md:px-2 md:py-3 rounded-xl md:rounded-none md:border-b shadow-sm md:shadow-none bg-white border border-slate-100 ${isSub ? 'ml-4 border-l-2 border-l-slate-300' : 'border-l-4 border-l-sky-500 bg-sky-50/40'}`}>
+            <div 
+              key={item.id} 
+              draggable={!!reorderItemLines}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnter={(e) => handleDragEnter(e, index)}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+              className={`flex items-center gap-2 p-2 md:px-2 md:py-3 rounded-xl md:rounded-none md:border-b shadow-sm md:shadow-none bg-white border border-slate-100 ${isSub ? 'ml-4 border-l-2 border-l-slate-300' : 'border-l-4 border-l-sky-500 bg-sky-50/40'} ${draggedIndex === index ? 'opacity-50' : ''}`}
+            >
+              {reorderItemLines && (
+                <div className="cursor-grab hover:text-sky-600 text-slate-400">
+                  <Move size={16} />
+                </div>
+              )}
               <div className="flex-1 pl-2">
                 <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className={`w-full bg-transparent outline-none font-bold placeholder-slate-400 ${isSub ? 'text-slate-600 text-xs' : 'text-sky-800 text-sm'}`} placeholder={isSub ? "Enter Sub-Section Title..." : "Enter Section Title..."} />
               </div>
@@ -111,21 +169,88 @@ export default function ItemLinesTable({
         const imageUrl = item.thumbnail !== undefined ? item.thumbnail : defaultImageUrl;
 
         return (
-          <div key={item.id} className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : 'md:grid-cols-[repeat(14,minmax(0,1fr))]'}`}>
+          <div 
+            key={item.id} 
+            draggable={!!reorderItemLines}
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragEnter={(e) => handleDragEnter(e, index)}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : 'md:grid-cols-[repeat(14,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''}`}
+          >
             <div className="col-span-2 md:col-span-3 space-y-1">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Item Code</div>
               <div className="flex gap-1 items-center">
-                <div className="flex-1 min-w-0">
-                  <SearchableDropdown
-                    options={inventoryItems.map(i => ({ value: i.ItemCode || i.code, label: `${i.ItemCode || i.code} - ${i.ItemName || i.name}` }))}
-                    value={item.itemCode}
-                    onChange={(val) => handleItemCodeSelect(val, item.id)}
-                    renderSelected={(opt) => opt.value}
-                    placeholder="Search Code"
-                    className="w-full"
-                    height="h-[30px]"
-                    rounded="rounded"
+                {reorderItemLines && (
+                  <div className="cursor-grab hover:text-sky-600 text-slate-400 hidden md:block">
+                    <Move size={16} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0 relative" ref={el => dropdownRefs.current[item.id] = el}>
+                  <input
+                    type="text"
+                    value={activeDropdownId === item.id ? (searchTerms[item.id] ?? item.itemCode ?? '') : (item.itemCode || '')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSearchTerms(prev => ({...prev, [item.id]: val}));
+                      handleItemChange(item.id, 'itemCode', val);
+                      setActiveDropdownId(item.id);
+                      const match = inventoryItems.find(i => (i.ItemCode || i.code) === val);
+                      if (match) {
+                        handleItemCodeSelect(val, item.id);
+                        setTimeout(() => document.getElementById(`qty-${item.id}`)?.focus(), 10);
+                      }
+                    }}
+                    onFocus={() => {
+                      setActiveDropdownId(item.id);
+                      setSearchTerms(prev => ({...prev, [item.id]: item.itemCode || ''}));
+                    }}
+                    className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 transition-all"
+                    placeholder="Search Code..."
+                    autoComplete="off"
                   />
+                  {activeDropdownId === item.id && (() => {
+                    const term = (searchTerms[item.id] ?? '').toLowerCase();
+                    const filtered = inventoryItems.filter(i => {
+                      const code = (i.ItemCode || i.code || '').toLowerCase();
+                      const name = (i.ItemName || i.name || '').toLowerCase();
+                      return code.includes(term) || name.includes(term);
+                    }).slice(0, 30);
+                    if (filtered.length === 0) return null;
+                    return (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[200] overflow-hidden" style={{animation: 'fadeInDown 0.15s ease-out'}}>
+                        <div className="max-h-56 overflow-y-auto">
+                          {filtered.map((inv) => {
+                            const code = inv.ItemCode || inv.code;
+                            const name = inv.ItemName || inv.name;
+                            const isSelected = item.itemCode === code;
+                            return (
+                              <div
+                                key={code}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleItemCodeSelect(code, item.id);
+                                  handleItemChange(item.id, 'itemCode', code);
+                                  setActiveDropdownId(null);
+                                  setSearchTerms(prev => ({...prev, [item.id]: code}));
+                                  setTimeout(() => document.getElementById(`qty-${item.id}`)?.focus(), 10);
+                                }}
+                                className={`px-3 py-2 cursor-pointer flex items-center gap-2 transition-colors border-b border-slate-50 last:border-0 ${
+                                  isSelected ? 'bg-sky-50' : 'hover:bg-slate-50'
+                                }`}
+                              >
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide flex-shrink-0 ${
+                                  isSelected ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
+                                }`}>{code}</span>
+                                <span className="text-xs text-slate-600 truncate">{name}</span>
+                                {isSelected && <span className="ml-auto text-sky-600 text-xs">✓</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 {item.itemCode && (
                   <button
@@ -173,7 +298,7 @@ export default function ItemLinesTable({
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Qty</div>
-              <input type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-xs px-2 py-1.5 rounded outline-none text-center" />
+              <input id={`qty-${item.id}`} type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-xs px-2 py-1.5 rounded outline-none text-center" />
             </div>
 
             {/* Act Disp and Rem Qty Columns */}

@@ -273,16 +273,26 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
 
           <div className="min-h-[250px] py-4">
             <ItemLinesTable 
-              items={items} 
-              inventoryItems={inventoryItems} 
-              handleItemChange={handleItemChange} 
-              handleItemCodeSelect={handleItemCodeSelect} 
-              removeItemLine={removeItemLine} 
-              addItemLine={addItemLine} 
-              addSection={addSection} 
+              items={items}
+              inventoryItems={inventoryItems}
+              handleItemChange={handleItemChange}
+              handleItemCodeSelect={handleItemCodeSelect}
+              removeItemLine={removeItemLine}
+              addItemLine={addItemLine}
+              addSection={addSection}
               addSubSection={addSubSection}
               copySection={copySection}
-              setIsCatalogOpen={setIsCatalogOpen} 
+              setIsCatalogOpen={setIsCatalogOpen}
+              reorderItemLines={(dragIndex, dropIndex) => {
+                setItems(prev => {
+                  const newItems = [...prev];
+                  const draggedItem = newItems[dragIndex];
+                  newItems.splice(dragIndex, 1);
+                  newItems.splice(dropIndex, 0, draggedItem);
+                  return newItems;
+                });
+              }}
+              showStatus={initialData && initialData.status === 'In Progress'}
             />
             <SummaryCard 
             summary={summary} 

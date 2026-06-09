@@ -40,17 +40,35 @@ export default function PremiumQuotationPrint({
     </div>
   );
 
-  const PageWrapper = ({ children, isLast = false, className = '' }) => (
-    <div className={`w-full bg-white relative flex flex-col min-h-[297mm] print:min-h-0 ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} print:!p-0 ${className}`} style={{ padding: '10mm', boxSizing: 'border-box' }}>
-      {children}
-    </div>
-  );
+  const PageWrapper = ({ children, isLast = false, className = '', fixedHeight = false }) => {
+    if (fixedHeight) {
+      return (
+        <div className={`w-full bg-white relative flex flex-col h-[297mm] overflow-hidden ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`} style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}>
+          {children}
+        </div>
+      );
+    }
+
+    return (
+      <div className={`w-full bg-white relative ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`} style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}>
+        {children}
+      </div>
+    );
+  };
 
   return (
-    <div className="w-full text-slate-800 font-sans print:!p-0 print:!bg-transparent" id="premium-quotation-print" style={{ backgroundColor: '#f8fafc', padding: '20px' }}>
+    <div className="w-full text-slate-800 font-sans print:!bg-transparent" id="premium-quotation-print" style={{ backgroundColor: '#f8fafc' }}>
+      <style type="text/css" media="print">
+        {`
+          @page {
+            size: A4;
+            margin: 8mm 10mm;
+          }
+        `}
+      </style>
       
       {/* Page 1: Merged Cover & Client Info Page */}
-      <PageWrapper className="print:!p-0">
+      <PageWrapper fixedHeight={true}>
         {/* Header Section (Logo Top Left, Details Top Right) */}
         <div className="flex justify-between items-center mb-6 print:mb-2">
           <div className="flex flex-col">
@@ -80,17 +98,62 @@ export default function PremiumQuotationPrint({
             <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" />
           </div>
           <div className="w-[50%] flex flex-col py-2">
-            <div className="space-y-4 print:space-y-2 text-sm text-slate-800 mb-8 print:mb-4">
-              <div className="flex"><span className="w-36 font-semibold">Client Name</span> <span className="uppercase">: {basicInfo?.customer || 'Walk-in Customer'}</span></div>
-              {basicInfo?.areaPinCode && <div className="flex"><span className="w-36"></span> <span>  {basicInfo.areaPinCode}</span></div>}
-              {basicInfo?.address && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.address}</span></div>}
-              {basicInfo?.cityState && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.cityState}, India</span></div>}
-              <div className="flex mt-4"><span className="w-36 font-semibold">Client Number</span> <span>: {basicInfo?.mobile || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Client Location</span> <span className="uppercase">: {basicInfo?.cityState?.split('/')[0] || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Architect Name</span> <span className="uppercase">: {otherInfo?.architectName || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Salesperson</span> <span className="uppercase">: {salesperson}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Sales Number</span> <span>: {otherInfo?.salesNumber || '-'}</span></div>
-            </div>
+            <table className="text-sm text-slate-800 mb-8 print:mb-4 border-collapse" style={{ borderSpacing: 0 }}>
+              <tbody>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap align-top" style={{ minWidth: '140px' }}>Client Name</td>
+                  <td className="pr-2 py-1 align-top">:</td>
+                  <td className="py-1 uppercase align-top">{basicInfo?.customer || 'Walk-in Customer'}</td>
+                </tr>
+                {basicInfo?.areaPinCode && (
+                  <tr>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5">{basicInfo.areaPinCode}</td>
+                  </tr>
+                )}
+                {basicInfo?.address && (
+                  <tr>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5 uppercase">{basicInfo.address}</td>
+                  </tr>
+                )}
+                {basicInfo?.cityState && (
+                  <tr>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5"></td>
+                    <td className="py-0.5 uppercase">{basicInfo.cityState}, India</td>
+                  </tr>
+                )}
+                <tr><td colSpan="3" className="py-1.5"></td></tr>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Client Number</td>
+                  <td className="pr-2 py-1">:</td>
+                  <td className="py-1">{basicInfo?.mobile || '-'}</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Client Location</td>
+                  <td className="pr-2 py-1">:</td>
+                  <td className="py-1 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Architect Name</td>
+                  <td className="pr-2 py-1">:</td>
+                  <td className="py-1 uppercase">{otherInfo?.architectName || '-'}</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Salesperson</td>
+                  <td className="pr-2 py-1">:</td>
+                  <td className="py-1 uppercase">{salesperson}</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Sales Number</td>
+                  <td className="pr-2 py-1">:</td>
+                  <td className="py-1">{otherInfo?.salesNumber || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
 
             <div className="mt-auto space-y-2">
               <div className="flex items-center gap-3 text-sm text-slate-700">
@@ -113,96 +176,272 @@ export default function PremiumQuotationPrint({
       {/* Page 3: Product Pages */}
       <PageWrapper>
         <Logo />
-        <h2 className="text-2xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
+        <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
         
-        <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="bg-slate-100 text-slate-700 uppercase tracking-wider text-[10px]">
-              <th className="py-3 px-2 text-center w-32">Image</th>
-              <th className="py-3 px-2 text-left w-[35%]">Product Details</th>
-              <th className="py-3 px-2 text-center w-12">Qty</th>
-              <th className="py-3 px-2 text-right w-20">MRP</th>
-              <th className="py-3 px-2 text-right w-16">Dis %</th>
-              <th className="py-3 px-2 text-right w-20">Net rate</th>
-              <th className="py-3 px-2 text-right w-24">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items?.filter(item => item.itemCode || item.description).map((item, idx) => {
-              if (item.type === 'section' || item.type === 'subsection') {
-                const isSection = item.type === 'section';
-                return (
-                  <tr key={idx} className={`${isSection ? 'bg-slate-100' : 'bg-slate-50/50'} border-b border-slate-200`}>
-                    <td colSpan="7" className={`py-4 px-4 text-left ${isSection ? 'font-black text-slate-800 text-[13px] uppercase tracking-wider' : 'font-bold text-slate-700 text-xs italic'}`}>
-                      {item.description}
-                    </td>
-                  </tr>
-                );
+        <div className="space-y-6">
+          {(() => {
+            const groupedSections = [];
+            let currentSection = {
+              id: 'default',
+              name: '',
+              items: [], // Will contain items and subsection headers
+            };
+
+            let currentSubtotal = { qty: 0, amt: 0 };
+            let hasItemsSinceLastSubtotal = false;
+
+            const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
+
+            // Helper to push a subtotal row to current section
+            const pushSubtotal = () => {
+              if (hasItemsSinceLastSubtotal) {
+                currentSection.items.push({
+                  isSubtotal: true,
+                  qty: currentSubtotal.qty,
+                  amount: currentSubtotal.amt
+                });
+                currentSubtotal = { qty: 0, amt: 0 };
+                hasItemsSinceLastSubtotal = false;
               }
+            };
 
-              const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
-              const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
-              const unitPrice = Number(item.unitPrice || 0);
-              const discountPercent = Number(item.discountPercent || 0);
-              const netRate = unitPrice - (unitPrice * (discountPercent / 100));
-              const amount = netRate * (Number(item.quantity) || 0);
+            itemsFiltered.forEach((item, index) => {
+              if (item.type === 'section') {
+                pushSubtotal(); // finish previous section's subtotal
+                if (currentSection.items.length > 0 || currentSection.name !== '') {
+                  groupedSections.push(currentSection);
+                }
+                currentSection = {
+                  id: item.id || index,
+                  name: item.description,
+                  items: []
+                };
+              } else if (item.type === 'subsection') {
+                pushSubtotal(); // finish previous subsection's subtotal
+                currentSection.items.push({
+                  isSubsection: true,
+                  description: item.description
+                });
+              } else {
+                const unitPrice = Number(item.unitPrice || 0);
+                const discountPercent = Number(item.discountPercent || 0);
+                const netRate = unitPrice - (unitPrice * (discountPercent / 100));
+                const amount = netRate * (Number(item.quantity) || 0);
 
-              return (
-                <tr key={idx} className="border-b border-slate-200">
-                  <td className="py-4 px-2 text-center">
-                    {imageUrl ? (
-                      <img src={imageUrl} alt="product" className="w-28 h-28 object-contain mx-auto rounded border border-slate-200 shadow-sm bg-white" />
-                    ) : (
-                      <div className="w-28 h-28 bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto rounded">
-                         <span className="text-[10px]">No Img</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-4 px-2 text-left">
-                    <div className="font-bold text-slate-800 text-sm mb-1">{item.itemCode || '-'}</div>
-                    <div className="text-slate-600 leading-snug">{item.description || '-'}</div>
-                  </td>
-                  <td className="py-4 px-2 text-center font-bold text-slate-800">{item.quantity}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">₹{unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">{discountPercent > 0 ? `${discountPercent}%` : '-'}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">₹{netRate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="py-4 px-2 text-right font-bold text-slate-900">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+                const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
 
-        {/* Summary */}
-        <div className="flex justify-end mt-8">
-          <div className="w-80 space-y-3 text-sm">
-            <div className="flex justify-between text-slate-600">
-              <span>Gross Amount:</span>
-              <span>₹{Number(summary?.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>Discount:</span>
-              <span>- ₹{Number(summary?.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>Tax Amount:</span>
-              <span>+ ₹{Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-900 font-bold text-lg border-t border-slate-300 pt-3 mt-2">
-              <span>Grand Total:</span>
-              <span>₹{Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</span>
-            </div>
-            {summary?.finalAmount && (
-              <div className="flex justify-between text-emerald-700 font-black text-xl border-t border-slate-300 pt-3 mt-2">
-                <span>Final Amount:</span>
-                <span>₹{Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</span>
-              </div>
-            )}
-          </div>
+                currentSubtotal.qty += Number(item.quantity) || 0;
+                currentSubtotal.amt += amount;
+                hasItemsSinceLastSubtotal = true;
+
+                currentSection.items.push({ ...item, amount, netRate, unitPrice, discountPercent, imageUrl });
+              }
+            });
+
+            pushSubtotal(); // push final subtotal
+            if (currentSection.items.length > 0 || currentSection.name !== '') {
+              groupedSections.push(currentSection);
+            }
+
+            return groupedSections.map((section, sIdx) => (
+              <table key={section.id || sIdx} className="w-full text-left text-sm border-collapse mb-2" style={{ pageBreakInside: 'auto', tableLayout: 'fixed' }}>
+                <thead className="table-header-group">
+                  {section.name && (
+                    <tr>
+                      <th colSpan="7" className="pt-6 pb-2 px-2 bg-white text-left font-medium text-black text-[24px] uppercase tracking-wide">
+                        {section.name}
+                      </th>
+                    </tr>
+                  )}
+                  <tr className="bg-white text-slate-800 font-medium border-y border-black text-[13px] tracking-wide">
+                    <th className="py-2 px-2 text-center w-[15%]">Image</th>
+                    <th className="py-2 px-2 text-left w-[40%]">Product Details</th>
+                    <th className="py-2 px-2 text-center w-[8%]">Qty</th>
+                    <th className="py-2 px-2 text-right w-[11%]">MRP</th>
+                    <th className="py-2 px-2 text-right w-[7%]">Dis %</th>
+                    <th className="py-2 px-2 text-right w-[10%]">Net rate</th>
+                    <th className="py-2 px-2 text-right w-[9%]">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {section.items.map((item, idx) => {
+                    if (item.isSubtotal) {
+                      return (
+                        <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
+                          <td colSpan="2" className="py-4 px-3 text-center font-bold text-slate-800 text-sm uppercase tracking-widest">Total</td>
+                          <td className="py-4 px-3 text-center font-bold text-slate-800 text-sm">{item.qty}</td>
+                          <td colSpan="3"></td>
+                          <td className="py-4 px-3 text-right font-bold text-slate-900 text-sm">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        </tr>
+                      );
+                    }
+
+                    if (item.isSubsection) {
+                      return (
+                        <tr key={`sub-${idx}`} className="break-inside-avoid">
+                          <td colSpan="7" className="py-2 px-2 text-center bg-gray-200 font-bold text-black text-[13px] uppercase tracking-wider border-y border-gray-400">
+                            {item.description}
+                          </td>
+                        </tr>
+                      );
+                    }
+                    const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+
+                    return (
+                      <tr key={idx} className="border-b border-slate-100 break-inside-avoid">
+                        <td className="py-4 px-2 text-center align-middle">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[140px] object-contain mx-auto" />
+                          ) : (
+                            <div className="w-full aspect-square max-w-[140px] flex items-center justify-center text-slate-300 mx-auto">
+                              <span className="text-xs">No Img</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-4 px-2 text-left align-top">
+                          <div className="font-bold text-slate-900 text-[14px] mb-1.5">{item.itemCode || '-'}</div>
+                          <div className="text-slate-700 text-[13px] leading-relaxed mb-2">{item.description || '-'}</div>
+                          {matchedInventoryItem?.Brand && (
+                            <div className="text-slate-600 text-[13px]">Brand - {matchedInventoryItem.Brand}</div>
+                          )}
+                        </td>
+                        <td className="py-4 px-2 text-center align-top">
+                          <div className="text-slate-800 text-[14px]">{item.quantity}</div>
+                          <div className="text-slate-600 text-[11px] mt-1 uppercase">PCS</div>
+                        </td>
+                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)} ₹` : '-'}</td>
+                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        <td className="py-4 px-2 text-right align-top text-slate-900 text-[13px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ));
+
+            // Build Section Summary data
+            const sectionSummaryData = groupedSections.filter(s => s.name).map(section => {
+              let totalMRP = 0;
+              let totalDiscount = 0;
+              let totalAmount = 0;
+              section.items.forEach(item => {
+                if (!item.isSubtotal && !item.isSubsection) {
+                  const qty = Number(item.quantity) || 0;
+                  const unitPrice = Number(item.unitPrice) || 0;
+                  const discountPercent = Number(item.discountPercent) || 0;
+                  const mrp = unitPrice * qty;
+                  const disc = mrp * (discountPercent / 100);
+                  totalMRP += mrp;
+                  totalDiscount += disc;
+                  totalAmount += mrp - disc;
+                }
+              });
+              return { name: section.name, totalMRP, totalDiscount, totalAmount };
+            });
+
+            const allSectionsMRP = sectionSummaryData.reduce((s, r) => s + r.totalMRP, 0);
+            const allSectionsDiscount = sectionSummaryData.reduce((s, r) => s + r.totalDiscount, 0);
+            const allSectionsAmount = sectionSummaryData.reduce((s, r) => s + r.totalAmount, 0);
+
+            return tables;
+          })()}
         </div>
       </PageWrapper>
 
-      {/* Page 4: Terms and Conditions */}
+      {/* Summary Page */}
+      <PageWrapper>
+        <Logo />
+        <h2 className="text-3xl font-medium text-black mb-8 uppercase tracking-wider">Summary</h2>
+        
+        {(() => {
+          const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
+          const sections = [];
+          let curSection = { name: '', items: [] };
+
+          itemsFiltered.forEach((item) => {
+            if (item.type === 'section') {
+              if (curSection.items.length > 0 || curSection.name !== '') sections.push(curSection);
+              curSection = { name: item.description, items: [] };
+            } else if (item.type !== 'subsection') {
+              const unitPrice = Number(item.unitPrice || 0);
+              const discountPercent = Number(item.discountPercent || 0);
+              const qty = Number(item.quantity || 0);
+              const mrp = unitPrice * qty;
+              const disc = mrp * (discountPercent / 100);
+              curSection.items.push({ mrp, disc, amount: mrp - disc });
+            }
+          });
+          if (curSection.items.length > 0 || curSection.name !== '') sections.push(curSection);
+
+          const sectionSummaryData = sections.filter(s => s.name).map(s => ({
+            name: s.name,
+            totalMRP: s.items.reduce((sum, i) => sum + i.mrp, 0),
+            totalDiscount: s.items.reduce((sum, i) => sum + i.disc, 0),
+            totalAmount: s.items.reduce((sum, i) => sum + i.amount, 0),
+          }));
+
+          const allMRP = sectionSummaryData.reduce((s, r) => s + r.totalMRP, 0);
+          const allDiscount = sectionSummaryData.reduce((s, r) => s + r.totalDiscount, 0);
+          const allAmount = sectionSummaryData.reduce((s, r) => s + r.totalAmount, 0);
+
+          if (sectionSummaryData.length === 0) return null;
+
+          return (
+            <table className="w-full text-left text-sm border-collapse" style={{ tableLayout: 'fixed' }}>
+              <thead>
+                <tr className="border-t border-black text-[12px] font-bold text-black uppercase tracking-wider">
+                  <th className="py-3 px-4 text-left w-[40%]">Section</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Total MRP</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Discount</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sectionSummaryData.map((sec, i) => (
+                  <tr key={i} className="border-b border-slate-200">
+                    <td className="py-3 px-4 text-left text-[13px] text-black uppercase">{sec.name}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalMRP.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalDiscount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  </tr>
+                ))}
+                {/* Total for all sections */}
+                <tr className="border-t-2 border-black">
+                  <td className="py-3 px-4 text-left text-[13px] font-black text-black uppercase tracking-wide">Total for all Sections</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allMRP.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allDiscount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allAmount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                </tr>
+                {/* Tax/GST */}
+                <tr>
+                  <td className="py-3 px-4 text-left text-[13px] text-slate-700">Tax Amount (GST)</td>
+                  <td colSpan="2"></td>
+                  <td className="py-3 px-4 text-right text-[13px] text-slate-700">₹ {Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                </tr>
+                {/* Grand Total */}
+                <tr className="border-t-2 border-black">
+                  <td className="py-4 px-4 text-left text-[15px] font-black text-black uppercase tracking-wide">Grand Total</td>
+                  <td colSpan="2"></td>
+                  <td className="py-4 px-4 text-right text-[15px] font-black text-black">₹ {Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</td>
+                </tr>
+                {summary?.finalAmount && (
+                  <tr className="border-t border-black">
+                    <td className="py-4 px-4 text-left text-[15px] font-black text-emerald-800 uppercase tracking-wide">Final Amount</td>
+                    <td colSpan="2"></td>
+                    <td className="py-4 px-4 text-right text-[15px] font-black text-emerald-800">₹ {Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          );
+        })()}
+
+        <p className="mt-6 text-[11px] text-slate-500">All prices are inclusive of GST and any other government taxes.</p>
+      </PageWrapper>
+
+      {/* Terms and Conditions */}
       <PageWrapper>
         <Logo />
         <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms & Conditions</h2>

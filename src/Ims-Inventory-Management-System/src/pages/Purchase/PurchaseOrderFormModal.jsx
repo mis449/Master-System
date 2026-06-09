@@ -270,6 +270,15 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
             addSubSection={addSubSection}
             copySection={copySection}
             setIsCatalogOpen={setIsCatalogOpen}
+            reorderItemLines={(dragIndex, dropIndex) => {
+              setItems(prev => {
+                const newItems = [...prev];
+                const draggedItem = newItems[dragIndex];
+                newItems.splice(dragIndex, 1);
+                newItems.splice(dropIndex, 0, draggedItem);
+                return newItems;
+              });
+            }}
           />
           <SummaryCard 
             summary={summary} 

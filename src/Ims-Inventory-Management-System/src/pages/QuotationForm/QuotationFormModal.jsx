@@ -529,6 +529,15 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
             addSubSection={addSubSection}
             copySection={copySection}
             setIsCatalogOpen={setIsCatalogOpen}
+            reorderItemLines={(dragIndex, dropIndex) => {
+              setItems(prev => {
+                const newItems = [...prev];
+                const draggedItem = newItems[dragIndex];
+                newItems.splice(dragIndex, 1);
+                newItems.splice(dropIndex, 0, draggedItem);
+                return newItems;
+              });
+            }}
             showStatus={initialData && initialData.status === 'In Progress'}
           />
           <SummaryCard 
