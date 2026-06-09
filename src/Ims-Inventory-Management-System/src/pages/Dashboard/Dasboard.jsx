@@ -322,40 +322,48 @@ export default function Dasboard() {
     const priceVal = Number(item.MRP || 0);
 
     return (
-      <div key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="bg-white rounded-lg border border-slate-100 shadow-sm p-2.5 space-y-1.5 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer">
-        <div className="flex justify-between items-center pb-1.5 border-b border-slate-50">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="w-4 h-4 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[8px] font-black text-slate-500 flex-shrink-0">
+      <div key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="bg-white rounded-lg border border-slate-100 shadow-sm p-3 space-y-2.5 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer">
+        <div className="flex justify-between items-start pb-2 border-b border-slate-50 gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <span className="w-5 h-5 mt-0.5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0">
               {globalIdx}
             </span>
-            <span className="text-[10px] font-bold text-slate-900 uppercase truncate">{item.ItemName}</span>
+            <span className="text-xs font-bold text-slate-900 uppercase break-words whitespace-normal leading-tight">{item.ItemName}</span>
           </div>
-          <span className="bg-slate-50 text-slate-800 border border-slate-200 px-1.5 py-0.5 rounded text-[7px] font-black uppercase flex-shrink-0 ml-1">
+          <span className="bg-slate-50 text-slate-800 border border-slate-200 px-2 py-0.5 rounded text-[9px] font-black uppercase flex-shrink-0 mt-0.5">
             {item.ItemCode}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-1.5 text-[10px] bg-slate-50 rounded-md p-1.5 border border-slate-100/50">
+        <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 rounded-md p-2 border border-slate-100/50">
           <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Brand</span>
-            <span className="text-slate-700 font-medium truncate block">{item.BrandName}</span>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Brand</span>
+            <span className="text-slate-800 font-semibold break-words whitespace-normal block leading-tight">{item.BrandName}</span>
           </div>
           <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Unit Price</span>
-            <span className="text-slate-700 font-medium">₹{priceVal.toLocaleString('en-IN')}</span>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Unit Price</span>
+            <span className="text-slate-800 font-semibold">₹{priceVal.toLocaleString('en-IN')}</span>
           </div>
           <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Purchase / Sales</span>
-            <span className="text-slate-700 font-medium"><span className="text-emerald-600 font-bold">+{item.purchaseQty}</span> / <span className="text-rose-600 font-bold">-{item.salesQty}</span></span>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Opening Qty</span>
+            <span className="text-slate-800 font-bold">{item.openingQty}</span>
           </div>
           <div>
-            <span className="text-slate-400 block uppercase text-[7px] tracking-tight">Current Qty</span>
-            <span className="text-sky-600 font-bold">{item.currentQty}</span>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Current Qty</span>
+            <span className="text-sky-600 font-bold text-sm">{item.currentQty}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Purchase / Sales</span>
+            <span className="text-slate-800 font-semibold"><span className="text-emerald-600 font-bold">+{item.purchaseQty}</span> / <span className="text-rose-600 font-bold">-{item.salesQty}</span></span>
+          </div>
+          <div>
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Pur. Ret / Sal. Ret</span>
+            <span className="text-slate-800 font-semibold"><span className="text-amber-600 font-bold">-{item.purchaseReturnQty}</span> / <span className="text-emerald-500 font-bold">+{item.salesReturnQty}</span></span>
           </div>
         </div>
 
-        <div className="flex justify-end items-center border-t border-slate-100 pt-1.5 text-[10px]">
-          <span className={`px-1.5 py-0.5 rounded text-[7px] uppercase font-black ${
+        <div className="flex justify-end items-center border-t border-slate-100 pt-2 text-xs">
+          <span className={`px-2 py-1 rounded text-[9px] uppercase font-black ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
           }`}>
             {item.stockLevel}
@@ -392,7 +400,7 @@ export default function Dasboard() {
     <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
       
       {/* Summary KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 px-2 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 px-2 sm:px-0">
         
         {/* Total Registered Products */}
         <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">

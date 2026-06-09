@@ -191,31 +191,31 @@ export default function ItemDetails() {
     const priceVal = Number(item.MRP || item.price || 0);
     return (
       <div key={item.ItmID || item.code} className="bg-white rounded-xl border border-sky-50 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
-        <div className="flex justify-between items-center pb-2 border-b border-slate-50">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500">
+        <div className="flex justify-between items-start pb-3 border-b border-slate-50 gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <span className="w-6 h-6 mt-0.5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-xs font-black text-slate-500 flex-shrink-0">
               {globalIdx}
             </span>
-            <span className="text-xs font-bold text-gray-900 uppercase truncate max-w-[150px]">{item.ItemName}</span>
+            <span className="text-sm font-bold text-gray-900 uppercase break-words whitespace-normal leading-tight">{item.ItemName}</span>
           </div>
-          <span className="bg-sky-50 text-sky-700 border border-sky-100 px-2 py-0.5 rounded text-[8px] font-black uppercase">
+          <span className="bg-sky-50 text-sky-700 border border-sky-100 px-2 py-1 rounded text-[10px] font-black uppercase flex-shrink-0 mt-0.5">
             {item.ItemCode}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 rounded-lg p-2 border border-slate-100/50">
+        <div className="grid grid-cols-2 gap-3 text-sm bg-slate-50 rounded-lg p-3 border border-slate-100/50">
 
           <div>
-            <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Brand</span>
-            <span className="text-gray-700 font-medium">{item.BrandName}</span>
+            <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Brand</span>
+            <span className="text-gray-800 font-semibold break-words whitespace-normal block leading-tight">{item.BrandName}</span>
           </div>
           <div>
-            <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Stock</span>
-            <span className="text-sky-600 font-bold">{item.StockQty || 0}</span>
+            <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Stock</span>
+            <span className="text-sky-600 font-bold text-base">{item.StockQty || 0}</span>
           </div>
-          <div className="col-span-2 pt-1 border-t border-slate-200/30 flex justify-between items-center">
-            <span className="text-gray-400 block uppercase text-[8px] tracking-tight">Unit Price / MRP</span>
-            <span className="text-emerald-600 font-bold">₹{priceVal.toLocaleString('en-IN')}</span>
+          <div className="col-span-2 pt-2 border-t border-slate-200/30 flex justify-between items-center mt-1">
+            <span className="text-gray-400 block uppercase text-[10px] tracking-tight">Unit Price / MRP</span>
+            <span className="text-emerald-600 font-bold text-base">₹{priceVal.toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>

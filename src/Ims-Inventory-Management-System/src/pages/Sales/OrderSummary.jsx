@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
+import DataTable from '../../components/DataTable';
 
 export default function OrderSummary() {
   const [quotations, setQuotations] = useState([]);
@@ -301,6 +302,56 @@ export default function OrderSummary() {
     return colors[status] || 'bg-slate-100 text-slate-700';
   };
 
+  const tableHeaders = [
+    "Delivery Date", "Item Code", "Description", "Ordered Qty", "In Stock", "To Company"
+  ];
+
+  const renderRow = (item, idx) => (
+    <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors text-xs print:border-black">
+      <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-x border-slate-100 print:border-black whitespace-nowrap">{item.deliveryDate}</td>
+      <td className="px-4 py-3.5 font-bold text-slate-700 border-r border-slate-100 print:border-black whitespace-nowrap">{item.itemCode}</td>
+      <td className="px-4 py-3.5 text-slate-600 border-r border-slate-100 print:border-black max-w-xs truncate">{item.description}</td>
+      <td className="px-4 py-3.5 text-center font-bold text-slate-800 border-r border-slate-100 print:border-black">{item.orderedQty.toFixed(2)}</td>
+      <td className="px-4 py-3.5 text-center font-bold text-emerald-600 border-r border-slate-100 print:border-black">{item.availableStock.toFixed(2)}</td>
+      <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-r border-slate-100 print:border-black">{item.orderedToCompanyQty.toFixed(2)}</td>
+    </tr>
+  );
+
+  const renderCard = (item, idx) => (
+    <div key={item.id} className="bg-white rounded-xl border border-sky-50 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
+      <div className="flex justify-between items-start pb-3 border-b border-slate-50 gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <span className="w-6 h-6 mt-0.5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-xs font-black text-slate-500 flex-shrink-0">
+            {idx + 1}
+          </span>
+          <span className="text-sm font-bold text-gray-900 uppercase break-words whitespace-normal leading-tight">{item.description}</span>
+        </div>
+        <span className="bg-sky-50 text-sky-700 border border-sky-100 px-2 py-1 rounded text-[10px] font-black uppercase flex-shrink-0 mt-0.5">
+          {item.itemCode}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-sm bg-slate-50 rounded-lg p-3 border border-slate-100/50">
+        <div>
+          <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Delivery Date</span>
+          <span className="text-slate-800 font-semibold break-words whitespace-normal block leading-tight">{item.deliveryDate}</span>
+        </div>
+        <div>
+          <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Ordered Qty</span>
+          <span className="text-slate-800 font-bold text-base">{item.orderedQty.toFixed(2)}</span>
+        </div>
+        <div>
+          <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">In Stock</span>
+          <span className="text-emerald-600 font-bold text-base">{item.availableStock.toFixed(2)}</span>
+        </div>
+        <div>
+          <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">To Company</span>
+          <span className="text-slate-800 font-bold text-base">{item.orderedToCompanyQty.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
       
@@ -514,58 +565,32 @@ export default function OrderSummary() {
         </div>
 
         {/* The Table */}
-        <div className="overflow-x-auto p-4 print:p-0 print:overflow-visible">
-          <table className="w-full text-left text-sm border-collapse min-w-[1000px] print:min-w-0 print:text-[10px] print:w-full">
-            <thead>
-              <tr className="bg-slate-50 border-b-2 border-slate-200 print:border-black print:bg-cyan-400 print:text-black print:-webkit-print-color-adjust: exact text-slate-600 font-extrabold text-[11px] uppercase tracking-wider">
-                <th className="px-4 py-4 text-center border-x border-slate-100 print:border-black">Tentative Delivery Date</th>
-                <th className="px-4 py-4 border-r border-slate-100 print:border-black">Item Code</th>
-                <th className="px-4 py-4 border-r border-slate-100 print:border-black">Description</th>
-                <th className="px-4 py-4 text-center border-r border-slate-100 print:border-black">Ordered Qty</th>
-                <th className="px-4 py-4 text-center border-r border-slate-100 print:border-black">In Stock</th>
-                <th className="px-4 py-4 text-center border-r border-slate-100 print:border-black">Order placed to company</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan="9" className="text-center py-8 text-slate-400">Loading orders...</td>
-                </tr>
-              ) : !selectedCustomer ? (
-                <tr>
-                  <td colSpan="9" className="text-center py-16 text-slate-500">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                        <User size={32} className="text-slate-300" />
-                      </div>
-                      <p className="font-semibold text-slate-600 text-base">Please select a customer</p>
-                      <p className="text-sm text-slate-400 mt-1">Choose a customer from the dropdown to view their order summary.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : orderItems.length === 0 ? (
-                <tr>
-                  <td colSpan="9" className="text-center py-12 text-slate-500">
-                    <div className="flex flex-col items-center justify-center">
-                      <Box size={32} className="text-slate-300 mb-2" />
-                      <p className="font-semibold text-slate-600">No orders found for {selectedCustomer}.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                orderItems.map((item, idx) => (
-                  <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors text-xs print:border-black">
-                    <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-x border-slate-100 print:border-black">{item.deliveryDate}</td>
-                    <td className="px-4 py-3.5 font-bold text-slate-700 border-r border-slate-100 print:border-black">{item.itemCode}</td>
-                    <td className="px-4 py-3.5 text-slate-600 border-r border-slate-100 print:border-black max-w-xs">{item.description}</td>
-                    <td className="px-4 py-3.5 text-center font-bold text-slate-800 border-r border-slate-100 print:border-black">{item.orderedQty.toFixed(2)}</td>
-                    <td className="px-4 py-3.5 text-center font-bold text-emerald-600 border-r border-slate-100 print:border-black">{item.availableStock.toFixed(2)}</td>
-                    <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-r border-slate-100 print:border-black">{item.orderedToCompanyQty.toFixed(2)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="flex-1 flex flex-col min-h-0 bg-white">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-48 text-slate-400">Loading orders...</div>
+          ) : !selectedCustomer ? (
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-500 bg-white">
+              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <User size={32} className="text-slate-300" />
+              </div>
+              <p className="font-semibold text-slate-600 text-base">Please select a customer</p>
+              <p className="text-sm text-slate-400 mt-1">Choose a customer from the dropdown to view their order summary.</p>
+            </div>
+          ) : orderItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-500 bg-white">
+              <Box size={32} className="text-slate-300 mb-2" />
+              <p className="font-semibold text-slate-600">No orders found for {selectedCustomer}.</p>
+            </div>
+          ) : (
+            <DataTable
+              headers={tableHeaders}
+              data={orderItems}
+              renderRow={renderRow}
+              renderCard={renderCard}
+              minWidth="1000px"
+              hidePagination={true}
+            />
+          )}
         </div>
       </div>
 
