@@ -147,6 +147,7 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
                 onChange={(e) => handleChange('title', e.target.value)}
                 className="w-20 px-2 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
               >
+                <option value=""></option>
                 <option value="Mr.">Mr.</option>
                 <option value="Mrs.">Mrs.</option>
                 <option value="Ms.">Ms.</option>

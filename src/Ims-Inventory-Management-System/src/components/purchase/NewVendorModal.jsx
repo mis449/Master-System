@@ -150,6 +150,7 @@ export default function NewVendorModal({ isOpen, onClose, onSave }) {
                 onChange={(e) => handleChange('salutation', e.target.value)}
                 className="w-20 shrink-0 px-2 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
               >
+                <option value=""></option>
                 <option>Mr.</option>
                 <option>Mrs.</option>
                 <option>Ms.</option>
