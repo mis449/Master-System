@@ -1,6 +1,7 @@
 import React from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy } from 'lucide-react';
 import SearchableDropdown from '../SearchableDropdown';
+import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
 
 export default function ItemLinesTable({
@@ -104,16 +105,34 @@ export default function ItemLinesTable({
           <div key={item.id} className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(15,minmax(0,1fr))]' : 'md:grid-cols-[repeat(13,minmax(0,1fr))]'}`}>
             <div className="col-span-2 md:col-span-2 space-y-1">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Item Code</div>
-              <SearchableDropdown
-                options={inventoryItems.map(i => ({ value: i.ItemCode || i.code, label: `${i.ItemCode || i.code} - ${i.ItemName || i.name}` }))}
-                value={item.itemCode}
-                onChange={(val) => handleItemCodeSelect(val, item.id)}
-                renderSelected={(opt) => opt.value}
-                placeholder="Search Code"
-                className="w-full"
-                height="h-[30px]"
-                rounded="rounded"
-              />
+              <div className="flex gap-1 items-center">
+                <div className="flex-1 min-w-0">
+                  <SearchableDropdown
+                    options={inventoryItems.map(i => ({ value: i.ItemCode || i.code, label: `${i.ItemCode || i.code} - ${i.ItemName || i.name}` }))}
+                    value={item.itemCode}
+                    onChange={(val) => handleItemCodeSelect(val, item.id)}
+                    renderSelected={(opt) => opt.value}
+                    placeholder="Search Code"
+                    className="w-full"
+                    height="h-[30px]"
+                    rounded="rounded"
+                  />
+                </div>
+                {item.itemCode && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(item.itemCode);
+                      toast.success('Item code copied!');
+                    }}
+                    title="Copy Item Code"
+                    className="flex-shrink-0 w-[30px] h-[30px] flex items-center justify-center bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 text-slate-500 hover:text-sky-600 transition-colors"
+                  >
+                    <Copy size={14} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div 
