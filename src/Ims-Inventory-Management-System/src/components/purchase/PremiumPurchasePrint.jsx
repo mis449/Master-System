@@ -3,7 +3,7 @@ import { Mail, Instagram, MapPin } from 'lucide-react';
 import logoImg from '../../Assets/images.png';
 import firstImg from '../../Assets/first.png';
 import secondImg from '../../Assets/second.png';
-import thirdImg from '../../Assets/third.png';
+import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 
 export default function PremiumPurchasePrint({ 
@@ -66,7 +66,7 @@ export default function PremiumPurchasePrint({
         </div>
 
         {/* Top Cover Image */}
-        <div className="mb-8 print:mb-6 rounded-lg overflow-hidden relative">
+        <div className="mt-6 mb-8 print:mb-6 rounded-lg overflow-hidden relative">
           <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full max-h-[350px] print:max-h-[280px] object-cover object-center" />
         </div>
         
@@ -250,8 +250,8 @@ export default function PremiumPurchasePrint({
       <PageWrapper isLast={true}>
         <Logo />
         
-        <div className="border border-slate-200 rounded-xl p-8 print:p-4 mb-8 print:mb-4 flex-1 flex flex-col justify-center shadow-sm items-center">
-          <img src={thirdImg} alt="Brand Showcase" className="w-full max-h-[500px] print:max-h-[250px] object-contain" />
+        <div className="mt-6 p-0 mb-8 print:mb-4 flex-1 flex flex-col justify-center items-center">
+          <img src={thirdImg} alt="Brand Showcase" className="w-full max-h-[700px] print:max-h-[400px] object-contain" />
         </div>
 
         <div className="bg-black text-white p-12 print:p-6 rounded-xl mt-auto print:bg-black" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
