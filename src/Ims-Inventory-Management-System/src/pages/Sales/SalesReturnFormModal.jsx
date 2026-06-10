@@ -14,6 +14,7 @@ import CatalogModal from '../QuotationForm/CatalogModal';
 import OtherInformationTab from '../../components/OtherInformationTab';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
 import { X, Image as ImageIcon } from 'lucide-react';
+import BrandDiscountModal from '../QuotationForm/BrandDiscountModal';
 
 export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialData }) {
   const [activeTab, setActiveTab] = useState('ItemLines');
@@ -23,6 +24,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
   const [printOrientation, setPrintOrientation] = useState('Horizontal');
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
   const { items: inventoryItems, fetchItems } = useDataStore();
@@ -142,6 +144,26 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
       newItems.push(getEmptyItem('item'));
       return newItems;
     });
+  };
+
+  const handleApplyBrandDiscount = (brandDiscounts) => {
+    setItems(prev => {
+      const updatedItems = prev.map(item => {
+        if (item.type === 'item' && item.itemCode) {
+          const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
+          let rawBrand = invItem ? (invItem.BrandName || invItem.brand || '') : '';
+          if (typeof rawBrand === 'string') rawBrand = rawBrand.trim();
+          const brand = rawBrand ? rawBrand : 'NO BRAND';
+          
+          if (brandDiscounts.hasOwnProperty(brand)) {
+            return { ...item, discountPercent: brandDiscounts[brand] };
+          }
+        }
+        return item;
+      });
+      return updatedItems;
+    });
+    toast.success("Brand-wise discounts applied successfully");
   };
 
   const addItemLine = () => setItems(prev => [...prev, getEmptyItem('item')]);
@@ -280,6 +302,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
                 return newItems;
               });
             }}
+            openBrandDiscount={() => setIsBrandDiscountOpen(true)}
           />
             <SummaryCard 
             summary={summary} 
@@ -322,6 +345,14 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
       }} 
     />
     <CatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} onSubmitCart={handleCatalogSubmit} />
+
+    <BrandDiscountModal
+      isOpen={isBrandDiscountOpen}
+      onClose={() => setIsBrandDiscountOpen(false)}
+      items={items}
+      inventoryItems={inventoryItems}
+      onApply={handleApplyBrandDiscount}
+    />
 
     {/* Print Preview Modal */}
     {isPrintPreviewOpen && createPortal(

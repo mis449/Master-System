@@ -16,6 +16,7 @@ import DispatchFormModal from '../Sales/DispatchFormModal';
 import { ShoppingCart } from 'lucide-react';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
 import emailjs from '@emailjs/browser';
+import BrandDiscountModal from './BrandDiscountModal';
 export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy }) {
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +29,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [printOrientation, setPrintOrientation] = useState('Horizontal');
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
   const { items: inventoryItems, fetchItems, addCustomer } = useDataStore();
@@ -247,6 +249,26 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       newItems.push(getEmptyItem('item'));
       return newItems;
     });
+  };
+
+  const handleApplyBrandDiscount = (brandDiscounts) => {
+    setItems(prev => {
+      const updatedItems = prev.map(item => {
+        if (item.type === 'item' && item.itemCode) {
+          const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
+          let rawBrand = invItem ? (invItem.BrandName || invItem.brand || '') : '';
+          if (typeof rawBrand === 'string') rawBrand = rawBrand.trim();
+          const brand = rawBrand ? rawBrand : 'NO BRAND';
+          
+          if (brandDiscounts.hasOwnProperty(brand)) {
+            return { ...item, discountPercent: brandDiscounts[brand] };
+          }
+        }
+        return item;
+      });
+      return updatedItems;
+    });
+    toast.success("Brand-wise discounts applied successfully");
   };
 
   const addItemLine = () => setItems(prev => [...prev, getEmptyItem('item')]);
@@ -539,6 +561,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               });
             }}
             showStatus={initialData && initialData.status === 'In Progress'}
+            openBrandDiscount={() => setIsBrandDiscountOpen(true)}
           />
           <SummaryCard 
             summary={summary} 
@@ -595,6 +618,14 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           toast.success("Ready for Invoice conversion (No handler provided)");
         }
       }}
+    />
+
+    <BrandDiscountModal
+      isOpen={isBrandDiscountOpen}
+      onClose={() => setIsBrandDiscountOpen(false)}
+      items={items}
+      inventoryItems={inventoryItems}
+      onApply={handleApplyBrandDiscount}
     />
 
     {/* Print Preview Modal */}

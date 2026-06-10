@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move } from 'lucide-react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
@@ -18,7 +18,8 @@ export default function ItemLinesTable({
   setIsCatalogOpen,
   reorderItemLines,
   showStatus = false,
-  showUploadAndRemark = false
+  showUploadAndRemark = false,
+  openBrandDiscount
 }) {
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
@@ -76,6 +77,9 @@ export default function ItemLinesTable({
          <button type="button" onClick={addSubSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Sub-Section</button>
          <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
          <button type="button" onClick={() => setIsAddProductOpen(true)} className="text-xs font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
+         {openBrandDiscount && (
+           <button type="button" onClick={openBrandDiscount} className="text-xs font-bold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple-100 border border-purple-100 shadow-sm ml-auto"><Tag size={14}/> Brand Discount</button>
+         )}
       </div>
 
       {/* Header */}
