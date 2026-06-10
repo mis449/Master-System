@@ -45,9 +45,16 @@ export default function PremiumQuotationPrint({
   const PageWrapper = ({ children, isLast = false, className = '' }) => (
     <div
       className={`w-full bg-white relative ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`}
-      style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}
+      style={{ padding: '8mm 10mm 12mm 10mm', boxSizing: 'border-box', minHeight: '275mm' }}
     >
-      {children}
+      <div className="mb-8">
+        {children}
+      </div>
+      
+      {/* Universal Footer */}
+      <div className="absolute bottom-0 left-[10mm] right-[10mm] pt-2 border-t border-black text-center text-[12px] font-medium text-black">
+        7880011158 | info@parekhgallerium.com | IG - @parekh_gallerium
+      </div>
     </div>
   );
 
@@ -167,13 +174,8 @@ export default function PremiumQuotationPrint({
       </PageWrapper>
 
 
-      {/* ── PAGE 3: Product Details ── */}
-      <PageWrapper>
-        <Logo />
-        <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
-        
-        <div className="space-y-6">
-          {(() => {
+      {/* ── PAGE 3 onwards: Product Details ── */}
+      {(() => {
             const groupedSections = [];
             let currentSection = {
               id: 'default',
@@ -239,28 +241,42 @@ export default function PremiumQuotationPrint({
               groupedSections.push(currentSection);
             }
 
-            return groupedSections.map((section, sIdx) => (
-              <table key={section.id || sIdx} className="w-full text-left text-sm border-collapse mb-2" style={{ pageBreakInside: 'auto', tableLayout: 'fixed' }}>
-                <thead className="table-header-group">
-                  {section.name && (
-                    <tr>
-                      <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-medium text-black text-[18px] uppercase tracking-wide">
-                        {section.name}
-                      </th>
-                    </tr>
+            return groupedSections.flatMap((section, sIdx) => {
+              const chunkSize = 7;
+              const chunks = [];
+              for (let i = 0; i < section.items.length; i += chunkSize) {
+                chunks.push(section.items.slice(i, i + chunkSize));
+              }
+
+              return chunks.map((chunk, chunkIdx) => (
+                <PageWrapper key={`${section.id || sIdx}-${chunkIdx}`}>
+                  <Logo />
+                  {sIdx === 0 && chunkIdx === 0 && (
+                    <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
                   )}
-                  <tr className="bg-white text-slate-800 font-medium border-y border-black text-[12px] tracking-wide">
-                    <th className="py-1.5 px-2 text-center w-[12%]">Image</th>
-                    <th className="py-1.5 px-2 text-left w-[43%]">Product Details</th>
-                    <th className="py-1.5 px-2 text-center w-[8%]">Qty</th>
-                    <th className="py-1.5 px-2 text-right w-[11%]">MRP</th>
-                    <th className="py-1.5 px-2 text-right w-[7%]">Dis%</th>
-                    <th className="py-1.5 px-2 text-right w-[10%]">Net rate</th>
-                    <th className="py-1.5 px-2 text-right w-[9%]">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {section.items.map((item, idx) => {
+                  
+                  <div className="space-y-6">
+                    <table className="w-full text-left text-sm border-collapse mb-2" style={{ pageBreakInside: 'auto', tableLayout: 'fixed' }}>
+                      <thead className="table-header-group">
+                        {(section.name || chunkIdx > 0) && (
+                          <tr>
+                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-medium text-black text-[18px] uppercase tracking-wide">
+                              {section.name} {chunkIdx > 0 ? '(Contd.)' : ''}
+                            </th>
+                          </tr>
+                        )}
+                        <tr className="bg-white text-slate-800 font-medium border-y border-black text-[12px] tracking-wide">
+                          <th className="py-1.5 px-2 text-center w-[12%]">Image</th>
+                          <th className="py-1.5 px-2 text-left w-[43%]">Product Details</th>
+                          <th className="py-1.5 px-2 text-center w-[8%]">Qty</th>
+                          <th className="py-1.5 px-2 text-right w-[11%]">MRP</th>
+                          <th className="py-1.5 px-2 text-right w-[7%]">Dis%</th>
+                          <th className="py-1.5 px-2 text-right w-[10%]">Net rate</th>
+                          <th className="py-1.5 px-2 text-right w-[9%]">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chunk.map((item, idx) => {
                     if (item.isSubtotal) {
                       return (
                         <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
@@ -316,10 +332,11 @@ export default function PremiumQuotationPrint({
                   })}
                 </tbody>
               </table>
+              </div>
+            </PageWrapper>
             ));
+            });
           })()}
-        </div>
-      </PageWrapper>
 
       {/* ── PAGE 4: Summary ── */}
       <PageWrapper>
