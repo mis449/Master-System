@@ -56,7 +56,7 @@ export default function PremiumPurchasePrint({
         <div className="flex justify-between items-center mb-6 print:mb-2">
           <div className="flex flex-col">
             <div className="mb-4">
-               <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-28 print:h-24 object-contain scale-[1.6] origin-left" />
+               <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[110px] object-contain origin-left mix-blend-multiply" />
             </div>
           </div>
           <div className="text-sm print:text-xs space-y-1.5 text-slate-600 text-right">
@@ -66,8 +66,8 @@ export default function PremiumPurchasePrint({
         </div>
 
         {/* Top Cover Image */}
-        <div className="mt-6 mb-8 print:mb-6 rounded-lg overflow-hidden relative">
-          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full max-h-[350px] print:max-h-[280px] object-cover object-center" />
+        <div className="mb-8 print:mb-6 rounded-lg overflow-hidden relative">
+          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full max-h-[300px] print:max-h-[250px] object-cover object-center" />
         </div>
         
         {/* Document Title */}

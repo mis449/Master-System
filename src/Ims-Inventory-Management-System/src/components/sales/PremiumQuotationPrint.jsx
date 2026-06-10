@@ -74,7 +74,7 @@ export default function PremiumQuotationPrint({
         {/* Header: Logo + Doc details */}
         <div className="flex justify-between items-center mb-3">
           <div>
-            <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-20 object-contain scale-[1.6] origin-left" />
+            <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[110px] object-contain origin-left mix-blend-multiply" />
           </div>
           <div className="text-sm space-y-1 text-slate-600 text-right">
             <div><span className="font-medium mr-2">Document # :</span> {quotationNo}</div>
@@ -83,8 +83,8 @@ export default function PremiumQuotationPrint({
         </div>
 
         {/* Cover image — bigger to fill more of the page */}
-        <div className="mt-6 mb-4 rounded-lg overflow-hidden">
-          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full object-cover object-center" style={{ maxHeight: '340px', minHeight: '260px' }} />
+        <div className="mb-4 rounded-lg overflow-hidden">
+          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full object-cover object-center" style={{ maxHeight: '280px', minHeight: '200px' }} />
         </div>
 
         {/* Document Title */}
