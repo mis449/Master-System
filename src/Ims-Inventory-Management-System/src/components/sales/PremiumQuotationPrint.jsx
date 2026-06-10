@@ -40,21 +40,15 @@ export default function PremiumQuotationPrint({
     </div>
   );
 
-  const PageWrapper = ({ children, isLast = false, className = '', fixedHeight = false }) => {
-    if (fixedHeight) {
-      return (
-        <div className={`w-full bg-white relative flex flex-col h-[297mm] overflow-hidden ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`} style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}>
-          {children}
-        </div>
-      );
-    }
-
-    return (
-      <div className={`w-full bg-white relative ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`} style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}>
-        {children}
-      </div>
-    );
-  };
+  // Page wrapper — auto-height, never clips content
+  const PageWrapper = ({ children, isLast = false, className = '' }) => (
+    <div
+      className={`w-full bg-white relative ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`}
+      style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}
+    >
+      {children}
+    </div>
+  );
 
   return (
     <div className="w-full text-slate-800 font-sans print:!bg-transparent" id="premium-quotation-print" style={{ backgroundColor: '#f8fafc' }}>
@@ -67,113 +61,112 @@ export default function PremiumQuotationPrint({
         `}
       </style>
       
-      {/* Page 1: Merged Cover & Client Info Page */}
-      <PageWrapper fixedHeight={true}>
-        {/* Header Section (Logo Top Left, Details Top Right) */}
-        <div className="flex justify-between items-center mb-6 print:mb-2">
-          <div className="flex flex-col">
-            <div className="mb-4">
-               <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-28 print:h-24 object-contain scale-[1.6] origin-left" />
-            </div>
+      {/* ── PAGE 1: Cover + Client Info (merged) ── */}
+      <PageWrapper>
+        {/* Header: Logo + Doc details */}
+        <div className="flex justify-between items-center mb-3">
+          <div>
+            <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-20 object-contain scale-[1.6] origin-left" />
           </div>
-          <div className="text-sm print:text-xs space-y-1.5 text-slate-600 text-right">
+          <div className="text-sm space-y-1 text-slate-600 text-right">
             <div><span className="font-medium mr-2">Document # :</span> {quotationNo}</div>
             <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
           </div>
         </div>
 
-        {/* Top Cover Image */}
-        <div className="mb-8 print:mb-6 rounded-lg overflow-hidden relative">
-          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full max-h-[350px] print:max-h-[280px] object-cover object-center" />
-        </div>
-        
-        {/* Document Title */}
-        <div className="mb-6 print:mb-4">
-          <h1 className="text-4xl print:text-3xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
+        {/* Cover image — bigger to fill more of the page */}
+        <div className="mb-4 rounded-lg overflow-hidden">
+          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full object-cover object-center" style={{ maxHeight: '340px', minHeight: '260px' }} />
         </div>
 
-        {/* Client Info Split Section */}
-        <div className="flex gap-12 print:gap-8 flex-1">
-          <div className="w-[50%] rounded-lg overflow-hidden">
-            <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" />
+        {/* Document Title */}
+        <div className="mb-4">
+          <h1 className="text-4xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
+        </div>
+
+        {/* Two-column: vertical image left, client info right */}
+        <div className="flex gap-8 items-stretch">
+          <div className="w-[40%] rounded-lg overflow-hidden" style={{ minHeight: '320px' }}>
+            <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" style={{ display: 'block' }} />
           </div>
-          <div className="w-[50%] flex flex-col py-2">
-            <table className="text-sm text-slate-800 mb-8 print:mb-4 border-collapse" style={{ borderSpacing: 0 }}>
+          <div className="w-[60%] flex flex-col py-2">
+            <table className="text-[15px] text-slate-800 mb-6 border-collapse" style={{ borderSpacing: 0 }}>
               <tbody>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap align-top" style={{ minWidth: '140px' }}>Client Name</td>
-                  <td className="pr-2 py-1 align-top">:</td>
-                  <td className="py-1 uppercase align-top">{basicInfo?.customer || 'Walk-in Customer'}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap align-top" style={{ minWidth: '155px' }}>Client Name</td>
+                  <td className="pr-2 py-1.5 align-top">:</td>
+                  <td className="py-1.5 uppercase align-top font-medium">{basicInfo?.customer || 'Walk-in Customer'}</td>
                 </tr>
                 {basicInfo?.areaPinCode && (
                   <tr>
                     <td className="py-0.5"></td>
                     <td className="py-0.5"></td>
-                    <td className="py-0.5">{basicInfo.areaPinCode}</td>
+                    <td className="py-0.5 text-slate-600">{basicInfo.areaPinCode}</td>
                   </tr>
                 )}
                 {basicInfo?.address && (
                   <tr>
                     <td className="py-0.5"></td>
                     <td className="py-0.5"></td>
-                    <td className="py-0.5 uppercase">{basicInfo.address}</td>
+                    <td className="py-0.5 uppercase text-slate-600">{basicInfo.address}</td>
                   </tr>
                 )}
                 {basicInfo?.cityState && (
                   <tr>
                     <td className="py-0.5"></td>
                     <td className="py-0.5"></td>
-                    <td className="py-0.5 uppercase">{basicInfo.cityState}, India</td>
+                    <td className="py-0.5 uppercase text-slate-600">{basicInfo.cityState}, India</td>
                   </tr>
                 )}
-                <tr><td colSpan="3" className="py-1.5"></td></tr>
+                <tr><td colSpan="3" className="py-2"></td></tr>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Client Number</td>
-                  <td className="pr-2 py-1">:</td>
-                  <td className="py-1">{basicInfo?.mobile || '-'}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Client Number</td>
+                  <td className="pr-2 py-1.5">:</td>
+                  <td className="py-1.5">{basicInfo?.mobile || '-'}</td>
                 </tr>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Client Location</td>
-                  <td className="pr-2 py-1">:</td>
-                  <td className="py-1 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Client Location</td>
+                  <td className="pr-2 py-1.5">:</td>
+                  <td className="py-1.5 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
                 </tr>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Architect Name</td>
-                  <td className="pr-2 py-1">:</td>
-                  <td className="py-1 uppercase">{otherInfo?.architectName || '-'}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Architect Name</td>
+                  <td className="pr-2 py-1.5">:</td>
+                  <td className="py-1.5 uppercase">{otherInfo?.architectName || '-'}</td>
                 </tr>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Salesperson</td>
-                  <td className="pr-2 py-1">:</td>
-                  <td className="py-1 uppercase">{salesperson}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Salesperson</td>
+                  <td className="pr-2 py-1.5">:</td>
+                  <td className="py-1.5 uppercase">{salesperson}</td>
                 </tr>
                 <tr>
-                  <td className="font-semibold pr-2 py-1 whitespace-nowrap">Sales Number</td>
-                  <td className="pr-2 py-1">:</td>
-                  <td className="py-1">{otherInfo?.salesNumber || '-'}</td>
+                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Sales Number</td>
+                  <td className="pr-2 py-1.5">:</td>
+                  <td className="py-1.5">{otherInfo?.salesNumber || '-'}</td>
                 </tr>
               </tbody>
             </table>
 
-            <div className="mt-auto space-y-2">
-              <div className="flex items-center gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={14} /></div>
+            <div className="mt-auto space-y-3">
+              <div className="flex items-center gap-3 text-[14px] text-slate-700">
+                <div className="w-7 h-7 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={16} /></div>
                 <span>info@parekhgallerium.com</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={14} /></div>
+              <div className="flex items-center gap-3 text-[14px] text-slate-700">
+                <div className="w-7 h-7 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={16} /></div>
                 <span>parekh_gallerium</span>
               </div>
-              <div className="flex items-start gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={14} /></div>
-                <span className="leading-snug">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
+              <div className="flex items-start gap-3 text-[14px] text-slate-700">
+                <div className="w-7 h-7 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={16} /></div>
+                <span className="leading-relaxed">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
               </div>
             </div>
           </div>
         </div>
       </PageWrapper>
 
-      {/* Page 3: Product Pages */}
+
+      {/* ── PAGE 3: Product Details ── */}
       <PageWrapper>
         <Logo />
         <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
@@ -184,7 +177,7 @@ export default function PremiumQuotationPrint({
             let currentSection = {
               id: 'default',
               name: '',
-              items: [], // Will contain items and subsection headers
+              items: [],
             };
 
             let currentSubtotal = { qty: 0, amt: 0 };
@@ -207,7 +200,7 @@ export default function PremiumQuotationPrint({
 
             itemsFiltered.forEach((item, index) => {
               if (item.type === 'section') {
-                pushSubtotal(); // finish previous section's subtotal
+                pushSubtotal();
                 if (currentSection.items.length > 0 || currentSection.name !== '') {
                   groupedSections.push(currentSection);
                 }
@@ -217,7 +210,8 @@ export default function PremiumQuotationPrint({
                   items: []
                 };
               } else if (item.type === 'subsection') {
-                pushSubtotal(); // finish previous subsection's subtotal
+                // Do NOT push subtotal here — totals accumulate across all subsections
+                // and are only shown at section end
                 currentSection.items.push({
                   isSubsection: true,
                   description: item.description
@@ -239,7 +233,7 @@ export default function PremiumQuotationPrint({
               }
             });
 
-            pushSubtotal(); // push final subtotal
+            pushSubtotal();
             if (currentSection.items.length > 0 || currentSection.name !== '') {
               groupedSections.push(currentSection);
             }
@@ -259,7 +253,7 @@ export default function PremiumQuotationPrint({
                     <th className="py-2 px-2 text-left w-[40%]">Product Details</th>
                     <th className="py-2 px-2 text-center w-[8%]">Qty</th>
                     <th className="py-2 px-2 text-right w-[11%]">MRP</th>
-                    <th className="py-2 px-2 text-right w-[7%]">Dis %</th>
+                    <th className="py-2 px-2 text-right w-[7%]">Dis%</th>
                     <th className="py-2 px-2 text-right w-[10%]">Net rate</th>
                     <th className="py-2 px-2 text-right w-[9%]">Amount</th>
                   </tr>
@@ -286,6 +280,7 @@ export default function PremiumQuotationPrint({
                         </tr>
                       );
                     }
+
                     const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
 
                     return (
@@ -311,7 +306,8 @@ export default function PremiumQuotationPrint({
                           <div className="text-slate-600 text-[11px] mt-1 uppercase">PCS</div>
                         </td>
                         <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)} ₹` : '-'}</td>
+                        {/* Fixed: was showing ₹ symbol instead of % for discount */}
+                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
                         <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                         <td className="py-4 px-2 text-right align-top text-slate-900 text-[13px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                       </tr>
@@ -320,37 +316,11 @@ export default function PremiumQuotationPrint({
                 </tbody>
               </table>
             ));
-
-            // Build Section Summary data
-            const sectionSummaryData = groupedSections.filter(s => s.name).map(section => {
-              let totalMRP = 0;
-              let totalDiscount = 0;
-              let totalAmount = 0;
-              section.items.forEach(item => {
-                if (!item.isSubtotal && !item.isSubsection) {
-                  const qty = Number(item.quantity) || 0;
-                  const unitPrice = Number(item.unitPrice) || 0;
-                  const discountPercent = Number(item.discountPercent) || 0;
-                  const mrp = unitPrice * qty;
-                  const disc = mrp * (discountPercent / 100);
-                  totalMRP += mrp;
-                  totalDiscount += disc;
-                  totalAmount += mrp - disc;
-                }
-              });
-              return { name: section.name, totalMRP, totalDiscount, totalAmount };
-            });
-
-            const allSectionsMRP = sectionSummaryData.reduce((s, r) => s + r.totalMRP, 0);
-            const allSectionsDiscount = sectionSummaryData.reduce((s, r) => s + r.totalDiscount, 0);
-            const allSectionsAmount = sectionSummaryData.reduce((s, r) => s + r.totalAmount, 0);
-
-            return tables;
           })()}
         </div>
       </PageWrapper>
 
-      {/* Summary Page */}
+      {/* ── PAGE 4: Summary ── */}
       <PageWrapper>
         <Logo />
         <h2 className="text-3xl font-medium text-black mb-8 uppercase tracking-wider">Summary</h2>
@@ -441,10 +411,10 @@ export default function PremiumQuotationPrint({
         <p className="mt-6 text-[11px] text-slate-500">All prices are inclusive of GST and any other government taxes.</p>
       </PageWrapper>
 
-      {/* Terms and Conditions */}
+      {/* ── PAGE 5: Terms & Conditions ── */}
       <PageWrapper>
         <Logo />
-        <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms & Conditions</h2>
+        <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms &amp; Conditions</h2>
         
         <div className="space-y-8 text-sm">
           <div>
@@ -496,11 +466,11 @@ export default function PremiumQuotationPrint({
         </div>
       </PageWrapper>
 
-      {/* Page 5: Brand Showcase & Final Footer */}
+      {/* ── PAGE 6: Brand Showcase & Final Footer ── */}
       <PageWrapper isLast={true}>
         <Logo />
         
-        <div className="border border-slate-200 rounded-xl p-8 print:p-4 mb-8 print:mb-4 flex-1 flex flex-col justify-center shadow-sm items-center">
+        <div className="border border-slate-200 rounded-xl p-8 print:p-4 mb-8 print:mb-4 flex flex-col justify-center shadow-sm items-center">
           <img src={thirdImg} alt="Brand Showcase" className="w-full max-h-[500px] print:max-h-[250px] object-contain" />
         </div>
 
@@ -513,8 +483,8 @@ export default function PremiumQuotationPrint({
             <img src={pgLogo} alt="Parekh Gallerium Logo" className="w-24 h-auto object-contain mb-2" />
             <h3 className="text-3xl print:text-2xl font-bold tracking-widest mt-4 mb-2">PAREKH GALLERIUM</h3>
             <p className="text-xs text-center text-slate-300 tracking-wider leading-relaxed">
-              SANITARY WARE | BATHROOM FIXTURES | SWIMMING POOL | SPA & JACUZZI<br/>
-              TILES & WOODEN FLOORING | PLUMBING & PIPING | FALSE CEILING |<br/>
+              SANITARY WARE | BATHROOM FIXTURES | SWIMMING POOL | SPA &amp; JACUZZI<br/>
+              TILES &amp; WOODEN FLOORING | PLUMBING &amp; PIPING | FALSE CEILING |<br/>
               WINDOWS AND DOORS
             </p>
           </div>
@@ -522,7 +492,7 @@ export default function PremiumQuotationPrint({
           <div className="flex justify-center gap-16 print:gap-8 text-xs text-slate-300">
             <div className="text-right space-y-1">
               <h4 className="font-bold text-white uppercase tracking-wider mb-2">Corporate Office</h4>
-              <p>C - 1,3 & 4, Rishab Complex,</p>
+              <p>C - 1,3 &amp; 4, Rishab Complex,</p>
               <p>M.G. Road, Raipur (C.G.)</p>
               <p>Ph.: 0771 - 4700501, 4031480</p>
               <p>Fax: 0771 - 4700501</p>
@@ -540,7 +510,7 @@ export default function PremiumQuotationPrint({
         </div>
         
         <div className="flex justify-between items-center text-[10px] text-slate-400 mt-4 print:mt-1 px-2">
-          <span>Page 4</span>
+          <span>Page 6</span>
           <span>Document made through Botivate, an IMS Software</span>
         </div>
       </PageWrapper>
