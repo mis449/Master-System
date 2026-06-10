@@ -5,6 +5,7 @@ import firstImg from '../../Assets/first.png';
 import secondImg from '../../Assets/second.png';
 import thirdImg from '../../Assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
+import upiImg from '../../../../assets/upi.png';
 
 export default function PremiumQuotationPrint({ 
   initialData, 
@@ -417,23 +418,26 @@ export default function PremiumQuotationPrint({
         <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms &amp; Conditions</h2>
         
         <div className="space-y-8 text-sm">
-          <div>
-            <h3 className="font-bold text-slate-800 mb-4 uppercase">General</h3>
-            <ul className="space-y-2 text-slate-700 uppercase leading-relaxed list-none">
-              <li>1) Special order products will not be taken back or exchanged.</li>
-              <li>2) Interest of 24% P.A will be charged if payment of bill is not made within given timeline.</li>
-              <li>3) Disputes if any are subject to Raipur jurisdiction only.</li>
-              <li>4) If any warranty passed to customer is purely from the manufacture only.</li>
-              <li>5) Please check the goods before accepting.</li>
-              <li>6) Refund will be made by cheque for returned goods.</li>
-              <li>7) Goods will not be returned and exchanged on Sunday and Saturday.</li>
-              <li>8) Payment 100% Advance.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-slate-800 mb-2 uppercase">Price Validity</h3>
-            <p className="text-slate-700">{basicInfo?.validityDate ? formatDate(basicInfo.validityDate) : '30 Days from Quotation Date'}</p>
+          <div className="text-[11px] text-slate-800 leading-snug space-y-1.5">
+            <p>1. Delivery Time - Delivery will be made within the estimated timeline after order confirmation.</p>
+            <p>2. Payment Terms - Payment must be made as 100 % per agreed terms and schedule.</p>
+            <p>3. RTGS / Bank Information - Payments should be transferred only to the provided bank account details.</p>
+            <p>4. Order Confirmation - Orders will be confirmed only upon receipt of the purchase order and an advance payment of 70%.</p>
+            <p>5. Invoice Details - The invoice will be issued once the order dispatch has been verified.</p>
+            <p>6. Delivery Address &amp; Delivery Terms - Goods will be delivered to the address provided by the customer.</p>
+            <p>7. Delivery Restrictions - Any problem with the product must be reported within a maximum time span of 48 hours.</p>
+            <p>8. Delivery Timeline &amp; Post-Delivery Requests - Any changes or requests after delivery may incur additional charges.</p>
+            <p>9. Cancellation of Order or Any Item - Cancellation is subject to approval and applicable cancellation charges.</p>
+            <p>10. Sales Return Policy - Returns are accepted only as per company policy and within specified time.</p>
+            <p>11. Inspection of Goods - Goods must be inspected at the time of delivery.</p>
+            <p>12. Freight Charges - Are applicable extra and vary depending on distance and material.</p>
+            <p>13. Services - Installation or service, if any, will be provided as per agreed terms.</p>
+            <p>14. Service Contact Person - Any service-related communication must be coordinated through the respective company technician as part of the grievance process.</p>
+            <p>15. Dispatch Contact Person &amp; Details - Dispatch updates will be shared by the designated dispatch contact.</p>
+            <p>16. Address Information - Customer must provide complete and correct address details.</p>
+            <p>17. Force Majeure / Act of God - Delays due to uncontrollable events are not the seller's responsibility. The company shall not be held accountable in the event of any uncertainty or unforeseen circumstances..</p>
+            <p>18. Disclaimer - Images, samples, and descriptions are for reference only.</p>
+            <p>19. Jurisdiction &amp; Governing Law - This agreement shall be governed by the laws of India, and the courts at Raipur, Chhattisgarh shall have exclusive jurisdiction over all disputes arising here from.</p>
           </div>
 
           <div className="flex justify-between items-start mt-12">
@@ -450,8 +454,8 @@ export default function PremiumQuotationPrint({
             
             <div className="text-center">
               <h3 className="font-bold text-slate-800 mb-3 uppercase">Scan for UPI</h3>
-              <div className="p-2 border-2 border-red-700 rounded inline-block bg-white shadow-sm">
-                <img src={qrCode} alt="UPI QR Code" className="w-32 h-32" />
+              <div className="p-1 border-2 border-red-700 rounded inline-block bg-white shadow-sm">
+                <img src={upiImg} alt="UPI QR Code" className="w-32 h-32 object-contain" />
               </div>
             </div>
             
