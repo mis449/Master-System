@@ -243,19 +243,19 @@ export default function PremiumQuotationPrint({
                 <thead className="table-header-group">
                   {section.name && (
                     <tr>
-                      <th colSpan="7" className="pt-6 pb-2 px-2 bg-white text-left font-medium text-black text-[24px] uppercase tracking-wide">
+                      <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-medium text-black text-[18px] uppercase tracking-wide">
                         {section.name}
                       </th>
                     </tr>
                   )}
-                  <tr className="bg-white text-slate-800 font-medium border-y border-black text-[13px] tracking-wide">
-                    <th className="py-2 px-2 text-center w-[15%]">Image</th>
-                    <th className="py-2 px-2 text-left w-[40%]">Product Details</th>
-                    <th className="py-2 px-2 text-center w-[8%]">Qty</th>
-                    <th className="py-2 px-2 text-right w-[11%]">MRP</th>
-                    <th className="py-2 px-2 text-right w-[7%]">Dis%</th>
-                    <th className="py-2 px-2 text-right w-[10%]">Net rate</th>
-                    <th className="py-2 px-2 text-right w-[9%]">Amount</th>
+                  <tr className="bg-white text-slate-800 font-medium border-y border-black text-[12px] tracking-wide">
+                    <th className="py-1.5 px-2 text-center w-[12%]">Image</th>
+                    <th className="py-1.5 px-2 text-left w-[43%]">Product Details</th>
+                    <th className="py-1.5 px-2 text-center w-[8%]">Qty</th>
+                    <th className="py-1.5 px-2 text-right w-[11%]">MRP</th>
+                    <th className="py-1.5 px-2 text-right w-[7%]">Dis%</th>
+                    <th className="py-1.5 px-2 text-right w-[10%]">Net rate</th>
+                    <th className="py-1.5 px-2 text-right w-[9%]">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -263,10 +263,10 @@ export default function PremiumQuotationPrint({
                     if (item.isSubtotal) {
                       return (
                         <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
-                          <td colSpan="2" className="py-4 px-3 text-center font-bold text-slate-800 text-sm uppercase tracking-widest">Total</td>
-                          <td className="py-4 px-3 text-center font-bold text-slate-800 text-sm">{item.qty}</td>
+                          <td colSpan="2" className="py-2 px-3 text-center font-bold text-slate-800 text-xs uppercase tracking-widest">Total</td>
+                          <td className="py-2 px-3 text-center font-bold text-slate-800 text-xs">{item.qty}</td>
                           <td colSpan="3"></td>
-                          <td className="py-4 px-3 text-right font-bold text-slate-900 text-sm">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          <td className="py-2 px-3 text-right font-bold text-slate-900 text-xs">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                         </tr>
                       );
                     }
@@ -274,7 +274,7 @@ export default function PremiumQuotationPrint({
                     if (item.isSubsection) {
                       return (
                         <tr key={`sub-${idx}`} className="break-inside-avoid">
-                          <td colSpan="7" className="py-2 px-2 text-center bg-gray-200 font-bold text-black text-[13px] uppercase tracking-wider border-y border-gray-400">
+                          <td colSpan="7" className="py-1.5 px-2 text-center bg-gray-200 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-400">
                             {item.description}
                           </td>
                         </tr>
@@ -285,31 +285,31 @@ export default function PremiumQuotationPrint({
 
                     return (
                       <tr key={idx} className="border-b border-slate-100 break-inside-avoid">
-                        <td className="py-4 px-2 text-center align-middle">
+                        <td className="py-2 px-2 text-center align-middle">
                           {item.imageUrl ? (
-                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[140px] object-contain mx-auto" />
+                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[80px] object-contain mx-auto" />
                           ) : (
-                            <div className="w-full aspect-square max-w-[140px] flex items-center justify-center text-slate-300 mx-auto">
-                              <span className="text-xs">No Img</span>
+                            <div className="w-full aspect-square max-w-[80px] flex items-center justify-center text-slate-300 mx-auto">
+                              <span className="text-[10px]">No Img</span>
                             </div>
                           )}
                         </td>
-                        <td className="py-4 px-2 text-left align-top">
-                          <div className="font-bold text-slate-900 text-[14px] mb-1.5">{item.itemCode || '-'}</div>
-                          <div className="text-slate-700 text-[13px] leading-relaxed mb-2">{item.description || '-'}</div>
+                        <td className="py-2 px-2 text-left align-top">
+                          <div className="font-bold text-slate-900 text-[12px] mb-0.5">{item.itemCode || '-'}</div>
+                          <div className="text-slate-700 text-[11px] leading-tight mb-1">{item.description || '-'}</div>
                           {matchedInventoryItem?.Brand && (
-                            <div className="text-slate-600 text-[13px]">Brand - {matchedInventoryItem.Brand}</div>
+                            <div className="text-slate-600 text-[10px]">Brand - {matchedInventoryItem.Brand}</div>
                           )}
                         </td>
-                        <td className="py-4 px-2 text-center align-top">
-                          <div className="text-slate-800 text-[14px]">{item.quantity}</div>
-                          <div className="text-slate-600 text-[11px] mt-1 uppercase">PCS</div>
+                        <td className="py-2 px-2 text-center align-top">
+                          <div className="text-slate-800 text-[12px]">{item.quantity}</div>
+                          <div className="text-slate-600 text-[9px] mt-0.5 uppercase">PCS</div>
                         </td>
-                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                         {/* Fixed: was showing ₹ symbol instead of % for discount */}
-                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
-                        <td className="py-4 px-2 text-right align-top text-slate-800 text-[13px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                        <td className="py-4 px-2 text-right align-top text-slate-900 text-[13px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
+                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        <td className="py-2 px-2 text-right align-top text-slate-900 text-[11px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                       </tr>
                     );
                   })}

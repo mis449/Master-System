@@ -400,7 +400,7 @@ export default function Dasboard() {
     <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
       
       {/* Summary KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 px-2 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 px-2 sm:px-0">
         
         {/* Total Registered Products */}
         <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">
@@ -424,27 +424,6 @@ export default function Dasboard() {
           </div>
         </div>
 
-        {/* Pending Indents */}
-        <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="space-y-0.5">
-            <span className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider block">Pending Indents</span>
-            <span className="text-lg md:text-2xl font-black text-slate-800 tracking-tight">{stats.pendingIndents}</span>
-          </div>
-          <div className="w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-            <Layers size={18} className="md:w-5 md:h-5" />
-          </div>
-        </div>
-
-        {/* Complete Indents */}
-        <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="space-y-0.5">
-            <span className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider block">Complete Indents</span>
-            <span className="text-lg md:text-2xl font-black text-slate-800 tracking-tight">{stats.completedIndents}</span>
-          </div>
-          <div className="w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-            <CheckCircle size={18} className="md:w-5 md:h-5" />
-          </div>
-        </div>
 
       </div>
 
