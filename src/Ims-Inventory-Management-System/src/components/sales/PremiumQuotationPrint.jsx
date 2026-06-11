@@ -64,7 +64,7 @@ export default function PremiumQuotationPrint({
         {`
           @page {
             size: A4;
-            margin: 8mm 10mm;
+            margin: 0;
           }
         `}
       </style>
@@ -265,14 +265,14 @@ export default function PremiumQuotationPrint({
                             </th>
                           </tr>
                         )}
-                        <tr className="bg-white text-slate-800 font-medium border-y border-black text-[12px] tracking-wide">
-                          <th className="py-1.5 px-2 text-center w-[12%]">Image</th>
-                          <th className="py-1.5 px-2 text-left w-[43%]">Product Details</th>
-                          <th className="py-1.5 px-2 text-center w-[8%]">Qty</th>
-                          <th className="py-1.5 px-2 text-right w-[11%]">MRP</th>
-                          <th className="py-1.5 px-2 text-right w-[7%]">Dis%</th>
-                          <th className="py-1.5 px-2 text-right w-[10%]">Net rate</th>
-                          <th className="py-1.5 px-2 text-right w-[9%]">Amount</th>
+                        <tr className="bg-white text-slate-800 font-semibold border-y border-black text-[13px] tracking-wide">
+                          <th className="py-2 px-2 text-center w-[14%]">Image</th>
+                          <th className="py-2 px-2 text-left w-[40%]">Product Details</th>
+                          <th className="py-2 px-2 text-center w-[8%]">Qty</th>
+                          <th className="py-2 px-2 text-right w-[11%]">MRP</th>
+                          <th className="py-2 px-2 text-right w-[7%]">Dis%</th>
+                          <th className="py-2 px-2 text-right w-[10%]">Net rate</th>
+                          <th className="py-2 px-2 text-right w-[10%]">Amount</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -302,31 +302,31 @@ export default function PremiumQuotationPrint({
 
                     return (
                       <tr key={idx} className="border-b border-slate-100 break-inside-avoid">
-                        <td className="py-2 px-2 text-center align-middle">
+                        <td className="py-1.5 px-2 text-center align-middle">
                           {item.imageUrl ? (
-                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[80px] object-contain mx-auto" />
+                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[95px] object-contain mx-auto" />
                           ) : (
-                            <div className="w-full aspect-square max-w-[80px] flex items-center justify-center text-slate-300 mx-auto">
-                              <span className="text-[10px]">No Img</span>
+                            <div className="w-full aspect-square max-w-[95px] flex items-center justify-center text-slate-300 mx-auto">
+                              <span className="text-[11px]">No Img</span>
                             </div>
                           )}
                         </td>
-                        <td className="py-2 px-2 text-left align-top">
-                          <div className="font-bold text-slate-900 text-[12px] mb-0.5">{item.itemCode || '-'}</div>
-                          <div className="text-slate-700 text-[11px] leading-tight mb-1">{item.description || '-'}</div>
+                        <td className="py-1.5 px-2 text-left align-top">
+                          <div className="font-bold text-slate-900 text-[13px] mb-0.5">{item.itemCode || '-'}</div>
+                          <div className="text-slate-700 text-[12px] leading-tight mb-1.5">{item.description || '-'}</div>
                           {matchedInventoryItem?.Brand && (
-                            <div className="text-slate-600 text-[10px]">Brand - {matchedInventoryItem.Brand}</div>
+                            <div className="text-slate-600 text-[11px]">Brand - {matchedInventoryItem.Brand}</div>
                           )}
                         </td>
-                        <td className="py-2 px-2 text-center align-top">
-                          <div className="text-slate-800 text-[12px]">{item.quantity}</div>
-                          <div className="text-slate-600 text-[9px] mt-0.5 uppercase">PCS</div>
+                        <td className="py-1.5 px-2 text-center align-top">
+                          <div className="text-slate-800 text-[13px]">{item.quantity}</div>
+                          <div className="text-slate-600 text-[10px] mt-0.5 uppercase">PCS</div>
                         </td>
-                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                         {/* Fixed: was showing ₹ symbol instead of % for discount */}
-                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
-                        <td className="py-2 px-2 text-right align-top text-slate-800 text-[11px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                        <td className="py-2 px-2 text-right align-top text-slate-900 text-[11px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
+                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[12px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                       </tr>
                     );
                   })}
