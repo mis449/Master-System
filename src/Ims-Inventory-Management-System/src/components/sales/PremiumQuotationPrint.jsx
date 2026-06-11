@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mail, Instagram, MapPin } from 'lucide-react';
-import logoImg from '../../Assets/images.png';
+import logoImg from '../../../../assets/logo.png';
 import firstImg from '../../Assets/first.png';
 import secondImg from '../../Assets/second.png';
 import thirdImg from '../../../../assets/third.png';
@@ -37,7 +37,7 @@ export default function PremiumQuotationPrint({
   // Reusable Logo Component
   const Logo = () => (
     <div className="mb-6">
-      <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-28 print:h-24 object-contain scale-[1.6] origin-left" />
+      <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[65px] object-contain origin-left mix-blend-multiply" />
     </div>
   );
 
@@ -72,101 +72,105 @@ export default function PremiumQuotationPrint({
       {/* ── PAGE 1: Cover + Client Info (merged) ── */}
       <PageWrapper>
         {/* Header: Logo + Doc details */}
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[110px] object-contain origin-left mix-blend-multiply" />
+        <div className="flex flex-col" style={{ height: '245mm' }}>
+          {/* Header: Logo + Doc details */}
+          <div className="flex justify-between items-center mb-2 shrink-0">
+            <div>
+              <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[65px] object-contain origin-left mix-blend-multiply" />
+            </div>
+            <div className="text-sm space-y-1 text-slate-600 text-right">
+              <div><span className="font-medium mr-2">Document # :</span> {quotationNo}</div>
+              <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
+            </div>
           </div>
-          <div className="text-sm space-y-1 text-slate-600 text-right">
-            <div><span className="font-medium mr-2">Document # :</span> {quotationNo}</div>
-            <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
+
+          {/* Upper image — approx 45% height */}
+          <div className="flex-1 min-h-0 mb-3 overflow-hidden">
+            <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full h-full object-cover object-center" />
           </div>
-        </div>
 
-        {/* Cover image — bigger to fill more of the page */}
-        <div className="mb-4 rounded-lg overflow-hidden">
-          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full object-cover object-center" style={{ maxHeight: '280px', minHeight: '200px' }} />
-        </div>
-
-        {/* Document Title */}
-        <div className="mb-4">
-          <h1 className="text-4xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
-        </div>
-
-        {/* Two-column: vertical image left, client info right */}
-        <div className="flex gap-8 items-stretch">
-          <div className="w-[40%] rounded-lg overflow-hidden" style={{ minHeight: '320px' }}>
-            <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" style={{ display: 'block' }} />
+          {/* Document Title */}
+          <div className="mb-3 shrink-0">
+            <h1 className="text-2xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
           </div>
-          <div className="w-[60%] flex flex-col py-2">
-            <table className="text-[15px] text-slate-800 mb-6 border-collapse" style={{ borderSpacing: 0 }}>
-              <tbody>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap align-top" style={{ minWidth: '155px' }}>Client Name</td>
-                  <td className="pr-2 py-1.5 align-top">:</td>
-                  <td className="py-1.5 uppercase align-top font-medium">{basicInfo?.customer || 'Walk-in Customer'}</td>
-                </tr>
-                {basicInfo?.areaPinCode && (
-                  <tr>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5 text-slate-600">{basicInfo.areaPinCode}</td>
-                  </tr>
-                )}
-                {basicInfo?.address && (
-                  <tr>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5 uppercase text-slate-600">{basicInfo.address}</td>
-                  </tr>
-                )}
-                {basicInfo?.cityState && (
-                  <tr>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5"></td>
-                    <td className="py-0.5 uppercase text-slate-600">{basicInfo.cityState}, India</td>
-                  </tr>
-                )}
-                <tr><td colSpan="3" className="py-2"></td></tr>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Client Number</td>
-                  <td className="pr-2 py-1.5">:</td>
-                  <td className="py-1.5">{basicInfo?.mobile || '-'}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Client Location</td>
-                  <td className="pr-2 py-1.5">:</td>
-                  <td className="py-1.5 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Architect Name</td>
-                  <td className="pr-2 py-1.5">:</td>
-                  <td className="py-1.5 uppercase">{otherInfo?.architectName || '-'}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Salesperson</td>
-                  <td className="pr-2 py-1.5">:</td>
-                  <td className="py-1.5 uppercase">{salesperson}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold pr-3 py-1.5 whitespace-nowrap">Sales Number</td>
-                  <td className="pr-2 py-1.5">:</td>
-                  <td className="py-1.5">{otherInfo?.salesNumber || '-'}</td>
-                </tr>
-              </tbody>
-            </table>
 
-            <div className="mt-auto space-y-3">
-              <div className="flex items-center gap-3 text-[14px] text-slate-700">
-                <div className="w-7 h-7 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={16} /></div>
-                <span>info@parekhgallerium.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-[14px] text-slate-700">
-                <div className="w-7 h-7 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={16} /></div>
-                <span>parekh_gallerium</span>
-              </div>
-              <div className="flex items-start gap-3 text-[14px] text-slate-700">
-                <div className="w-7 h-7 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={16} /></div>
-                <span className="leading-relaxed">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
+          {/* Two-column: vertical image left, client info right — approx 45% height */}
+          <div className="flex-1 min-h-0 flex gap-2 items-stretch">
+            <div className="w-[40%] overflow-hidden">
+              <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover object-center" style={{ display: 'block' }} />
+            </div>
+            <div className="w-[60%] flex flex-col overflow-hidden">
+              <table className="-mt-1 text-[14px] text-slate-800 mb-4 border-collapse" style={{ borderSpacing: 0 }}>
+                <tbody>
+                  <tr>
+                    <td className="font-semibold pr-3 pb-0.5 whitespace-nowrap align-top">Client Name</td>
+                    <td className="pr-2 pb-0.5 align-top">:</td>
+                    <td className="pb-0.5 uppercase align-top font-medium">{basicInfo?.customer || 'Walk-in Customer'}</td>
+                  </tr>
+                  {basicInfo?.areaPinCode && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 text-slate-600 leading-tight">{basicInfo.areaPinCode}</td>
+                    </tr>
+                  )}
+                  {basicInfo?.address && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 uppercase text-slate-600 leading-tight">{basicInfo.address}</td>
+                    </tr>
+                  )}
+                  {basicInfo?.cityState && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 uppercase text-slate-600 leading-tight">{basicInfo.cityState}, India</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Client Number</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5">{basicInfo?.mobile || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Client Location</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Salesperson</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5 uppercase">{salesperson}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Sales Number</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5">{otherInfo?.salesNumber || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap align-top pt-2">Scan to reach us</td>
+                    <td className="pr-2 py-0.5 align-top pt-2">:</td>
+                    <td className="py-0.5 align-top pt-1">
+                      <img src={qrCode} alt="Scan to reach us" className="w-[85px] h-[85px] object-contain" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="mt-auto space-y-1">
+                <div className="flex items-center gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={14} /></div>
+                  <span>info@parekhgallerium.com</span>
+                </div>
+                <div className="flex items-center gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={14} /></div>
+                  <span>parekh_gallerium</span>
+                </div>
+                <div className="flex items-start gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={14} /></div>
+                  <span className="leading-tight">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
+                </div>
               </div>
             </div>
           </div>
@@ -260,19 +264,19 @@ export default function PremiumQuotationPrint({
                       <thead className="table-header-group">
                         {(section.name || chunkIdx > 0) && (
                           <tr>
-                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-medium text-black text-[18px] uppercase tracking-wide">
+                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
                               {section.name} {chunkIdx > 0 ? '(Contd.)' : ''}
                             </th>
                           </tr>
                         )}
                         <tr className="bg-white text-slate-800 font-semibold border-y border-black text-[13px] tracking-wide">
-                          <th className="py-2 px-2 text-center w-[14%]">Image</th>
-                          <th className="py-2 px-2 text-left w-[40%]">Product Details</th>
-                          <th className="py-2 px-2 text-center w-[8%]">Qty</th>
-                          <th className="py-2 px-2 text-right w-[11%]">MRP</th>
-                          <th className="py-2 px-2 text-right w-[7%]">Dis%</th>
-                          <th className="py-2 px-2 text-right w-[10%]">Net rate</th>
-                          <th className="py-2 px-2 text-right w-[10%]">Amount</th>
+                          <th className="py-[2px] px-2 text-center w-[14%]">Image</th>
+                          <th className="py-[2px] px-2 text-left w-[40%] whitespace-nowrap">Product Details</th>
+                          <th className="py-[2px] px-2 text-center w-[8%]">Qty</th>
+                          <th className="py-[2px] px-2 text-right w-[11%]">MRP</th>
+                          <th className="py-[2px] px-2 text-right w-[7%]">Dis%</th>
+                          <th className="py-[2px] px-2 text-right w-[10%]">Net rate</th>
+                          <th className="py-[2px] px-2 text-right w-[10%]">Amount</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -291,7 +295,7 @@ export default function PremiumQuotationPrint({
                     if (item.isSubsection) {
                       return (
                         <tr key={`sub-${idx}`} className="break-inside-avoid">
-                          <td colSpan="7" className="py-1.5 px-2 text-center bg-gray-200 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-400">
+                          <td colSpan="7" className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
                             {item.description}
                           </td>
                         </tr>
@@ -471,7 +475,7 @@ export default function PremiumQuotationPrint({
             
             <div className="text-center">
               <h3 className="font-bold text-slate-800 mb-3 uppercase">Scan for UPI</h3>
-              <div className="p-1 border-2 border-red-700 rounded inline-block bg-white shadow-sm">
+              <div className="p-1 border-2 border-red-700 inline-block bg-white shadow-sm">
                 <img src={upiImg} alt="UPI QR Code" className="w-32 h-32 object-contain" />
               </div>
             </div>
@@ -495,7 +499,7 @@ export default function PremiumQuotationPrint({
           <img src={thirdImg} alt="Brand Showcase" className="w-full max-h-[700px] print:max-h-[400px] object-contain" />
         </div>
 
-        <div className="bg-black text-white p-12 print:p-6 rounded-xl mt-auto print:bg-black" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+        <div className="bg-black text-white p-12 print:p-6 mt-auto print:bg-black" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
           <h2 className="text-center text-xl print:text-lg font-medium tracking-widest mb-12 print:mb-6 uppercase">
             Central India's Largest Bathroom Solution Showroom
           </h2>
