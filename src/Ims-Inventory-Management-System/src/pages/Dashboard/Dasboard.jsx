@@ -655,7 +655,7 @@ export default function Dasboard() {
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="bg-emerald-50/50 border border-emerald-100 p-2 rounded">
                   <span className="text-[8px] uppercase text-emerald-600 font-bold block">Available Stock</span>
-                  <span className="text-sm font-black text-emerald-700">{(selectedItem.StockQty || 0)}</span>
+                  <span className="text-sm font-black text-emerald-700">{(selectedItem.currentQty || 0) - (selectedItem.ReservedQty || 0) - (selectedItem.DisplayQty || 0)}</span>
                 </div>
                 <div className="bg-blue-50/50 border border-blue-100 p-2 rounded">
                   <span className="text-[8px] uppercase text-blue-600 font-bold block">Reserved Qty</span>

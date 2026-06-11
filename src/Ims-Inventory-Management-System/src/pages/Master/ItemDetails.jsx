@@ -87,6 +87,7 @@ export default function ItemDetails() {
       ItemName: item.ItemName || '',
       BrandName: item.BrandName || '',
       MRP: item.MRP || '',
+      StockQty: item.StockQty || '',
       ImageURL: item.Thumbnail || item.product_image_url || ''
     });
     setIsEditModalOpen(true);
