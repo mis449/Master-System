@@ -93,7 +93,7 @@ export default function CatalogModal({ isOpen, onClose, onSubmitCart }) {
 
   return createPortal(
     // z-[9999] ensures it overlays everything. inset-0 anchors it to screen.
-    <div className="fixed inset-0 lg:left-56 2xl:left-60 z-[9999] bg-slate-50 flex flex-col shadow-2xl overflow-hidden pt-2">
+    <div className="fixed inset-0 md:left-52 z-[9999] bg-slate-50 flex flex-col shadow-2xl overflow-hidden pt-2">
       
       {/* Top Bar (Header) */}
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm z-20 shrink-0">
@@ -174,9 +174,9 @@ export default function CatalogModal({ isOpen, onClose, onSubmitCart }) {
                      {name}
                    </div>
                    
-                   <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100 py-4 min-h-[120px]">
-                     {item.imageUrl ? (
-                       <img src={item.imageUrl} alt={name} className="max-h-24 object-contain mix-blend-multiply" />
+                   <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100 py-4 min-h-[160px]">
+                     {item.Thumbnail ? (
+                       <img src={item.Thumbnail} alt={name} className="max-h-36 object-contain mix-blend-multiply" />
                      ) : (
                        <div className="flex flex-col items-center justify-center text-slate-300">
                          <CameraOff size={24} className="mb-1" />
