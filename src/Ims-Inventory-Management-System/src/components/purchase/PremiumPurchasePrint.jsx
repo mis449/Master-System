@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mail, Instagram, MapPin } from 'lucide-react';
-import logoImg from '../../Assets/images.png';
+import logoImg from '../../../../assets/logo.png';
 import firstImg from '../../Assets/first.png';
 import secondImg from '../../Assets/second.png';
 import thirdImg from '../../../../assets/third.png';
