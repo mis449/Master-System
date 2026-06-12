@@ -41,18 +41,18 @@ export default function PremiumQuotationPrint({
     </div>
   );
 
-  // Page wrapper — auto-height, never clips content
+  // Page wrapper — strict height to A4 size to prevent any extra blank pages
   const PageWrapper = ({ children, isLast = false, className = '' }) => (
     <div
-      className={`w-full bg-white relative ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`}
-      style={{ padding: '8mm 10mm 12mm 10mm', boxSizing: 'border-box', minHeight: '275mm' }}
+      className={`w-full bg-white relative overflow-hidden ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`}
+      style={{ padding: '8mm 10mm 12mm 10mm', boxSizing: 'border-box', height: '295mm' }}
     >
-      <div className="mb-8">
+      <div className="w-full h-full pb-6">
         {children}
       </div>
       
       {/* Universal Footer */}
-      <div className="absolute bottom-0 left-[10mm] right-[10mm] pt-2 border-t border-black text-center text-[12px] font-medium text-black">
+      <div className="absolute bottom-0 left-[10mm] right-[10mm] pt-2 border-t border-black text-center text-[12px] font-medium text-black bg-white z-10 pb-2">
         7880011158 | info@parekhgallerium.com | IG - @parekh_gallerium
       </div>
     </div>
@@ -66,8 +66,18 @@ export default function PremiumQuotationPrint({
             size: A4;
             margin: 0;
           }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+          }
+          #premium-quotation-print {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
         `}
       </style>
+
       
       {/* ── PAGE 1: Cover + Client Info (merged) ── */}
       <PageWrapper>
@@ -180,22 +190,17 @@ export default function PremiumQuotationPrint({
 
       {/* ── PAGE 3 onwards: Product Details ── */}
       {(() => {
-            const groupedSections = [];
-            let currentSection = {
-              id: 'default',
-              name: '',
-              items: [],
-            };
-
+            const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
+            
+            const flattenedRows = [];
             let currentSubtotal = { qty: 0, amt: 0 };
             let hasItemsSinceLastSubtotal = false;
+            let currentSectionName = '';
 
-            const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
-
-            // Helper to push a subtotal row to current section
             const pushSubtotal = () => {
               if (hasItemsSinceLastSubtotal) {
-                currentSection.items.push({
+                flattenedRows.push({
+                  type: 'subtotal',
                   isSubtotal: true,
                   qty: currentSubtotal.qty,
                   amount: currentSubtotal.amt
@@ -205,21 +210,20 @@ export default function PremiumQuotationPrint({
               }
             };
 
-            itemsFiltered.forEach((item, index) => {
+            itemsFiltered.forEach((item) => {
               if (item.type === 'section') {
                 pushSubtotal();
-                if (currentSection.items.length > 0 || currentSection.name !== '') {
-                  groupedSections.push(currentSection);
+                currentSectionName = item.description || '';
+                if (currentSectionName) {
+                  flattenedRows.push({
+                    type: 'section_header',
+                    name: currentSectionName,
+                    isContinuation: false
+                  });
                 }
-                currentSection = {
-                  id: item.id || index,
-                  name: item.description,
-                  items: []
-                };
               } else if (item.type === 'subsection') {
-                // Do NOT push subtotal here — totals accumulate across all subsections
-                // and are only shown at section end
-                currentSection.items.push({
+                flattenedRows.push({
+                  type: 'subsection',
                   isSubsection: true,
                   description: item.description
                 });
@@ -236,109 +240,180 @@ export default function PremiumQuotationPrint({
                 currentSubtotal.amt += amount;
                 hasItemsSinceLastSubtotal = true;
 
-                currentSection.items.push({ ...item, amount, netRate, unitPrice, discountPercent, imageUrl });
+                flattenedRows.push({ 
+                  ...item, 
+                  type: 'product',
+                  amount, netRate, unitPrice, discountPercent, imageUrl
+                });
               }
             });
 
             pushSubtotal();
-            if (currentSection.items.length > 0 || currentSection.name !== '') {
-              groupedSections.push(currentSection);
-            }
 
-            return groupedSections.flatMap((section, sIdx) => {
-              const chunkSize = 7;
-              const chunks = [];
-              for (let i = 0; i < section.items.length; i += chunkSize) {
-                chunks.push(section.items.slice(i, i + chunkSize));
+            const pages = [];
+            let currentPageRows = [];
+            let currentWeight = 0;
+            let activeSectionName = '';
+
+            for (let i = 0; i < flattenedRows.length; i++) {
+              // The first page has the "PRODUCT DETAILS" header which takes extra space.
+              // So limit first page to 6 products (~7.5 weight), and subsequent pages to 7 products (~8.8 weight).
+              const MAX_WEIGHT = pages.length === 0 ? 7.5 : 8.8;
+
+              const row = flattenedRows[i];
+              let weight = 1.0;
+              if (row.type === 'section_header') weight = 0.7;
+              else if (row.type === 'subsection') weight = 0.4;
+              else if (row.type === 'subtotal') weight = 0.5;
+              else weight = 1.0; 
+
+              if (currentWeight + weight > MAX_WEIGHT && currentPageRows.filter(r => r.type === 'product').length > 0) {
+                // Prevent orphan headers at bottom
+                let poppedHeaders = [];
+                while (
+                  currentPageRows.length > 0 && 
+                  (currentPageRows[currentPageRows.length - 1].type === 'section_header' || currentPageRows[currentPageRows.length - 1].type === 'subsection')
+                ) {
+                  const h = currentPageRows.pop();
+                  currentWeight -= (h.type === 'section_header' ? 0.7 : 0.4);
+                  poppedHeaders.unshift(h);
+                }
+
+                if (currentPageRows.length > 0) {
+                  pages.push(currentPageRows);
+                }
+                
+                currentPageRows = [...poppedHeaders];
+                currentWeight = poppedHeaders.reduce((sum, h) => sum + (h.type === 'section_header' ? 0.7 : 0.4), 0);
+
+                if (activeSectionName && row.type !== 'section_header') {
+                  if (poppedHeaders.length === 0 || poppedHeaders[0].type !== 'section_header') {
+                    currentPageRows.unshift({
+                      type: 'section_header',
+                      name: activeSectionName,
+                      isContinuation: true
+                    });
+                    currentWeight += 0.7;
+                  }
+                }
               }
 
-              return chunks.map((chunk, chunkIdx) => (
-                <PageWrapper key={`${section.id || sIdx}-${chunkIdx}`}>
+              if (row.type === 'section_header') {
+                activeSectionName = row.name;
+              }
+
+              currentPageRows.push(row);
+              currentWeight += weight;
+            }
+
+            if (currentPageRows.length > 0) {
+              pages.push(currentPageRows);
+            }
+
+            return pages.map((pageChunk, pageIdx) => {
+              // Check if the very first row is a section_header so we can render it above the table column headers, to preserve exact UI
+              const firstRowIsSection = pageChunk.length > 0 && pageChunk[0].type === 'section_header';
+              const firstSectionRow = firstRowIsSection ? pageChunk[0] : null;
+              const remainingRows = firstRowIsSection ? pageChunk.slice(1) : pageChunk;
+
+              return (
+                <PageWrapper key={`page-${pageIdx}`}>
                   <Logo />
-                  {sIdx === 0 && chunkIdx === 0 && (
+                  {pageIdx === 0 && (
                     <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
                   )}
                   
                   <div className="space-y-6">
                     <table className="w-full text-left text-sm border-collapse mb-2" style={{ pageBreakInside: 'auto', tableLayout: 'fixed' }}>
                       <thead className="table-header-group">
-                        {(section.name || chunkIdx > 0) && (
+                        {firstSectionRow && (
                           <tr>
                             <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
-                              {section.name} {chunkIdx > 0 ? '(Contd.)' : ''}
+                              {firstSectionRow.name} {firstSectionRow.isContinuation ? '(Contd.)' : ''}
                             </th>
                           </tr>
                         )}
                         <tr className="bg-white text-slate-800 font-semibold border-y border-black text-[13px] tracking-wide">
-                          <th className="py-[2px] px-2 text-center w-[14%]">Image</th>
-                          <th className="py-[2px] px-2 text-left w-[40%] whitespace-nowrap">Product Details</th>
-                          <th className="py-[2px] px-2 text-center w-[8%]">Qty</th>
-                          <th className="py-[2px] px-2 text-right w-[11%]">MRP</th>
-                          <th className="py-[2px] px-2 text-right w-[7%]">Dis%</th>
-                          <th className="py-[2px] px-2 text-right w-[10%]">Net rate</th>
-                          <th className="py-[2px] px-2 text-right w-[10%]">Amount</th>
+                          <th className="py-[2px] px-2 text-center w-[18%]">Image</th>
+                          <th className="py-[2px] px-2 text-left w-[41%] whitespace-nowrap">Product Details</th>
+                          <th className="py-[2px] px-1 text-center w-[5%]">Qty</th>
+                          <th className="py-[2px] px-1 text-right w-[10%]">MRP</th>
+                          <th className="py-[2px] px-1 text-right w-[5%]">Dis%</th>
+                          <th className="py-[2px] px-1 text-right w-[9%]">Net rate</th>
+                          <th className="py-[2px] px-2 text-right w-[12%]">Amount</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {chunk.map((item, idx) => {
-                    if (item.isSubtotal) {
-                      return (
-                        <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
-                          <td colSpan="2" className="py-2 px-3 text-center font-bold text-slate-800 text-xs uppercase tracking-widest">Total</td>
-                          <td className="py-2 px-3 text-center font-bold text-slate-800 text-xs">{item.qty}</td>
-                          <td colSpan="3"></td>
-                          <td className="py-2 px-3 text-right font-bold text-slate-900 text-xs">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                      );
-                    }
+                        {remainingRows.map((item, idx) => {
+                          if (item.type === 'section_header') {
+                            return (
+                              <tr key={`sec-${idx}`} className="break-inside-avoid">
+                                <td colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
+                                  {item.name} {item.isContinuation ? '(Contd.)' : ''}
+                                </td>
+                              </tr>
+                            );
+                          }
 
-                    if (item.isSubsection) {
-                      return (
-                        <tr key={`sub-${idx}`} className="break-inside-avoid">
-                          <td colSpan="7" className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
-                            {item.description}
-                          </td>
-                        </tr>
-                      );
-                    }
+                          if (item.type === 'subtotal') {
+                            return (
+                              <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
+                                <td colSpan="2" className="py-2 px-2 text-center font-bold text-slate-800 text-xs uppercase tracking-widest">Total</td>
+                                <td className="py-2 px-2 text-center font-bold text-slate-800 text-xs">{item.qty}</td>
+                                <td colSpan="3"></td>
+                                <td className="py-2 px-2 text-right font-bold text-slate-900 text-xs">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              </tr>
+                            );
+                          }
 
-                    const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+                          if (item.type === 'subsection') {
+                            return (
+                              <tr key={`sub-${idx}`} className="break-inside-avoid">
+                                <td colSpan="7" className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
+                                  {item.description}
+                                </td>
+                              </tr>
+                            );
+                          }
 
-                    return (
-                      <tr key={idx} className="border-b border-slate-100 break-inside-avoid">
-                        <td className="py-1.5 px-2 text-center align-middle">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt="product" className="w-full aspect-square max-w-[95px] object-contain mx-auto" />
-                          ) : (
-                            <div className="w-full aspect-square max-w-[95px] flex items-center justify-center text-slate-300 mx-auto">
-                              <span className="text-[11px]">No Img</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-1.5 px-2 text-left align-top">
-                          <div className="font-bold text-slate-900 text-[13px] mb-0.5">{item.itemCode || '-'}</div>
-                          <div className="text-slate-700 text-[12px] leading-tight mb-1.5">{item.description || '-'}</div>
-                          {matchedInventoryItem?.Brand && (
-                            <div className="text-slate-600 text-[11px]">Brand - {matchedInventoryItem.Brand}</div>
-                          )}
-                        </td>
-                        <td className="py-1.5 px-2 text-center align-top">
-                          <div className="text-slate-800 text-[13px]">{item.quantity}</div>
-                          <div className="text-slate-600 text-[10px] mt-0.5 uppercase">PCS</div>
-                        </td>
-                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px]">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        {/* Fixed: was showing ₹ symbol instead of % for discount */}
-                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
-                        <td className="py-1.5 px-2 text-right align-top text-slate-800 text-[12px]">₹ {item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                        <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[12px]">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              </div>
-            </PageWrapper>
-            ));
+                          // Product row
+                          const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+
+                          return (
+                            <tr key={`prod-${idx}`} className="border-b border-slate-100 break-inside-avoid">
+                              <td className="py-1.5 px-2 text-center align-middle">
+                                {item.imageUrl ? (
+                                  <img src={item.imageUrl} alt="product" className="h-[100px] w-auto max-w-full object-contain mx-auto" />
+                                ) : (
+                                  <div className="h-[100px] w-full max-w-[180px] flex items-center justify-center text-slate-300 mx-auto">
+                                    <span className="text-[11px]">No Img</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-1.5 px-2 text-left align-top">
+                                <div className="font-bold text-slate-900 text-[11px]">{item.itemCode || '-'}</div>
+                                {item.description && (
+                                  <div className="text-slate-600 text-[10px] mt-1 pr-2 leading-snug">
+                                    {item.description}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-1.5 px-1 text-center align-top">
+                                <div className="text-slate-800 text-[13px]">{item.quantity}</div>
+                                <div className="text-slate-600 text-[10px] mt-0.5 uppercase">PCS</div>
+                              </td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[12px] whitespace-nowrap">₹{item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </PageWrapper>
+              );
             });
           })()}
 
@@ -378,7 +453,36 @@ export default function PremiumQuotationPrint({
           const allDiscount = sectionSummaryData.reduce((s, r) => s + r.totalDiscount, 0);
           const allAmount = sectionSummaryData.reduce((s, r) => s + r.totalAmount, 0);
 
-          if (sectionSummaryData.length === 0) return null;
+          if (sectionSummaryData.length === 0) {
+            return (
+              <div className="flex justify-end mt-4">
+                <div className="w-80 space-y-3 text-sm">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Gross Amount:</span>
+                    <span>₹{Number(summary?.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Discount:</span>
+                    <span>- ₹{Number(summary?.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Tax Amount:</span>
+                    <span>+ ₹{Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-900 font-bold text-lg border-t border-slate-300 pt-3 mt-2">
+                    <span>Grand Total:</span>
+                    <span>₹{Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  {summary?.finalAmount && (
+                    <div className="flex justify-between text-emerald-700 font-black text-xl border-t border-slate-300 pt-3 mt-2">
+                      <span>Final Amount:</span>
+                      <span>₹{Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
 
           return (
             <table className="w-full text-left text-sm border-collapse" style={{ tableLayout: 'fixed' }}>

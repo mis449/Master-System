@@ -363,7 +363,7 @@ export default function ItemLinesTable({
                     const newUnitPrice = denom !== 0 ? netVal / denom : 0;
                     if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice); 
                   }}
-                  className="w-full max-w-[90px] border border-emerald-200 text-xs px-1 py-1 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                  className="w-full max-w-[110px] border border-emerald-200 text-xs px-2 py-1.5 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                   placeholder="0.00"
                 />
               </div>

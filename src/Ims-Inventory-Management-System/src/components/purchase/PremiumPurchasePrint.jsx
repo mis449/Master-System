@@ -5,6 +5,7 @@ import firstImg from '../../Assets/first.png';
 import secondImg from '../../Assets/second.png';
 import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
+import upiImg from '../../../../assets/upi.png';
 
 export default function PremiumPurchasePrint({ 
   initialData, 
@@ -37,183 +38,522 @@ export default function PremiumPurchasePrint({
   // Reusable Logo Component
   const Logo = () => (
     <div className="mb-6">
-      <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-28 print:h-24 object-contain scale-[1.6] origin-left" />
+      <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[65px] object-contain origin-left mix-blend-multiply" />
     </div>
   );
 
+  // Page wrapper — strict height to A4 size to prevent any extra blank pages
   const PageWrapper = ({ children, isLast = false, className = '' }) => (
-    <div className={`w-full bg-white relative flex flex-col min-h-[297mm] print:min-h-0 ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} print:!p-0 ${className}`} style={{ padding: '10mm', boxSizing: 'border-box' }}>
-      {children}
+    <div
+      className={`w-full bg-white relative overflow-hidden ${isLast ? '' : 'break-after-page mb-8 print:mb-0'} ${className}`}
+      style={{ padding: '8mm 10mm 12mm 10mm', boxSizing: 'border-box', height: '295mm' }}
+    >
+      <div className="w-full h-full pb-6">
+        {children}
+      </div>
+      
+      {/* Universal Footer */}
+      <div className="absolute bottom-0 left-[10mm] right-[10mm] pt-2 border-t border-black text-center text-[12px] font-medium text-black bg-white z-10 pb-2">
+        7880011158 | info@parekhgallerium.com | IG - @parekh_gallerium
+      </div>
     </div>
   );
 
   return (
-    <div className="w-full text-slate-800 font-sans print:!p-0 print:!bg-transparent" id="premium-purchase-print" style={{ backgroundColor: '#f8fafc', padding: '20px' }}>
+    <div className="w-full text-slate-800 font-sans print:!bg-transparent" id="premium-purchase-print" style={{ backgroundColor: '#f8fafc' }}>
+      <style type="text/css" media="print">
+        {`
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+          }
+          #premium-purchase-print {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        `}
+      </style>
+
       
-      {/* Page 1: Merged Cover & Vendor Info Page */}
-      <PageWrapper className="print:!p-0">
-        {/* Header Section (Logo Top Left, Details Top Right) */}
-        <div className="flex justify-between items-center mb-6 print:mb-2">
-          <div className="flex flex-col">
-            <div className="mb-4">
-               <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[110px] object-contain origin-left mix-blend-multiply" />
+      {/* ── PAGE 1: Cover + Vendor Info (merged) ── */}
+      <PageWrapper>
+        {/* Header: Logo + Doc details */}
+        <div className="flex flex-col" style={{ height: '245mm' }}>
+          {/* Header: Logo + Doc details */}
+          <div className="flex justify-between items-center mb-2 shrink-0">
+            <div>
+              <img src={logoImg} alt="Parekh Sanitary Stores Logo" className="h-[65px] object-contain origin-left mix-blend-multiply" />
+            </div>
+            <div className="text-sm space-y-1 text-slate-600 text-right">
+              <div><span className="font-medium mr-2">Document # :</span> {purchaseNo}</div>
+              <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
             </div>
           </div>
-          <div className="text-sm print:text-xs space-y-1.5 text-slate-600 text-right">
-            <div><span className="font-medium mr-2">Document # :</span> {purchaseNo}</div>
-            <div><span className="font-medium mr-2">Created On :</span> {formattedDate}</div>
-          </div>
-        </div>
 
-        {/* Top Cover Image */}
-        <div className="mb-8 print:mb-6 rounded-lg overflow-hidden relative">
-          <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full max-h-[300px] print:max-h-[250px] object-cover object-center" />
-        </div>
-        
-        {/* Document Title */}
-        <div className="mb-6 print:mb-4">
-          <h1 className="text-4xl print:text-3xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
-        </div>
-
-        {/* Vendor Info Split Section */}
-        <div className="flex gap-12 print:gap-8 flex-1">
-          <div className="w-[50%] rounded-lg overflow-hidden">
-            <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover" />
+          {/* Upper image — approx 45% height */}
+          <div className="flex-1 min-h-0 mb-3 overflow-hidden">
+            <img src={coverImage} alt="Luxury Bathroom Cover" className="w-full h-full object-cover object-center" />
           </div>
-          <div className="w-[50%] flex flex-col py-2">
-            <div className="space-y-4 print:space-y-2 text-sm text-slate-800 mb-8 print:mb-4">
-              <div className="flex"><span className="w-36 font-semibold">Vendor Name</span> <span className="uppercase">: {basicInfo?.vendor || basicInfo?.vendorName || '-'}</span></div>
-              {basicInfo?.areaPinCode && <div className="flex"><span className="w-36"></span> <span>  {basicInfo.areaPinCode}</span></div>}
-              {basicInfo?.address && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.address}</span></div>}
-              {basicInfo?.cityState && <div className="flex"><span className="w-36"></span> <span className="uppercase">  {basicInfo.cityState}, India</span></div>}
-              <div className="flex mt-4"><span className="w-36 font-semibold">Vendor Number</span> <span>: {basicInfo?.mobile || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Vendor Location</span> <span className="uppercase">: {basicInfo?.cityState?.split('/')[0] || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Reference No</span> <span className="uppercase">: {otherInfo?.referenceNumber || '-'}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Buyer</span> <span className="uppercase">: {salesperson}</span></div>
+
+          {/* Document Title */}
+          <div className="mb-3 shrink-0">
+            <h1 className="text-2xl font-light tracking-wider text-slate-800">{documentTitle}</h1>
+          </div>
+
+          {/* Two-column: vertical image left, vendor info right — approx 45% height */}
+          <div className="flex-1 min-h-0 flex gap-2 items-stretch">
+            <div className="w-[40%] overflow-hidden">
+              <img src={verticalImage} alt="Bathroom details" className="w-full h-full object-cover object-center" style={{ display: 'block' }} />
             </div>
+            <div className="w-[60%] flex flex-col overflow-hidden">
+              <table className="-mt-1 text-[14px] text-slate-800 mb-4 border-collapse" style={{ borderSpacing: 0 }}>
+                <tbody>
+                  <tr>
+                    <td className="font-semibold pr-3 pb-0.5 whitespace-nowrap align-top">Vendor Name</td>
+                    <td className="pr-2 pb-0.5 align-top">:</td>
+                    <td className="pb-0.5 uppercase align-top font-medium">{basicInfo?.vendor || basicInfo?.vendorName || '-'}</td>
+                  </tr>
+                  {basicInfo?.areaPinCode && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 text-slate-600 leading-tight">{basicInfo.areaPinCode}</td>
+                    </tr>
+                  )}
+                  {basicInfo?.address && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 uppercase text-slate-600 leading-tight">{basicInfo.address}</td>
+                    </tr>
+                  )}
+                  {basicInfo?.cityState && (
+                    <tr>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5"></td>
+                      <td className="py-0.5 uppercase text-slate-600 leading-tight">{basicInfo.cityState}, India</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Vendor Number</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5">{basicInfo?.mobile || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Vendor Location</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5 uppercase">{basicInfo?.cityState?.split('/')[0] || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Buyer</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5 uppercase">{salesperson}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Reference No</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5">{otherInfo?.referenceNumber || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap align-top pt-2">Scan to reach us</td>
+                    <td className="pr-2 py-0.5 align-top pt-2">:</td>
+                    <td className="py-0.5 align-top pt-1">
+                      <img src={qrCode} alt="Scan to reach us" className="w-[85px] h-[85px] object-contain" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-            <div className="mt-auto space-y-2">
-              <div className="flex items-center gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={14} /></div>
-                <span>info@parekhgallerium.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={14} /></div>
-                <span>parekh_gallerium</span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-slate-700">
-                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={14} /></div>
-                <span className="leading-snug">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
+              <div className="mt-auto space-y-1">
+                <div className="flex items-center gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-500 rounded"><Mail size={14} /></div>
+                  <span>info@parekhgallerium.com</span>
+                </div>
+                <div className="flex items-center gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-pink-100 text-pink-500 rounded"><Instagram size={14} /></div>
+                  <span>parekh_gallerium</span>
+                </div>
+                <div className="flex items-start gap-3 text-[13px] text-slate-700">
+                  <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-500 rounded shrink-0"><MapPin size={14} /></div>
+                  <span className="leading-tight">6M84+9HF, New Dhamtari Rd, RishabhNagar<br/>and Pawan Vihar Colony, Pachpedi Naka,<br/>Raipur, Tikrapara, Chhattisgarh 492001</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </PageWrapper>
 
-      {/* Page 3: Product Pages */}
-      <PageWrapper>
-        <Logo />
-        <h2 className="text-2xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
-        
-        <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="bg-slate-100 text-slate-700 uppercase tracking-wider text-[10px]">
-              <th className="py-3 px-2 text-center w-32">Image</th>
-              <th className="py-3 px-2 text-left w-[35%]">Product Details</th>
-              <th className="py-3 px-2 text-center w-12">Qty</th>
-              <th className="py-3 px-2 text-right w-20">Rate</th>
-              <th className="py-3 px-2 text-right w-16">Dis %</th>
-              <th className="py-3 px-2 text-right w-20">Net rate</th>
-              <th className="py-3 px-2 text-right w-24">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items?.filter(item => item.itemCode || item.description).map((item, idx) => {
-              const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
-              const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
-              const unitPrice = Number(item.unitPrice || 0);
-              const discountPercent = Number(item.discountPercent || 0);
-              const netRate = unitPrice - (unitPrice * (discountPercent / 100));
-              const amount = netRate * (Number(item.quantity) || 0);
+
+      {/* ── PAGE 3 onwards: Product Details ── */}
+      {(() => {
+            const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
+            
+            const flattenedRows = [];
+            let currentSubtotal = { qty: 0, amt: 0 };
+            let hasItemsSinceLastSubtotal = false;
+            let currentSectionName = '';
+
+            const pushSubtotal = () => {
+              if (hasItemsSinceLastSubtotal) {
+                flattenedRows.push({
+                  type: 'subtotal',
+                  isSubtotal: true,
+                  qty: currentSubtotal.qty,
+                  amount: currentSubtotal.amt
+                });
+                currentSubtotal = { qty: 0, amt: 0 };
+                hasItemsSinceLastSubtotal = false;
+              }
+            };
+
+            itemsFiltered.forEach((item) => {
+              if (item.type === 'section') {
+                pushSubtotal();
+                currentSectionName = item.description || '';
+                if (currentSectionName) {
+                  flattenedRows.push({
+                    type: 'section_header',
+                    name: currentSectionName,
+                    isContinuation: false
+                  });
+                }
+              } else if (item.type === 'subsection') {
+                flattenedRows.push({
+                  type: 'subsection',
+                  isSubsection: true,
+                  description: item.description
+                });
+              } else {
+                const unitPrice = Number(item.unitPrice || 0);
+                const discountPercent = Number(item.discountPercent || 0);
+                const netRate = unitPrice - (unitPrice * (discountPercent / 100));
+                const amount = netRate * (Number(item.quantity) || 0);
+
+                const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+                const imageUrl = item.thumbnail || item.image || (matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '');
+
+                currentSubtotal.qty += Number(item.quantity) || 0;
+                currentSubtotal.amt += amount;
+                hasItemsSinceLastSubtotal = true;
+
+                flattenedRows.push({ 
+                  ...item, 
+                  type: 'product',
+                  amount, netRate, unitPrice, discountPercent, imageUrl
+                });
+              }
+            });
+
+            pushSubtotal();
+
+            const pages = [];
+            let currentPageRows = [];
+            let currentWeight = 0;
+            let activeSectionName = '';
+
+            for (let i = 0; i < flattenedRows.length; i++) {
+              // The first page has the "PRODUCT DETAILS" header which takes extra space.
+              // So limit first page to 6 products (~7.5 weight), and subsequent pages to 7 products (~8.8 weight).
+              const MAX_WEIGHT = pages.length === 0 ? 7.5 : 8.8;
+
+              const row = flattenedRows[i];
+              let weight = 1.0;
+              if (row.type === 'section_header') weight = 0.7;
+              else if (row.type === 'subsection') weight = 0.4;
+              else if (row.type === 'subtotal') weight = 0.5;
+              else weight = 1.0; 
+
+              if (currentWeight + weight > MAX_WEIGHT && currentPageRows.filter(r => r.type === 'product').length > 0) {
+                // Prevent orphan headers at bottom
+                let poppedHeaders = [];
+                while (
+                  currentPageRows.length > 0 && 
+                  (currentPageRows[currentPageRows.length - 1].type === 'section_header' || currentPageRows[currentPageRows.length - 1].type === 'subsection')
+                ) {
+                  const h = currentPageRows.pop();
+                  currentWeight -= (h.type === 'section_header' ? 0.7 : 0.4);
+                  poppedHeaders.unshift(h);
+                }
+
+                if (currentPageRows.length > 0) {
+                  pages.push(currentPageRows);
+                }
+                
+                currentPageRows = [...poppedHeaders];
+                currentWeight = poppedHeaders.reduce((sum, h) => sum + (h.type === 'section_header' ? 0.7 : 0.4), 0);
+
+                if (activeSectionName && row.type !== 'section_header') {
+                  if (poppedHeaders.length === 0 || poppedHeaders[0].type !== 'section_header') {
+                    currentPageRows.unshift({
+                      type: 'section_header',
+                      name: activeSectionName,
+                      isContinuation: true
+                    });
+                    currentWeight += 0.7;
+                  }
+                }
+              }
+
+              if (row.type === 'section_header') {
+                activeSectionName = row.name;
+              }
+
+              currentPageRows.push(row);
+              currentWeight += weight;
+            }
+
+            if (currentPageRows.length > 0) {
+              pages.push(currentPageRows);
+            }
+
+            return pages.map((pageChunk, pageIdx) => {
+              // Check if the very first row is a section_header so we can render it above the table column headers, to preserve exact UI
+              const firstRowIsSection = pageChunk.length > 0 && pageChunk[0].type === 'section_header';
+              const firstSectionRow = firstRowIsSection ? pageChunk[0] : null;
+              const remainingRows = firstRowIsSection ? pageChunk.slice(1) : pageChunk;
 
               return (
-                <tr key={idx} className="border-b border-slate-200">
-                  <td className="py-4 px-2 text-center">
-                    {imageUrl ? (
-                      <img src={imageUrl} alt="product" className="w-28 h-28 object-contain mx-auto rounded border border-slate-200 shadow-sm bg-white" />
-                    ) : (
-                      <div className="w-28 h-28 bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto rounded">
-                         <span className="text-[10px]">No Img</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-4 px-2 text-left">
-                    <div className="font-bold text-slate-800 text-sm mb-1">{item.itemCode || '-'}</div>
-                    <div className="text-slate-600 leading-snug">{item.description || '-'}</div>
-                  </td>
-                  <td className="py-4 px-2 text-center font-bold text-slate-800">{item.quantity}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">₹{unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">{discountPercent > 0 ? `${discountPercent}%` : '-'}</td>
-                  <td className="py-4 px-2 text-right text-slate-700">₹{netRate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="py-4 px-2 text-right font-bold text-slate-900">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
+                <PageWrapper key={`page-${pageIdx}`}>
+                  <Logo />
+                  {pageIdx === 0 && (
+                    <h2 className="text-3xl font-bold text-slate-800 mb-6 uppercase tracking-wider">Product Details</h2>
+                  )}
+                  
+                  <div className="space-y-6">
+                    <table className="w-full text-left text-sm border-collapse mb-2" style={{ pageBreakInside: 'auto', tableLayout: 'fixed' }}>
+                      <thead className="table-header-group">
+                        {firstSectionRow && (
+                          <tr>
+                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
+                              {firstSectionRow.name} {firstSectionRow.isContinuation ? '(Contd.)' : ''}
+                            </th>
+                          </tr>
+                        )}
+                        <tr className="bg-white text-slate-800 font-semibold border-y border-black text-[13px] tracking-wide">
+                          <th className="py-[2px] px-2 text-center w-[18%]">Image</th>
+                          <th className="py-[2px] px-2 text-left w-[41%] whitespace-nowrap">Product Details</th>
+                          <th className="py-[2px] px-1 text-center w-[5%]">Qty</th>
+                          <th className="py-[2px] px-1 text-right w-[10%]">Rate</th>
+                          <th className="py-[2px] px-1 text-right w-[5%]">Dis%</th>
+                          <th className="py-[2px] px-1 text-right w-[9%]">Net rate</th>
+                          <th className="py-[2px] px-2 text-right w-[12%]">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {remainingRows.map((item, idx) => {
+                          if (item.type === 'section_header') {
+                            return (
+                              <tr key={`sec-${idx}`} className="break-inside-avoid">
+                                <td colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
+                                  {item.name} {item.isContinuation ? '(Contd.)' : ''}
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          if (item.type === 'subtotal') {
+                            return (
+                              <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
+                                <td colSpan="2" className="py-2 px-2 text-center font-bold text-slate-800 text-xs uppercase tracking-widest">Total</td>
+                                <td className="py-2 px-2 text-center font-bold text-slate-800 text-xs">{item.qty}</td>
+                                <td colSpan="3"></td>
+                                <td className="py-2 px-2 text-right font-bold text-slate-900 text-xs">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              </tr>
+                            );
+                          }
+
+                          if (item.type === 'subsection') {
+                            return (
+                              <tr key={`sub-${idx}`} className="break-inside-avoid">
+                                <td colSpan="7" className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
+                                  {item.description}
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          // Product row
+                          const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+
+                          return (
+                            <tr key={`prod-${idx}`} className="border-b border-slate-100 break-inside-avoid">
+                              <td className="py-1.5 px-2 text-center align-middle">
+                                {item.imageUrl ? (
+                                  <img src={item.imageUrl} alt="product" className="h-[100px] w-auto max-w-full object-contain mx-auto" />
+                                ) : (
+                                  <div className="h-[100px] w-full max-w-[180px] flex items-center justify-center text-slate-300 mx-auto">
+                                    <span className="text-[11px]">No Img</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-1.5 px-2 text-left align-top">
+                                <div className="font-bold text-slate-900 text-[11px]">{item.itemCode || '-'}</div>
+                                {item.description && (
+                                  <div className="text-slate-600 text-[10px] mt-1 pr-2 leading-snug">
+                                    {item.description}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-1.5 px-1 text-center align-top">
+                                <div className="text-slate-800 text-[13px]">{item.quantity}</div>
+                                <div className="text-slate-600 text-[10px] mt-0.5 uppercase">PCS</div>
+                              </td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[12px] whitespace-nowrap">₹{item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </PageWrapper>
               );
-            })}
-          </tbody>
-        </table>
+            });
+          })()}
 
-        {/* Summary */}
-        <div className="flex justify-end mt-8">
-          <div className="w-80 space-y-3 text-sm">
-            <div className="flex justify-between text-slate-600">
-              <span>Gross Amount:</span>
-              <span>₹{Number(summary?.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>Discount:</span>
-              <span>- ₹{Number(summary?.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>Tax Amount:</span>
-              <span>+ ₹{Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between text-slate-900 font-bold text-lg border-t border-slate-300 pt-3 mt-2">
-              <span>Grand Total:</span>
-              <span>₹{Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</span>
-            </div>
-            {summary?.finalAmount && (
-              <div className="flex justify-between text-emerald-700 font-black text-xl border-t border-slate-300 pt-3 mt-2">
-                <span>Final Amount:</span>
-                <span>₹{Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </PageWrapper>
-
-      {/* Page 4: Terms and Conditions */}
+      {/* ── PAGE 4: Summary ── */}
       <PageWrapper>
         <Logo />
-        <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms & Conditions</h2>
+        <h2 className="text-3xl font-medium text-black mb-8 uppercase tracking-wider">Summary</h2>
+        
+        {(() => {
+          const itemsFiltered = items?.filter(item => item.itemCode || item.description) || [];
+          const sections = [];
+          let curSection = { name: '', items: [] };
+
+          itemsFiltered.forEach((item) => {
+            if (item.type === 'section') {
+              if (curSection.items.length > 0 || curSection.name !== '') sections.push(curSection);
+              curSection = { name: item.description, items: [] };
+            } else if (item.type !== 'subsection') {
+              const unitPrice = Number(item.unitPrice || 0);
+              const discountPercent = Number(item.discountPercent || 0);
+              const qty = Number(item.quantity || 0);
+              const mrp = unitPrice * qty;
+              const disc = mrp * (discountPercent / 100);
+              curSection.items.push({ mrp, disc, amount: mrp - disc });
+            }
+          });
+          if (curSection.items.length > 0 || curSection.name !== '') sections.push(curSection);
+
+          const sectionSummaryData = sections.filter(s => s.name).map(s => ({
+            name: s.name,
+            totalMRP: s.items.reduce((sum, i) => sum + i.mrp, 0),
+            totalDiscount: s.items.reduce((sum, i) => sum + i.disc, 0),
+            totalAmount: s.items.reduce((sum, i) => sum + i.amount, 0),
+          }));
+
+          const allMRP = sectionSummaryData.reduce((s, r) => s + r.totalMRP, 0);
+          const allDiscount = sectionSummaryData.reduce((s, r) => s + r.totalDiscount, 0);
+          const allAmount = sectionSummaryData.reduce((s, r) => s + r.totalAmount, 0);
+
+          if (sectionSummaryData.length === 0) {
+            return (
+              <div className="flex justify-end mt-4">
+                <div className="w-80 space-y-3 text-sm">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Gross Amount:</span>
+                    <span>₹{Number(summary?.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Discount:</span>
+                    <span>- ₹{Number(summary?.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Tax Amount:</span>
+                    <span>+ ₹{Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-900 font-bold text-lg border-t border-slate-300 pt-3 mt-2">
+                    <span>Grand Total:</span>
+                    <span>₹{Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  {summary?.finalAmount && (
+                    <div className="flex justify-between text-emerald-700 font-black text-xl border-t border-slate-300 pt-3 mt-2">
+                      <span>Final Amount:</span>
+                      <span>₹{Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <table className="w-full text-left text-sm border-collapse" style={{ tableLayout: 'fixed' }}>
+              <thead>
+                <tr className="border-t border-black text-[12px] font-bold text-black uppercase tracking-wider">
+                  <th className="py-3 px-4 text-left w-[40%]">Section</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Total MRP</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Discount</th>
+                  <th className="py-3 px-4 text-right w-[20%]">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sectionSummaryData.map((sec, i) => (
+                  <tr key={i} className="border-b border-slate-200">
+                    <td className="py-3 px-4 text-left text-[13px] text-black uppercase">{sec.name}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalMRP.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalDiscount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                    <td className="py-3 px-4 text-right text-[13px] text-black">₹ {sec.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  </tr>
+                ))}
+                {/* Total for all sections */}
+                <tr className="border-t-2 border-black">
+                  <td className="py-3 px-4 text-left text-[13px] font-black text-black uppercase tracking-wide">Total for all Sections</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allMRP.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allDiscount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                  <td className="py-3 px-4 text-right text-[13px] font-bold text-black">₹ {allAmount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+                </tr>
+                {/* Tax/GST */}
+                <tr>
+                  <td className="py-3 px-4 text-left text-[13px] text-slate-700">Tax Amount (GST)</td>
+                  <td colSpan="2"></td>
+                  <td className="py-3 px-4 text-right text-[13px] text-slate-700">₹ {Number(summary?.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                </tr>
+                {/* Grand Total */}
+                <tr className="border-t-2 border-black">
+                  <td className="py-4 px-4 text-left text-[15px] font-black text-black uppercase tracking-wide">Grand Total</td>
+                  <td colSpan="2"></td>
+                  <td className="py-4 px-4 text-right text-[15px] font-black text-black">₹ {Number(summary?.totalAmount || 0).toLocaleString('en-IN')}</td>
+                </tr>
+                {summary?.finalAmount && (
+                  <tr className="border-t border-black">
+                    <td className="py-4 px-4 text-left text-[15px] font-black text-emerald-800 uppercase tracking-wide">Final Amount</td>
+                    <td colSpan="2"></td>
+                    <td className="py-4 px-4 text-right text-[15px] font-black text-emerald-800">₹ {Number(summary?.finalAmount || 0).toLocaleString('en-IN')}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          );
+        })()}
+
+        <p className="mt-6 text-[11px] text-slate-500">All prices are inclusive of GST and any other government taxes.</p>
+      </PageWrapper>
+
+      {/* ── PAGE 5: Terms & Conditions ── */}
+      <PageWrapper>
+        <Logo />
+        <h2 className="text-3xl font-light text-slate-800 mb-8 uppercase tracking-widest">Terms &amp; Conditions</h2>
         
         <div className="space-y-8 text-sm">
-          <div>
-            <h3 className="font-bold text-slate-800 mb-4 uppercase">General</h3>
-            <ul className="space-y-2 text-slate-700 uppercase leading-relaxed list-none">
-              <li>1) Special order products will not be taken back or exchanged.</li>
-              <li>2) Interest of 24% P.A will be charged if payment of bill is not made within given timeline.</li>
-              <li>3) Disputes if any are subject to Raipur jurisdiction only.</li>
-              <li>4) If any warranty passed to customer is purely from the manufacture only.</li>
-              <li>5) Please check the goods before accepting.</li>
-              <li>6) Refund will be made by cheque for returned goods.</li>
-              <li>7) Goods will not be returned and exchanged on Sunday and Saturday.</li>
-              <li>8) Payment 100% Advance.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-slate-800 mb-2 uppercase">Price Validity</h3>
-            <p className="text-slate-700">{basicInfo?.validityDate ? formatDate(basicInfo.validityDate) : '30 Days from Purchase Date'}</p>
+          <div className="text-[11px] text-slate-800 leading-snug space-y-1.5">
+            <p>1. Special order products will not be taken back or exchanged.</p>
+            <p>2. Interest of 24% P.A will be charged if payment of bill is not made within given timeline.</p>
+            <p>3. Disputes if any are subject to Raipur jurisdiction only.</p>
+            <p>4. If any warranty passed to customer is purely from the manufacture only.</p>
+            <p>5. Please check the goods before accepting.</p>
+            <p>6. Refund will be made by cheque for returned goods.</p>
+            <p>7. Goods will not be returned and exchanged on Sunday and Saturday.</p>
+            <p>8. Payment 100% Advance.</p>
+            {basicInfo?.validityDate && <p className="mt-2 font-bold text-slate-700">Price Validity: {formatDate(basicInfo.validityDate)}</p>}
           </div>
 
           <div className="flex justify-between items-start mt-12">
@@ -230,8 +570,8 @@ export default function PremiumPurchasePrint({
             
             <div className="text-center">
               <h3 className="font-bold text-slate-800 mb-3 uppercase">Scan for UPI</h3>
-              <div className="p-2 border-2 border-red-700 rounded inline-block bg-white shadow-sm">
-                <img src={qrCode} alt="UPI QR Code" className="w-32 h-32" />
+              <div className="p-1 border-2 border-red-700 inline-block bg-white shadow-sm">
+                <img src={upiImg} alt="UPI QR Code" className="w-32 h-32 object-contain" />
               </div>
             </div>
             
@@ -246,15 +586,15 @@ export default function PremiumPurchasePrint({
         </div>
       </PageWrapper>
 
-      {/* Page 5: Brand Showcase & Final Footer */}
+      {/* ── PAGE 6: Brand Showcase & Final Footer ── */}
       <PageWrapper isLast={true}>
         <Logo />
         
-        <div className="mt-6 p-0 mb-8 print:mb-4 flex-1 flex flex-col justify-center items-center">
+        <div className="mt-6 p-0 mb-8 print:mb-4 flex flex-col justify-center items-center">
           <img src={thirdImg} alt="Brand Showcase" className="w-full max-h-[700px] print:max-h-[400px] object-contain" />
         </div>
 
-        <div className="bg-black text-white p-12 print:p-6 rounded-xl mt-auto print:bg-black" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+        <div className="bg-black text-white p-12 print:p-6 mt-auto print:bg-black" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
           <h2 className="text-center text-xl print:text-lg font-medium tracking-widest mb-12 print:mb-6 uppercase">
             Central India's Largest Bathroom Solution Showroom
           </h2>
@@ -263,8 +603,8 @@ export default function PremiumPurchasePrint({
             <img src={pgLogo} alt="Parekh Gallerium Logo" className="w-24 h-auto object-contain mb-2" />
             <h3 className="text-3xl print:text-2xl font-bold tracking-widest mt-4 mb-2">PAREKH GALLERIUM</h3>
             <p className="text-xs text-center text-slate-300 tracking-wider leading-relaxed">
-              SANITARY WARE | BATHROOM FIXTURES | SWIMMING POOL | SPA & JACUZZI<br/>
-              TILES & WOODEN FLOORING | PLUMBING & PIPING | FALSE CEILING |<br/>
+              SANITARY WARE | BATHROOM FIXTURES | SWIMMING POOL | SPA &amp; JACUZZI<br/>
+              TILES &amp; WOODEN FLOORING | PLUMBING &amp; PIPING | FALSE CEILING |<br/>
               WINDOWS AND DOORS
             </p>
           </div>
@@ -272,7 +612,7 @@ export default function PremiumPurchasePrint({
           <div className="flex justify-center gap-16 print:gap-8 text-xs text-slate-300">
             <div className="text-right space-y-1">
               <h4 className="font-bold text-white uppercase tracking-wider mb-2">Corporate Office</h4>
-              <p>C - 1,3 & 4, Rishab Complex,</p>
+              <p>C - 1,3 &amp; 4, Rishab Complex,</p>
               <p>M.G. Road, Raipur (C.G.)</p>
               <p>Ph.: 0771 - 4700501, 4031480</p>
               <p>Fax: 0771 - 4700501</p>
@@ -290,7 +630,7 @@ export default function PremiumPurchasePrint({
         </div>
         
         <div className="flex justify-between items-center text-[10px] text-slate-400 mt-4 print:mt-1 px-2">
-          <span>Page 4</span>
+          <span>Page 6</span>
           <span>Document made through Botivate, an IMS Software</span>
         </div>
       </PageWrapper>
