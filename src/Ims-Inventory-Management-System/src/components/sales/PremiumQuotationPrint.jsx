@@ -6,6 +6,7 @@ import secondImg from '../../Assets/second.png';
 import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 import upiImg from '../../../../assets/upi.png';
+import locationQrImg from '../../../../assets/locationqr,png.png';
 
 export default function PremiumQuotationPrint({ 
   initialData, 
@@ -19,7 +20,7 @@ export default function PremiumQuotationPrint({
 }) {
   const coverImage = firstImg;
   const verticalImage = secondImg;
-  const qrCode = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=parekh@upi&pn=Parekh%20Gallerium";
+  const qrCode = locationQrImg;
 
   const quotationNo = initialData?.quotationNo || initialData?.docNo || 'Draft';
   const createdOn = initialData?.date || initialData?.docDate || new Date().toISOString().split('T')[0];
