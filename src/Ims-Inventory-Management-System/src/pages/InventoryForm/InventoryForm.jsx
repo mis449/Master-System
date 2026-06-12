@@ -45,11 +45,13 @@ export default function InventoryForm() {
     // Build a lookup map to avoid O(N*M) loops
     const summaryMap = {};
     inventorySummary.forEach(s => {
-      summaryMap[s.item_code] = s;
+      if (s.item_code) {
+        summaryMap[s.item_code.toString().trim().toLowerCase()] = s;
+      }
     });
 
     return items.map(item => {
-      const code = item.ItemCode || item.code;
+      const code = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
       const summary = summaryMap[code] || {};
 
       const openingQty = summary.opening_qty || 0;

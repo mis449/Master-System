@@ -386,16 +386,88 @@ const useDataStore = create((set, get) => ({
     }
   },
 
-  // Fetch inventory summary (for opening qty auto-population)
+  // Fetch inventory summary dynamically from all modules
   fetchInventorySummary: async () => {
     try {
-      const { data, error } = await supabase
-        .from('inventory_summary')
-        .select('*');
-      if (error) throw error;
-      set({ inventorySummary: data || [] });
+      // Import services dynamically to avoid circular dependencies
+      const [invoiceService, purchaseService, salesReturnService, purchaseReturnService] = await Promise.all([
+        import('../services/InvoiceService'),
+        import('../services/PurchaseService'),
+        import('../services/SalesReturnService'),
+        import('../services/PurchaseReturnService')
+      ]);
+
+      const [invoices, purchases, salesReturns, purchaseReturns] = await Promise.all([
+        invoiceService.getInvoices(),
+        purchaseService.getPurchases(),
+        salesReturnService.getSalesReturns(),
+        purchaseReturnService.getPurchaseReturns()
+      ]);
+
+      const summaryMap = {};
+
+      const addQty = (code, type, qty) => {
+        if (!code || !qty) return;
+        const key = String(code).trim().toLowerCase();
+        if (!summaryMap[key]) {
+          summaryMap[key] = {
+            item_code: String(code).trim(),
+            opening_qty: 0,
+            purchase_qty: 0,
+            sales_qty: 0,
+            purchase_return_qty: 0,
+            sales_return_qty: 0,
+            closing_qty: 0
+          };
+        }
+        summaryMap[key][type] += qty;
+        
+        if (type === 'purchase_qty' || type === 'sales_return_qty' || type === 'opening_qty') {
+           summaryMap[key].closing_qty += qty;
+        } else if (type === 'sales_qty' || type === 'purchase_return_qty') {
+           summaryMap[key].closing_qty -= qty;
+        }
+      };
+
+      // 1. Process Sales (Invoices)
+      (invoices || []).forEach(inv => {
+        if (inv.status !== 'Cancelled') {
+          const items = inv.details?.items || inv.items || [];
+          items.forEach(i => addQty(i.itemCode || i.code || i.item_code, 'sales_qty', Number(i.quantity) || 0));
+        }
+      });
+
+      // 2. Process Purchases
+      (purchases || []).forEach(pur => {
+        if (pur.status !== 'Cancelled') {
+          const items = pur.details?.items || pur.items || [];
+          items.forEach(i => addQty(i.itemCode || i.code || i.item_code, 'purchase_qty', Number(i.quantity) || 0));
+        }
+      });
+
+      // 3. Process Sales Returns (scales_return)
+      (salesReturns || []).forEach(sr => {
+        if (sr.status !== 'Cancelled') {
+          const items = sr.details?.items || sr.items || [];
+          items.forEach(i => addQty(i.itemCode || i.code || i.item_code, 'sales_return_qty', Number(i.quantity) || 0));
+        }
+      });
+
+      // 4. Process Purchase Returns
+      (purchaseReturns || []).forEach(pr => {
+        if (pr.status !== 'Cancelled') {
+          const items = pr.details?.items || pr.items || [];
+          items.forEach(i => addQty(i.itemCode || i.code || i.item_code, 'purchase_return_qty', Number(i.quantity) || 0));
+        }
+      });
+
+      // Note: opening_stock logic could go here if it was stored in inventory_transactions
+      // For now, opening_qty starts at 0 unless fetched from somewhere else.
+
+      const data = Object.values(summaryMap);
+      set({ inventorySummary: data });
     } catch (err) {
-      console.error('Error fetching inventory summary:', err);
+      console.error('Error computing inventory summary:', err);
     }
   },
 
