@@ -117,31 +117,63 @@ const AdminDashboard = () => {
           setDataSheetRows(dataResult.data.slice(1));
         }
 
-        // Process Archived Map
+        let startIso = getCurrentWeek().start;
+        let endIso = getCurrentWeek().end;
+
+        const parseSheetDateToIso = (dateStr) => {
+          if (!dateStr) return "";
+          const d = new Date(dateStr);
+          if (isNaN(d.getTime())) return "";
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          return `${yyyy}-${mm}-${dd}`;
+        };
+
+        // Dynamically synchronize the dashboard's dateRange with the actual reporting week from the For Records sheet
+        if (result.success && Array.isArray(result.data) && result.data.length > 2) {
+          const firstRow = result.data[2];
+          const sheetStart = firstRow[0];
+          const sheetEnd = firstRow[1];
+          if (sheetStart && sheetEnd) {
+            const parsedStart = parseSheetDateToIso(sheetStart);
+            const parsedEnd = parseSheetDateToIso(sheetEnd);
+            if (parsedStart && parsedEnd) {
+              startIso = parsedStart;
+              endIso = parsedEnd;
+              console.log("Synchronizing dateRange from sheet:", startIso, "to", endIso);
+              setDateRange({ start: startIso, end: endIso });
+            }
+          }
+        }
+
+        const currentStartDate = new Date(startIso);
+        const nextWeekStartDate = new Date(currentStartDate);
+        nextWeekStartDate.setDate(currentStartDate.getDate() + 7);
+        const nextWeekStartIso = parseSheetDateToIso(nextWeekStartDate);
+
+        // Process Archived Map for both current (next week) and last week
         const newArchivedMap = {};
-        const currentWeek = getCurrentWeek();
+        const lastWeekArchivedMap = {};
+        
         if (archivedResult.success && Array.isArray(archivedResult.data)) {
           archivedResult.data.slice(1).forEach((row, idx) => {
             const name = row[0];
             const rowStart = row[1];
             if (!name) return;
 
-            const normalizeDate = (d) => {
-              if (!d) return "";
-              const dateObj = new Date(d);
-              return isNaN(dateObj) ? d : dateObj.toISOString().split("T")[0];
+            const normRowStart = parseSheetDateToIso(rowStart);
+            const values = {
+              nextWeekPlannedNotDone: row[3]?.toString() || "",
+              nextWeekPlannedNotDoneOnTime: row[4]?.toString() || "",
+              nextWeekCommitment: row[5]?.toString() || ""
             };
 
-            const normRowStart = normalizeDate(rowStart);
-            if (normRowStart >= currentWeek.start && normRowStart <= currentWeek.end) {
-              newArchivedMap[name] = {
-                rowIndex: idx + 2,
-                values: {
-                  nextWeekPlannedNotDone: row[3]?.toString() || "",
-                  nextWeekPlannedNotDoneOnTime: row[4]?.toString() || "",
-                  nextWeekCommitment: row[5]?.toString() || ""
-                }
-              };
+            // Only map exactly matching dates
+            if (normRowStart === nextWeekStartIso) {
+              newArchivedMap[name] = { rowIndex: idx + 2, values };
+            } else if (normRowStart === startIso) {
+              lastWeekArchivedMap[name] = { rowIndex: idx + 2, values };
             }
           });
         }
@@ -193,6 +225,9 @@ const AdminDashboard = () => {
               const weeklyDonePct = target > 0 ? (100 - Math.abs(parseFloat(String(row[5] || "0").replace("%", "")))) : 0;
               const weeklyOnTimePct = target > 0 ? (100 - Math.abs(parseFloat(String(row[6] || "0").replace("%", "")))) : 0;
 
+              const currentArchive = newArchivedMap[empName] || null;
+              const lastWeekArchive = lastWeekArchivedMap[empName] || null;
+
               return {
                 id: `emp-${100 + index}`,
                 name: empName,
@@ -207,40 +242,16 @@ const AdminDashboard = () => {
                 totalWorkDone: row[7] || 0,
                 weekPending: row[8] || 0,
                 allPendingTillDate: row[9] || 0,
-                plannedWorkNotDone: row[12] || 0,
-                plannedWorkNotDoneOnTime: row[13] || 0,
-                commitment: row[14] || 0,
-                nextWeekPlannedWorkNotDone: row[16] || 0,
-                nextWeekPlannedWorkNotDoneOnTime: row[17] || 0,
-                nextWeekCommitment: row[18] || 0
+                plannedWorkNotDone: lastWeekArchive && lastWeekArchive.values.nextWeekPlannedNotDone ? lastWeekArchive.values.nextWeekPlannedNotDone : (row[12] || ""),
+                plannedWorkNotDoneOnTime: lastWeekArchive && lastWeekArchive.values.nextWeekPlannedNotDoneOnTime ? lastWeekArchive.values.nextWeekPlannedNotDoneOnTime : (row[13] || ""),
+                commitment: lastWeekArchive && lastWeekArchive.values.nextWeekCommitment ? lastWeekArchive.values.nextWeekCommitment : (row[14] || ""),
+                nextWeekPlannedWorkNotDone: currentArchive && currentArchive.values.nextWeekPlannedNotDone ? currentArchive.values.nextWeekPlannedNotDone : (row[16] || ""),
+                nextWeekPlannedWorkNotDoneOnTime: currentArchive && currentArchive.values.nextWeekPlannedNotDoneOnTime ? currentArchive.values.nextWeekPlannedNotDoneOnTime : (row[17] || ""),
+                nextWeekCommitment: currentArchive && currentArchive.values.nextWeekCommitment ? currentArchive.values.nextWeekCommitment : (row[18] || "")
               };
             });
 
           setSheetEmployees(parsedData);
-
-          // Dynamically synchronize the dashboard's dateRange with the actual reporting week from the For Records sheet
-          if (result.data.length > 2) {
-            const firstRow = result.data[2];
-            const sheetStart = firstRow[0];
-            const sheetEnd = firstRow[1];
-            if (sheetStart && sheetEnd) {
-              const parseSheetDateToIso = (dateStr) => {
-                if (!dateStr) return "";
-                const d = new Date(dateStr);
-                if (isNaN(d.getTime())) return "";
-                const yyyy = d.getFullYear();
-                const mm = String(d.getMonth() + 1).padStart(2, "0");
-                const dd = String(d.getDate()).padStart(2, "0");
-                return `${yyyy}-${mm}-${dd}`;
-              };
-              const startIso = parseSheetDateToIso(sheetStart);
-              const endIso = parseSheetDateToIso(sheetEnd);
-              if (startIso && endIso) {
-                console.log("Synchronizing dateRange from sheet:", startIso, "to", endIso);
-                setDateRange({ start: startIso, end: endIso });
-              }
-            }
-          }
         }
       } catch (error) {
         console.error("Error fetching sheet data:", error);
@@ -1217,12 +1228,12 @@ const AdminDashboard = () => {
                       )}
                       {visibleColumns.allPending && <td className="px-4 py-4 text-xs font-bold text-gray-900 text-center">{emp.allPendingTillDate}</td>}
                       
-                      {visibleColumns.lastWeekPlannedNotDone && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.plannedWorkNotDone}</td>}
-                      {visibleColumns.lastWeekPlannedNotDoneOnTime && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.plannedWorkNotDoneOnTime}</td>}
-                      {visibleColumns.lastWeekCommitment && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600">{emp.commitment}</td>}
+                      {visibleColumns.lastWeekPlannedNotDone && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600" onClick={(e) => e.stopPropagation()}>{emp.plannedWorkNotDone}</td>}
+                      {visibleColumns.lastWeekPlannedNotDoneOnTime && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600" onClick={(e) => e.stopPropagation()}>{emp.plannedWorkNotDoneOnTime}</td>}
+                      {visibleColumns.lastWeekCommitment && <td className="px-4 py-4 text-center text-xs font-bold bg-red-50/30 text-red-600" onClick={(e) => e.stopPropagation()}>{emp.commitment}</td>}
                       
                       {visibleColumns.nextWeekPlannedNotDone && (
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                           {selectedEmployees.includes(emp.id) ? (
                             <input 
                               type="text"
@@ -1237,7 +1248,7 @@ const AdminDashboard = () => {
                         </td>
                       )}
                       {visibleColumns.nextWeekPlannedNotDoneOnTime && (
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                           {selectedEmployees.includes(emp.id) ? (
                             <input 
                               type="text"
@@ -1252,7 +1263,7 @@ const AdminDashboard = () => {
                         </td>
                       )}
                       {visibleColumns.nextWeekCommitment && (
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                           {selectedEmployees.includes(emp.id) ? (
                             <input 
                               type="text"
