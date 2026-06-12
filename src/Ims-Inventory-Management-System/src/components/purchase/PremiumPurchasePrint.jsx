@@ -6,7 +6,7 @@ import secondImg from '../../Assets/second.png';
 import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 import upiImg from '../../../../assets/upi.png';
-import locationQrImg from '../../../../assets/locationqr,png.png';
+import locationQrImg from '../../../../assets/locationqr1.png';
 
 export default function PremiumPurchasePrint({ 
   initialData, 
