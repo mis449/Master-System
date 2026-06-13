@@ -238,16 +238,16 @@ const WorkingDayCalendarPage = () => {
 
     return (
         <ERPLayout>
-            <div className="max-w-7xl mx-auto space-y-4 px-4 pb-10">
+            <div className="max-w-7xl mx-auto space-y-4 px-5 sm:px-6 lg:px-8 pb-10 w-full overflow-x-hidden">
                 {/* Header Section - Professional & Clean */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 py-6 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-600 rounded text-white font-semibold shadow-sm">
+                    <div className="flex items-start sm:items-center gap-3">
+                        <div className="p-2 bg-blue-600 rounded text-white font-semibold shadow-sm shrink-0">
                             <List size={22} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 leading-tight">Working Days Management</h1>
-                            <p className="text-sm text-gray-500 font-medium">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">Working Days Management</h1>
+                            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1 sm:mt-0">
                                 Configure operational availability and scheduled work days.
                             </p>
                         </div>
@@ -266,7 +266,7 @@ const WorkingDayCalendarPage = () => {
                             </button>
                         </div>
 
-                        <div className="flex gap-3 bg-gray-50 p-2 rounded-lg border border-gray-200 w-full sm:w-auto justify-center">
+                        <div className="flex flex-wrap gap-2 sm:gap-3 bg-gray-50 p-2 rounded-lg border border-gray-200 w-full sm:w-auto justify-center">
                             <LegendItem label="Working" color="bg-emerald-500" />
                             <LegendItem label="Holiday" color="bg-red-500" />
                             <LegendItem label="Off Day" color="bg-gray-300" />
@@ -276,12 +276,12 @@ const WorkingDayCalendarPage = () => {
 
                 {/* Days Table List - Classic & Readable */}
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div className="px-5 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-base font-semibold text-gray-800">
+                    <div className="px-4 sm:px-5 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <h2 className="text-sm sm:text-base font-semibold text-gray-800">
                                 Schedule for {monthName} {year}
                             </h2>
-                            <span className="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100 uppercase">
+                            <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100 uppercase">
                                 {workingDays.length} Working Days
                             </span>
                         </div>
@@ -301,14 +301,14 @@ const WorkingDayCalendarPage = () => {
                     </div>
 
                     <div className="overflow-x-auto overflow-y-auto max-h-[70vh]">
-                        <table className="w-full text-left text-sm border-collapse min-w-[600px]">
+                        <table className="w-full text-left text-sm border-collapse min-w-max sm:min-w-[600px]">
                             <thead>
                                 <tr className="bg-white border-b border-gray-200 sticky top-0 z-10">
-                                    <th className="px-6 py-3 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">Day of Week</th>
-                                    <th className="px-6 py-3 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">Week No.</th>
-                                    <th className="px-6 py-3 font-semibold text-gray-600 text-[10px] uppercase tracking-wider text-center">Tasks</th>
-                                    <th className="px-6 py-3 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">Operational Status</th>
+                                    <th className="px-2 sm:px-6 py-2 sm:py-3 font-semibold text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-wider">Date</th>
+                                    <th className="px-2 sm:px-6 py-2 sm:py-3 font-semibold text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-wider">Day of Week</th>
+                                    <th className="px-2 sm:px-6 py-2 sm:py-3 font-semibold text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-wider">Week No.</th>
+                                    <th className="px-2 sm:px-6 py-2 sm:py-3 font-semibold text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-wider text-center">Tasks</th>
+                                    <th className="px-2 sm:px-6 py-2 sm:py-3 font-semibold text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-wider">Operational Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -337,27 +337,27 @@ const WorkingDayCalendarPage = () => {
                                                     'bg-gray-50 text-gray-400 hover:bg-gray-100'
                                                 }`}
                                         >
-                                            <td className="px-6 py-4">
-                                                <div className={`font-semibold ${dayInfo.isWorking ? 'text-gray-900' : 'text-gray-500'}`}>
+                                            <td className="px-2 sm:px-6 py-3 sm:py-4">
+                                                <div className={`font-semibold text-xs sm:text-sm ${dayInfo.isWorking ? 'text-gray-900' : 'text-gray-500'}`}>
                                                     {new Date(dayInfo.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 font-medium">
+                                            <td className="px-2 sm:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap">
                                                 {dayInfo.dayName}
                                             </td>
-                                            <td className="px-6 py-4 text-xs font-medium">
+                                            <td className="px-2 sm:px-6 py-3 sm:py-4 text-xs font-medium">
                                                 {dayInfo.weekNum || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
                                                 {dayInfo.taskCount > 0 ? (
-                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-600 text-white font-bold text-[10px] shadow-sm">
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded bg-blue-600 text-white font-bold text-[9px] sm:text-[10px] shadow-sm">
                                                         {dayInfo.taskCount}
                                                     </span>
                                                 ) : (
-                                                    <span className="text-gray-300 text-[10px]">0</span>
+                                                    <span className="text-gray-300 text-[9px] sm:text-[10px]">0</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                 {dayInfo.isHoliday ? (
                                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-full border border-red-200">
                                                         <ShieldAlert size={12} />
