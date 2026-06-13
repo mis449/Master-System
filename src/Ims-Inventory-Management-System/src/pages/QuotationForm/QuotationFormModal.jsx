@@ -53,6 +53,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         setItems(initialData.details.items || [getEmptyItem()]);
         setOtherInfo(initialData.details.otherInfo || {
           salesPerson: '',
+          salesNumber: '',
           referenceNumber: '',
           customerReference: '',
           expectedDeliveryDate: '',
@@ -87,6 +88,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         setItems([getEmptyItem()]);
         setOtherInfo({
           salesPerson: '',
+          salesNumber: '',
           referenceNumber: '',
           customerReference: '',
           expectedDeliveryDate: '',
@@ -130,6 +132,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   // Other Info State
   const [otherInfo, setOtherInfo] = useState({
     salesPerson: '',
+    salesNumber: '',
     referenceNumber: '',
     customerReference: '',
     expectedDeliveryDate: '',
@@ -531,6 +534,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
             setOtherInfo(prev => ({
               ...prev,
               salesPerson: custObj.salesPerson || prev.salesPerson,
+              salesNumber: custObj.salesNo || prev.salesNumber,
               mobile: custObj.mobile || prev.mobile,
               state: custObj.cityState ? custObj.cityState.split('/')[1]?.trim() : prev.state
             }));
@@ -590,6 +594,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         setOtherInfo(prev => ({
           ...prev,
           salesPerson: customerData.salesPerson || prev.salesPerson,
+          salesNumber: customerData.salesNo || prev.salesNumber,
           mobile: customerData.mobile || prev.mobile,
           state: customerData.cityState ? customerData.cityState.split('/')[1]?.trim() : prev.state
         }));

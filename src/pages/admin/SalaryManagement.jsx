@@ -587,7 +587,7 @@ export default function SalaryManagement() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                            <div className="w-12 h-12 rounded-md bg-blue-200 flex items-center justify-center text-blue-700 shadow-sm border border-blue-300">
                                 <IndianRupee size={24} />
                             </div>
                             <div>
@@ -601,15 +601,15 @@ export default function SalaryManagement() {
                                 setNewEmp({ name: "", basic_salary: 0 });
                                 setIsEmployeeModalOpen(true);
                             }}
-                            className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                            className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-md font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
                         >
                             <Plus size={16} />
                             Manage Employees
                         </button>
                     </div>
                 
-                <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-black rounded-xl">
+                <div className="flex items-center gap-3 bg-white p-2 rounded-md border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-black rounded-md">
                         <Calendar size={20} className="text-blue-500" />
                         <input 
                             type="month" 
@@ -620,7 +620,7 @@ export default function SalaryManagement() {
                     </div>
                     <button 
                         onClick={() => navigate(-1)} 
-                        className="p-2.5 text-gray-900 hover:text-black hover:bg-gray-50 rounded-xl transition-all"
+                        className="p-2.5 text-gray-900 hover:text-black hover:bg-gray-50 rounded-md transition-all"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
@@ -630,19 +630,19 @@ export default function SalaryManagement() {
             {/* Vertical Form Entry Section */}
             <div className="space-y-6 mb-8">
                 {rows.map((row, index) => (
-                    <div key={index} className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-blue-100/20 overflow-hidden transition-all hover:shadow-blue-200/30">
+                    <div key={index} className="bg-white rounded-md border border-gray-100 shadow-xl shadow-blue-100/20 overflow-hidden transition-all hover:shadow-blue-200/30">
                         {/* Card Header */}
-                        <div className="bg-blue-600 px-6 py-3 flex items-center justify-between">
+                        <div className="bg-blue-100 px-6 py-3 flex items-center justify-between border-b border-blue-200">
                             <div className="flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-black text-sm">
+                                <span className="w-8 h-8 rounded-md bg-blue-200 flex items-center justify-center text-blue-800 font-black text-sm">
                                     {index + 1}
                                 </span>
-                                <h3 className="text-white font-bold text-[11px] tracking-tight">Entry Details</h3>
+                                <h3 className="text-blue-900 font-bold text-[11px] tracking-tight">Entry Details</h3>
                             </div>
                             {rows.length > 1 && (
                                 <button 
                                     onClick={() => removeRow(index)}
-                                    className="p-1.5 bg-white/10 text-white hover:bg-white/20 rounded-lg transition-all"
+                                    className="p-1.5 bg-blue-200 text-blue-700 hover:bg-red-100 hover:text-red-600 rounded-md transition-all"
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -660,7 +660,7 @@ export default function SalaryManagement() {
                                         <select 
                                             value={row.employee_name}
                                             onChange={(e) => handleEmployeeChange(index, e.target.value)}
-                                            className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all appearance-none ${row.employee_name ? 'text-black' : 'text-gray-400'}`}
+                                            className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all appearance-none ${row.employee_name ? 'text-black' : 'text-gray-400'}`}
                                         >
                                             <option value="">Select Employee</option>
                                             {employees.map(emp => (
@@ -679,7 +679,7 @@ export default function SalaryManagement() {
                                             type="number" 
                                             value={row.basic_salary || ""} 
                                             onChange={(e) => handleInputChange(index, "basic_salary", e.target.value)}
-                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.basic_salary > 0 ? 'text-black' : 'text-gray-400'}`}
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.basic_salary > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
@@ -692,7 +692,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.total_days} 
                                         onChange={(e) => handleInputChange(index, "total_days", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.total_days > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.total_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -703,7 +703,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.working_days || ""} 
                                         onChange={(e) => handleInputChange(index, "working_days", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.working_days > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.working_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -714,7 +714,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.extra_days || ""} 
                                         onChange={(e) => handleInputChange(index, "extra_days", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.extra_days > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.extra_days > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -727,7 +727,7 @@ export default function SalaryManagement() {
                                             type="number" 
                                             value={row.advance || ""} 
                                             onChange={(e) => handleInputChange(index, "advance", e.target.value)}
-                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-red-500 outline-none transition-all ${row.advance > 0 ? 'text-black' : 'text-gray-400'}`}
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-red-500 outline-none transition-all ${row.advance > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
@@ -739,7 +739,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.absent || ""} 
                                         onChange={(e) => handleInputChange(index, "absent", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.absent > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.absent > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -750,7 +750,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.half_day || ""} 
                                         onChange={(e) => handleInputChange(index, "half_day", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.half_day > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.half_day > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -761,7 +761,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.biometric_mismatch || ""} 
                                         onChange={(e) => handleInputChange(index, "biometric_mismatch", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.biometric_mismatch > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.biometric_mismatch > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -772,7 +772,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.late_comers || ""} 
                                         onChange={(e) => handleInputChange(index, "late_comers", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.late_comers > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.late_comers > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -785,7 +785,7 @@ export default function SalaryManagement() {
                                             type="number" 
                                             value={row.final_amt || ""} 
                                             onChange={(e) => handleInputChange(index, "final_amt", e.target.value)}
-                                            className={`w-full pl-8 pr-4 py-2.5 bg-blue-50 border border-blue-200 rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.final_amt > 0 ? 'text-black' : 'text-gray-400'}`}
+                                            className={`w-full pl-8 pr-4 py-2.5 bg-blue-50 border border-blue-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.final_amt > 0 ? 'text-black' : 'text-gray-400'}`}
                                             placeholder="0"
                                         />
                                     </div>
@@ -797,7 +797,7 @@ export default function SalaryManagement() {
                                         type="number" 
                                         value={row.round_off || ""} 
                                         onChange={(e) => handleInputChange(index, "round_off", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.round_off > 0 ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.round_off > 0 ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="0"
                                     />
                                 </div>
@@ -808,7 +808,7 @@ export default function SalaryManagement() {
                                         type="text" 
                                         value={row.remarks || ""} 
                                         onChange={(e) => handleInputChange(index, "remarks", e.target.value)}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-2xl text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.remarks ? 'text-black' : 'text-gray-400'}`}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-[13px] font-bold focus:bg-white focus:border-blue-500 outline-none transition-all ${row.remarks ? 'text-black' : 'text-gray-400'}`}
                                         placeholder="Any notes..."
                                     />
                                 </div>
@@ -822,7 +822,7 @@ export default function SalaryManagement() {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <button 
                     onClick={addRow}
-                    className="flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-bold rounded-2xl border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm text-sm"
+                    className="flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-bold rounded-md border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm text-sm"
                 >
                     <Plus size={18} />
                     Add New Row
@@ -832,7 +832,7 @@ export default function SalaryManagement() {
                     <button 
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-200 transform transition-all active:scale-95 disabled:opacity-70 text-sm"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow-xl shadow-blue-200 transform transition-all active:scale-95 disabled:opacity-70 text-sm"
                     >
                         {isSubmitting ? (
                             <><Loader2 size={20} className="animate-spin" /> Saving...</>
@@ -847,7 +847,7 @@ export default function SalaryManagement() {
             <div className="mt-12">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-500 rounded-xl text-white shadow-md">
+                        <div className="p-2 bg-green-500 rounded-md text-white shadow-md">
                             <Save size={18} />
                         </div>
                         <div>
@@ -863,12 +863,12 @@ export default function SalaryManagement() {
                             placeholder="Filter by name or month..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-2xl text-[11px] font-black uppercase tracking-wider focus:border-blue-500 outline-none transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-md text-[11px] font-black uppercase tracking-wider focus:border-blue-500 outline-none transition-all shadow-sm"
                         />
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-green-100/20 overflow-hidden">
+                <div className="bg-white rounded-md border border-gray-100 shadow-xl shadow-green-100/20 overflow-hidden">
                     {/* Desktop Table View */}
                     <div className="hidden lg:block overflow-x-auto pb-6">
                         <table className="w-full text-left border-collapse">
@@ -894,14 +894,14 @@ export default function SalaryManagement() {
                             <tbody>
                                 {isLoadingData ? (
                                     <tr>
-                                        <td colSpan="9" className="p-8 text-center text-gray-900 font-medium">
+                                        <td colSpan="15" className="p-8 text-center text-gray-900 font-medium">
                                             <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
                                             Loading submitted records...
                                         </td>
                                     </tr>
                                 ) : submittedData.length === 0 ? (
                                     <tr>
-                                        <td colSpan="12" className="p-8 text-center text-gray-900 font-medium">
+                                        <td colSpan="15" className="p-8 text-center text-gray-900 font-medium">
                                             No records found for this month.
                                         </td>
                                     </tr>
@@ -934,14 +934,14 @@ export default function SalaryManagement() {
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button 
                                                         onClick={() => downloadSalarySlip(item)}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-all"
                                                         title="View Slip"
                                                     >
                                                         <FileText size={16} />
                                                     </button>
                                                     <button 
                                                         onClick={() => downloadSalarySlipAsPDF(item)}
-                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-xl transition-all"
+                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-all"
                                                         title="Download PDF"
                                                     >
                                                         <Download size={16} />
@@ -951,7 +951,7 @@ export default function SalaryManagement() {
                                             <td className="py-5 px-4 text-center">
                                                 <button 
                                                     onClick={() => deleteRecord(item.id)}
-                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-all"
                                                     title="Delete Record"
                                                 >
                                                     <Trash2 size={16} />
@@ -1018,14 +1018,14 @@ export default function SalaryManagement() {
 
                                     <div className="flex items-center justify-between pt-2">
                                         <div className="flex gap-2">
-                                            <button onClick={() => downloadSalarySlip(item)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-2 text-xs font-bold transition-all active:scale-95">
+                                            <button onClick={() => downloadSalarySlip(item)} className="p-2.5 bg-blue-50 text-blue-600 rounded-md flex items-center gap-2 text-xs font-bold transition-all active:scale-95">
                                                 <FileText size={14} /> View
                                             </button>
-                                            <button onClick={() => downloadSalarySlipAsPDF(item)} className="p-2.5 bg-green-50 text-green-600 rounded-xl flex items-center gap-2 text-xs font-bold transition-all active:scale-95">
+                                            <button onClick={() => downloadSalarySlipAsPDF(item)} className="p-2.5 bg-green-50 text-green-600 rounded-md flex items-center gap-2 text-xs font-bold transition-all active:scale-95">
                                                 <Download size={14} /> PDF
                                             </button>
                                         </div>
-                                        <button onClick={() => deleteRecord(item.id)} className="p-2.5 bg-red-50 text-red-500 rounded-xl transition-all active:scale-95">
+                                        <button onClick={() => deleteRecord(item.id)} className="p-2.5 bg-red-50 text-red-500 rounded-md transition-all active:scale-95">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
@@ -1049,7 +1049,7 @@ export default function SalaryManagement() {
             {/* Add/Manage Employee Modal */}
             {isEmployeeModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 my-8">
+                    <div className="bg-white rounded-md w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 my-8">
                         <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
                             <h3 className="text-white font-bold tracking-tight">
                                 {newEmp.id ? "Edit Employee" : "Add New Employee"}
@@ -1075,7 +1075,7 @@ export default function SalaryManagement() {
                                                 required
                                                 value={newEmp.name}
                                                 onChange={(e) => setNewEmp({...newEmp, name: e.target.value})}
-                                                className="w-full pl-10 pr-4 py-3 bg-white border border-transparent rounded-2xl text-sm font-bold text-black focus:border-blue-500 outline-none transition-all shadow-sm"
+                                                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-md text-sm font-bold text-black focus:border-blue-500 outline-none transition-all shadow-sm"
                                                 placeholder="Employee name"
                                             />
                                         </div>
@@ -1089,7 +1089,7 @@ export default function SalaryManagement() {
                                                 required
                                                 value={newEmp.basic_salary || ""}
                                                 onChange={(e) => setNewEmp({...newEmp, basic_salary: parseFloat(e.target.value) || 0})}
-                                                className="w-full pl-8 pr-4 py-2.5 bg-white border border-transparent rounded-2xl text-[13px] font-bold text-blue-600 focus:border-blue-500 outline-none transition-all shadow-sm"
+                                                className="w-full pl-8 pr-4 py-2.5 bg-white border border-gray-200 rounded-md text-[13px] font-bold text-blue-600 focus:border-blue-500 outline-none transition-all shadow-sm"
                                                 placeholder="0"
                                             />
                                         </div>
@@ -1099,7 +1099,7 @@ export default function SalaryManagement() {
                                     <button 
                                         type="submit" 
                                         disabled={isSavingEmp}
-                                        className="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3 bg-blue-600 text-white rounded-md font-black uppercase tracking-widest text-sm hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
                                     >
                                         {isSavingEmp ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
                                         {newEmp.id ? "Update Employee" : "Add Employee"}
@@ -1108,7 +1108,7 @@ export default function SalaryManagement() {
                                         <button 
                                             type="button"
                                             onClick={() => setNewEmp({ name: "", basic_salary: 0 })}
-                                            className="px-6 py-3 bg-gray-200 text-black rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-gray-300 transition-all"
+                                            className="px-6 py-3 bg-gray-200 text-black rounded-md font-black uppercase tracking-widest text-sm hover:bg-gray-300 transition-all"
                                         >
                                             Cancel
                                         </button>

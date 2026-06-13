@@ -7,6 +7,7 @@ import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 import upiImg from '../../../../assets/upi.png';
 import locationQrImg from '../../../../assets/locationqr1.png';
+import useDataStore from '../../store/dataStore';
 
 export default function PremiumQuotationPrint({ 
   initialData, 
@@ -157,7 +158,7 @@ export default function PremiumQuotationPrint({
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Sales Number</td>
                     <td className="pr-2 py-0.5">:</td>
-                    <td className="py-0.5">{otherInfo?.salesNumber || '-'}</td>
+                    <td className="py-0.5">{otherInfo?.salesNumber || useDataStore.getState().customers?.find(c => c.name === basicInfo?.customer)?.salesNo || '-'}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap align-top pt-2">Scan to reach us</td>

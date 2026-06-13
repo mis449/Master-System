@@ -66,6 +66,23 @@ const ERPLayout = ({ children }) => {
       subItems: []
     },
     {
+      id: 'ims',
+      label: 'IMS Inventory Management System',
+      icon: ShoppingCart,
+      path: '/ims',
+      roles: ['admin', 'manager', 'hod'],
+      section: 'IMS Inventory Management System',
+      subItems: [
+        { label: 'Dashboard', path: '/ims/dashboard', icon: TrendingUp, roles: ['admin'] },
+        { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Item Details', path: '/ims/master', icon: LayoutGrid, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] }
+      ]
+    },
+    {
       id: 'checklist',
       label: 'Checklist & Delegation',
       icon: CheckSquare,
@@ -105,23 +122,6 @@ const ERPLayout = ({ children }) => {
         { label: 'Dashboard', path: '/dashboard/mis-dashboard', icon: LayoutDashboard, roles: ['admin'] },
         { label: 'History', path: '/dashboard/mis-history', icon: History, roles: ['admin'] },
         { label: 'KPI & KRA', path: '/dashboard/kpi-kra', icon: Target, roles: ['admin'] },
-      ]
-    },
-    {
-      id: 'ims',
-      label: 'IMS Inventory Management System',
-      icon: ShoppingCart,
-      path: '/ims',
-      roles: ['admin', 'manager', 'hod'],
-      section: 'IMS Inventory Management System',
-      subItems: [
-        { label: 'Dashboard', path: '/ims/dashboard', icon: TrendingUp, roles: ['admin'] },
-        { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Item Details', path: '/ims/master', icon: LayoutGrid, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] }
       ]
     },
     {

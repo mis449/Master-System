@@ -15,6 +15,7 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
     email: '',
     mobile: '',
     salesPerson: '',
+    salesNo: '',
     gstTreatment: 'Regular_OR_UnRegd',
     gstType: 'CGST + SGST',
     priceList: 'MRP'
@@ -260,9 +261,22 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
               className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
             >
               <option value="">Select</option>
-              <option value="Admin">Krisha</option>
-              <option value="Sales Rep 1"></option>
+              <option value="Krisha">Krisha</option> 
+              <option value="Deepak">Dushyant</option>
+              <option value="Jainam">Sneha</option>
+              <option value="Khushi">Siddhant</option>
+              <option value="Mayur">Naman</option>
             </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <label className="sm:w-1/3 text-sm font-bold text-slate-700">Sales No</label>
+            <input 
+              type="text" 
+              value={formData.salesNo} 
+              onChange={(e) => handleChange('salesNo', e.target.value)}
+              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
