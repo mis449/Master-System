@@ -300,12 +300,12 @@ export default function Dasboard() {
         <td className="px-4 py-3 text-justify text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.BrandName}</td>
         <td className="px-4 py-3 text-center text-xs text-slate-700 font-medium whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
-        <td className="px-4 py-3 text-center text-xs text-slate-500 font-bold whitespace-nowrap">{item.openingQty}</td>
-        <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">+{item.purchaseQty}</td>
-        <td className="px-4 py-3 text-center text-xs text-rose-600 font-bold whitespace-nowrap">-{item.salesQty}</td>
-        <td className="px-4 py-3 text-center text-xs text-amber-600 font-bold whitespace-nowrap">-{item.purchaseReturnQty}</td>
-        <td className="px-4 py-3 text-center text-xs text-emerald-500 font-bold whitespace-nowrap">+{item.salesReturnQty}</td>
-        <td className="px-4 py-3 text-center text-xs text-sky-600 font-black whitespace-nowrap bg-sky-50/25">{item.currentQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-slate-500 font-bold whitespace-nowrap">{item.openingQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-emerald-600 font-bold whitespace-nowrap">+{item.purchaseQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-rose-600 font-bold whitespace-nowrap">-{item.salesQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-amber-600 font-bold whitespace-nowrap">-{item.purchaseReturnQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-emerald-500 font-bold whitespace-nowrap">+{item.salesReturnQty}</td>
+        <td className="px-4 py-3 text-center text-[16px] text-sky-600 font-black whitespace-nowrap bg-sky-50/25">{item.currentQty}</td>
         <td className="px-4 py-3 text-center whitespace-nowrap text-xs">
           <span className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'

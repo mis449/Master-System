@@ -337,35 +337,13 @@ export default function ItemLinesTable({
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Tax %</div>
               <input type="number" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" />
             </div>
-            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-600 text-xs md:pr-1 pt-1 md:pt-0">
+            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-700 text-xs md:pr-1 pt-1 md:pt-0">
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Net Amount</div>
-              <div className="flex items-center justify-end">
-                <span className="mr-1">₹</span>
-                <input 
-                  type="number" 
-                  value={net ? Number(net).toFixed(2) : ''} 
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const qty = Number(item.quantity) || 1;
-                    const disc = (Number(item.discountPercent) || 0) / 100;
-                    const tax = (Number(item.taxPercent) || 0) / 100;
-                    const netVal = Number(val) || 0;
-                    const denom = qty * (1 - disc) * (1 + tax);
-                    const newUnitPrice = denom !== 0 ? netVal / denom : 0;
-                    handleItemChange(item.id, 'unitPrice', Number(newUnitPrice).toFixed(4));
-                  }} 
-                  onBlur={(e) => { 
-                    const qty = Number(item.quantity) || 1;
-                    const disc = (Number(item.discountPercent) || 0) / 100;
-                    const tax = (Number(item.taxPercent) || 0) / 100;
-                    const netVal = Number(e.target.value) || 0;
-                    const denom = qty * (1 - disc) * (1 + tax);
-                    const newUnitPrice = denom !== 0 ? netVal / denom : 0;
-                    if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice); 
-                  }}
-                  className="w-full max-w-[110px] border border-emerald-200 text-xs px-2 py-1.5 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                  placeholder="0.00"
-                />
+              <div className="flex items-center justify-end py-1.5">
+                <span className="mr-1 text-emerald-600">₹</span>
+                <span className="w-full max-w-[80px] text-right text-emerald-700 text-[13px]">
+                  {net ? Number(net).toFixed(2) : '0.00'}
+                </span>
               </div>
             </div>
             
