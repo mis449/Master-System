@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import PurchaseOrderList from './PurchaseOrderList';
 import PurchaseList from './PurchaseList';
 import PurchaseReturnList from './PurchaseReturnList';
 
 export default function PurchaseModule() {
-  const [activeTab, setActiveTab] = useState('Purchase Order');
+  const [activeTab, setActiveTab] = useState('Purchase');
   
   // Context to pass data between tabs when converting (e.g. PO -> Purchase)
   const [conversionContext, setConversionContext] = useState(null);
@@ -30,7 +29,7 @@ export default function PurchaseModule() {
         {/* Module Header & Tabs */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
           <div className="flex gap-2 bg-slate-100/50 p-1 rounded-xl">
-            {['Purchase Order', 'Purchase', 'Purchase Return'].map((tab) => (
+            {['Purchase', 'Purchase Return'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -48,11 +47,6 @@ export default function PurchaseModule() {
 
         {/* Tab Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
-          {activeTab === 'Purchase Order' && (
-            <PurchaseOrderList 
-              onConvertToPurchase={handleConvertToPurchase} 
-            />
-          )}
           {activeTab === 'Purchase' && (
             <PurchaseList 
               conversionContext={conversionContext} 
