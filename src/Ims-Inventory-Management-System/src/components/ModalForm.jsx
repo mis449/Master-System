@@ -36,11 +36,13 @@ const ModalForm = ({
 
   const targetNode = document.getElementById('erp-main-container') || document.body;
 
+  const isFullScreen = maxWidth?.includes('98vw') || maxWidth?.includes('100vw') || maxWidth?.includes('w-screen') || maxWidth === 'full';
+
   return createPortal(
-    <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 ${zIndex} animate-in fade-in duration-200 overflow-hidden`} style={{ zIndex: 9999 }}>
+    <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center ${isFullScreen ? 'p-0' : 'p-2 md:p-4'} ${zIndex} animate-in fade-in duration-200 overflow-hidden`} style={{ zIndex: 9999 }}>
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full ${maxWidth} flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 m-auto`}
-        style={{ maxHeight: '90vh' }}
+        className={`bg-white shadow-2xl w-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 m-auto ${isFullScreen ? 'h-screen w-screen max-w-none rounded-none' : `rounded-2xl ${maxWidth}`}`}
+        style={{ maxHeight: isFullScreen ? '100vh' : '90vh' }}
       >
         {/* Header - Clean with Close Button */}
         {!hideHeader && (

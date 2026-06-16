@@ -74,23 +74,24 @@ export default function ItemLinesTable({
         }
       `}</style>
       <div className="sticky top-0 z-30 flex flex-wrap gap-2 mb-2 bg-white/95 backdrop-blur-sm py-2 md:py-3 -mt-2 -mx-2 px-2 border-b border-slate-100 shadow-sm rounded-t-lg">
-         <button type="button" onClick={addItemLine} className="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-100 shadow-sm"><Plus size={14}/> Add Item Line</button>
-         <button type="button" onClick={addSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Section</button>
-         <button type="button" onClick={addSubSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Sub-Section</button>
-         <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
-         <button type="button" onClick={() => { setProductToEdit(null); setIsAddProductOpen(true); }} className="text-xs font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
+         <button type="button" onClick={addItemLine} className="text-sm font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-100 shadow-sm"><Plus size={14}/> Add Item Line</button>
+         <button type="button" onClick={addSection} className="text-sm font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Section</button>
+         <button type="button" onClick={addSubSection} className="text-sm font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Sub-Section</button>
+         <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-sm font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
+         <button type="button" onClick={() => { setProductToEdit(null); setIsAddProductOpen(true); }} className="text-sm font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
          {openBrandDiscount && (
-           <button type="button" onClick={openBrandDiscount} className="text-xs font-bold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple-100 border border-purple-100 shadow-sm ml-auto"><Tag size={14}/> Brand Discount</button>
+           <button type="button" onClick={openBrandDiscount} className="text-sm font-bold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple-100 border border-purple-100 shadow-sm ml-auto"><Tag size={14}/> Brand Discount</button>
          )}
       </div>
 
       {/* Header */}
-      <div className={`hidden md:grid gap-2 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(16,minmax(0,1fr))]' : 'grid-cols-[repeat(14,minmax(0,1fr))]'}`}>
+      <div className={`hidden md:grid gap-2 px-2 text-sm md:text-sm font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(17,minmax(0,1fr))]' : 'grid-cols-[repeat(15,minmax(0,1fr))]'}`}>
         <div className="col-span-3 text-left">Item Code</div>
         <div className="col-span-1 text-center">Image</div>
         {showStatus ? (
           <>
             <div className="col-span-2 text-left">Description</div>
+            <div className="col-span-1 text-center">Stock</div>
             <div className="col-span-1">Qty</div>
             <div className="col-span-1">Act Disp</div>
             <div className="col-span-1">Rem Qty</div>
@@ -104,6 +105,7 @@ export default function ItemLinesTable({
         ) : showUploadAndRemark ? (
           <>
             <div className="col-span-2 text-left">Description</div>
+            <div className="col-span-1 text-center">Stock</div>
             <div className="col-span-1">Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
@@ -116,6 +118,7 @@ export default function ItemLinesTable({
         ) : (
           <>
             <div className="col-span-3 text-left">Description</div>
+            <div className="col-span-1 text-center">Stock</div>
             <div className="col-span-1">Qty</div>
             <div className="col-span-2">Unit Price</div>
             <div className="col-span-1">Disc %</div>
@@ -150,7 +153,7 @@ export default function ItemLinesTable({
                 </div>
               )}
               <div className="flex-1 pl-2">
-                <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className={`w-full bg-transparent outline-none font-bold placeholder-slate-400 ${isSub ? 'text-slate-600 text-xs' : 'text-sky-800 text-sm'}`} placeholder={isSub ? "Enter Sub-Section Title..." : "Enter Section Title..."} />
+                <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className={`w-full bg-transparent outline-none font-bold placeholder-slate-400 ${isSub ? 'text-slate-600 text-sm' : 'text-sky-800 text-sm'}`} placeholder={isSub ? "Enter Sub-Section Title..." : "Enter Section Title..."} />
               </div>
               {copySection && (
                 <button type="button" onClick={() => copySection(item.id)} className="p-1.5 text-sky-500 hover:text-sky-700 hover:bg-sky-100 rounded transition-colors" title="Duplicate">
@@ -187,10 +190,10 @@ export default function ItemLinesTable({
             onDragEnter={(e) => handleDragEnter(e, index)}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
-            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(16,minmax(0,1fr))]' : 'md:grid-cols-[repeat(14,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''}`}
+            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : 'md:grid-cols-[repeat(15,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''}`}
           >
             <div className="col-span-2 md:col-span-3 space-y-1">
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Item Code</div>
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Item Code</div>
               <div className="flex gap-1 items-center">
                 {reorderItemLines && (
                   <div 
@@ -221,7 +224,7 @@ export default function ItemLinesTable({
                       setActiveDropdownId(item.id);
                       setSearchTerms(prev => ({...prev, [item.id]: item.itemCode || ''}));
                     }}
-                    className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 transition-all"
+                    className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 transition-all"
                     placeholder="Search Code..."
                     autoComplete="off"
                   />
@@ -235,7 +238,7 @@ export default function ItemLinesTable({
                     if (filtered.length === 0) return null;
                     return (
                       <div className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[200] min-w-[350px] sm:min-w-[450px] max-w-[90vw] overflow-hidden" style={{animation: 'fadeInDown 0.15s ease-out'}}>
-                        <div className="max-h-64 overflow-y-auto">
+                        <div className="max-h-84 overflow-y-auto">
                           {filtered.map((inv) => {
                             const code = inv.ItemCode || inv.code;
                             const name = inv.ItemName || inv.name;
@@ -258,7 +261,7 @@ export default function ItemLinesTable({
                                 <span className="text-[11px] text-slate-700 whitespace-normal pr-6 font-medium">
                                   {code}:-{name} -({code})
                                 </span>
-                                {isSelected && <span className="absolute right-3 text-sky-600 text-xs font-bold">✓</span>}
+                                {isSelected && <span className="absolute right-3 text-sky-600 text-sm font-bold">✓</span>}
                               </div>
                             );
                           })}
@@ -296,7 +299,7 @@ export default function ItemLinesTable({
                 }
               }}
             >
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase w-full text-center">Image</div>
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase w-full text-center">Image</div>
               {imageUrl ? (
                 <img src={imageUrl} alt="product" className="w-12 h-12 rounded object-cover border border-slate-200 bg-slate-50" />
               ) : (
@@ -307,49 +310,54 @@ export default function ItemLinesTable({
             </div>
 
             <div className={`col-span-2 ${showStatus ? 'md:col-span-2' : showUploadAndRemark ? 'md:col-span-2' : 'md:col-span-3'} space-y-1`}>
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Description</div>
-              <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none" placeholder="Description" />
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Description</div>
+              <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none" placeholder="Description" />
             </div>
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Qty</div>
-              <input id={`qty-${item.id}`} type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-xs px-2 py-1.5 rounded outline-none text-center" />
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Stock</div>
+              <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1.5 rounded text-center text-slate-600 font-bold select-none">{matchedInventoryItem ? (matchedInventoryItem.StockQty || matchedInventoryItem.stock || 0) : '-'}</div>
+            </div>
+            
+            <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Qty</div>
+              <input id={`qty-${item.id}`} type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
 
             {/* Act Disp and Rem Qty Columns */}
             {showStatus && (
               <>
                 <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-                  <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Act Disp</div>
-                  <div className="w-full bg-slate-50 border border-slate-200 text-xs px-1 py-1 rounded text-center text-sky-700 font-bold select-none">{dispatched}</div>
+                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Act Disp</div>
+                  <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1 rounded text-center text-sky-700 font-bold select-none">{dispatched}</div>
                 </div>
                 <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-                  <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Rem Qty</div>
-                  <div className="w-full bg-slate-50 border border-slate-200 text-xs px-1 py-1 rounded text-center text-amber-600 font-bold select-none">{remaining}</div>
+                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Rem Qty</div>
+                  <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1 rounded text-center text-amber-600 font-bold select-none">{remaining}</div>
                 </div>
               </>
             )}
 
             <div className={`col-span-1 ${showStatus ? 'md:col-span-1' : showUploadAndRemark ? 'md:col-span-1' : 'md:col-span-2'} space-y-1 text-center md:text-center`}>
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Unit Price</div>
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Unit Price</div>
               <input 
                 type="number" 
                 value={item.unitPrice} 
                 onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} 
                 onBlur={(e) => { if (item.itemCode && e.target.value) updateItemPrice(item.itemCode, e.target.value); }}
-                className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" 
+                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
               />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Disc %</div>
-              <input type="number" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" />
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Disc %</div>
+              <input type="number" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Tax %</div>
-              <input type="number" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none text-center" />
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Tax %</div>
+              <input type="number" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
-            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-700 text-xs md:pr-1 pt-1 md:pt-0">
-              <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Net Amount</div>
+            <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-700 text-sm md:pr-1 pt-1 md:pt-0">
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Net Amount</div>
               <div className="flex items-center justify-end py-1.5">
                 <span className="mr-1 text-emerald-600">₹</span>
                 <span className="w-full max-w-[80px] text-right text-emerald-700 text-[13px]">
@@ -361,12 +369,12 @@ export default function ItemLinesTable({
             {showUploadAndRemark && (
               <>
                 <div className="col-span-2 md:col-span-2 space-y-1 text-center md:text-center">
-                  <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Remark</div>
-                  <input type="text" value={item.remark || ''} onChange={(e) => handleItemChange(item.id, 'remark', e.target.value)} className="w-full border border-slate-200 text-xs px-2 py-1.5 rounded outline-none h-[30px]" placeholder="Remark" />
+                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Remark</div>
+                  <input type="text" value={item.remark || ''} onChange={(e) => handleItemChange(item.id, 'remark', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none h-[30px]" placeholder="Remark" />
                 </div>
                 <div className="col-span-1 md:col-span-2 space-y-1 text-center md:text-center">
-                  <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Upload Image</div>
-                  <label className="flex items-center justify-center cursor-pointer w-full border border-slate-200 text-[10px] px-2 rounded outline-none h-[30px] bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold transition-colors">
+                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Upload Image</div>
+                  <label className="flex items-center justify-center cursor-pointer w-full border border-slate-200 text-sm md:text-sm px-2 rounded outline-none h-[30px] bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold transition-colors">
                     <span className="truncate">{item.image ? item.image.name : 'Upload Image'}</span>
                     <input type="file" accept="image/*" onChange={(e) => handleItemChange(item.id, 'image', e.target.files[0])} className="hidden" />
                   </label>
@@ -377,7 +385,7 @@ export default function ItemLinesTable({
             {/* Status Column */}
             {showStatus && (
               <div className="col-span-1 md:col-span-2 space-y-1 text-left md:text-center flex flex-col items-start md:items-center justify-center pt-1 md:pt-0">
-                <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Status</div>
+                <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Status</div>
                 {isCompleted ? (
                   <span className="px-1.5 py-0.5 rounded text-[8px] uppercase font-black bg-emerald-100 text-emerald-700 border border-emerald-250">
                     Completed

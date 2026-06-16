@@ -178,7 +178,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
         onClose={onClose}
         title="Dispatch Material"
         hideFooter={true}
-        maxWidth="max-w-6xl"
+        maxWidth="max-w-[98vw] w-[98vw]"
       >
       <div className="flex flex-col space-y-4 -mt-2">
         

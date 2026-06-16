@@ -237,7 +237,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
       title={initialData ? "Edit Purchase Order" : "Purchase Order Form"}
       onSubmit={handleSubmit}
       submitText={isSubmitting ? 'Saving...' : (initialData ? 'Update Purchase Order' : 'Save Purchase Order')}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="space-y-6">
         <VendorDetailsSection 

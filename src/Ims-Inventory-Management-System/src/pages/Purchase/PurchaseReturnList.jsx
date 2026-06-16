@@ -130,7 +130,11 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
   ];
 
   const renderRow = (item, idx) => (
-    <tr key={item.id || idx} className="hover:bg-rose-50/25 transition-colors border-b border-slate-100">
+    <tr 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="hover:bg-rose-50/50 transition-colors border-b border-slate-100 cursor-pointer"
+    >
       <td className="px-4 py-3 text-center text-xs text-rose-600 font-bold whitespace-nowrap">{item.returnNo || '-'}</td>
       <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
       <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.vendor || '-'}</td>
@@ -143,10 +147,14 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
         </span>
       </td>
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
-        <button onClick={() => handleView(item)} className="p-1 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded transition shadow-sm" title="View/Edit">
-          <Eye size={14} />
-        </button>
-        <button onClick={() => handleDelete(item.id)} className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" title="Delete">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }} 
+          className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" 
+          title="Delete"
+        >
           <Trash2 size={14} />
         </button>
       </td>
@@ -154,7 +162,11 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
   );
 
   const renderCard = (item, idx) => (
-    <div key={item.id || idx} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-rose-100">
+    <div 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-rose-100 cursor-pointer"
+    >
       <div className="flex justify-between items-center pb-2 border-b border-slate-50">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-900 uppercase truncate max-w-[150px]">{item.vendor || '-'}</span>
@@ -188,10 +200,14 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-2 border-t border-slate-50 mt-2">
-        <button onClick={() => handleView(item)} className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded transition shadow-sm" title="View/Edit">
-          <Eye size={14} />
-        </button>
-        <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" title="Delete">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }} 
+          className="p-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" 
+          title="Delete"
+        >
           <Trash2 size={14} />
         </button>
       </div>

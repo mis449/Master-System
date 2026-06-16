@@ -425,7 +425,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       onSubmit={handleSubmit}
       submitText={isSubmitting ? 'Saving...' : (initialData ? 'Update Quotation' : 'Save Quotation')}
       hideSubmit={false}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="space-y-6">
         

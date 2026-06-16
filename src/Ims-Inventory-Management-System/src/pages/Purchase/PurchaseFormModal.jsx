@@ -258,7 +258,7 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
       title={initialData && initialData.id && !isConversion ? "Edit Purchase" : (isConversion ? "New Purchase (From PO)" : "New Purchase")}
       onSubmit={handleSubmit}
       submitText={isSubmitting ? 'Saving...' : (initialData && initialData.id && !isConversion ? 'Update Purchase' : 'Save Purchase')}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="space-y-6">
         

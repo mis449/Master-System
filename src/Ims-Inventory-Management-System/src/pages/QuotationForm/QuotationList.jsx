@@ -159,8 +159,14 @@ export default function QuotationList({ onConvertToInvoice }) {
   ];
 
   const renderRow = (item, idx) => (
-    <tr key={item.id || idx} className="hover:bg-sky-50/25 transition-colors border-b border-slate-100">
-      <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap">{item.quotationNo || '-'}</td>
+    <tr 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
+    >
+      <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap">
+        {item.quotationNo || '-'}
+      </td>
       <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
       <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.customerName || '-'}</td>
       <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.state || '-'}</td>
@@ -174,10 +180,14 @@ export default function QuotationList({ onConvertToInvoice }) {
       </td>
 
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
-        <button onClick={() => handleView(item)} className="p-1 bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white rounded transition shadow-sm" title="View/Edit">
-          <Eye size={14} />
-        </button>
-        <button onClick={() => handleDelete(item.id)} className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" title="Delete">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }} 
+          className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" 
+          title="Delete"
+        >
           <Trash2 size={14} />
         </button>
       </td>
@@ -185,17 +195,30 @@ export default function QuotationList({ onConvertToInvoice }) {
   );
 
   const renderCard = (item, idx) => (
-    <div key={item.id || idx} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
+    <div 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer"
+    >
       <div className="flex justify-between items-center pb-2 border-b border-slate-50">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400">#{item.quotationNo}</span>
+          <span className="text-[10px] font-bold text-sky-600">
+            #{item.quotationNo}
+          </span>
           <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-black ${getStatusColor(item.status)}`}>
             {item.status === 'Final' ? 'Completed' : (item.status || 'Draft')}
           </span>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleView(item)} className="p-1.5 bg-sky-50 text-sky-600 rounded hover:bg-sky-500 hover:text-white transition"><Eye size={12} /></button>
-          <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-500 hover:text-white transition"><Trash2 size={12} /></button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(item.id);
+            }} 
+            className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-500 hover:text-white transition"
+          >
+            <Trash2 size={12} />
+          </button>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-y-2 text-xs">

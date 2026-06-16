@@ -118,7 +118,11 @@ export default function DispatchList({ onConvertToInvoice }) {
   ];
 
   const renderRow = (item, idx) => (
-    <tr key={item.id || idx} className="hover:bg-sky-50/25 transition-colors border-b border-slate-100">
+    <tr 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
+    >
       <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap">{item.quotationNo || '-'}</td>
       <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
       <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[200px]">{item.customerName || '-'}</td>
@@ -128,26 +132,40 @@ export default function DispatchList({ onConvertToInvoice }) {
         {getStatusBadge(item.status)}
       </td>
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
-        {item.status === 'Active' ? (
+        {item.status === 'Active' && (
           <>
-            <button onClick={() => handleAction(item, 'Accept')} className="p-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded transition shadow-sm" title="Accept">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAction(item, 'Accept');
+              }} 
+              className="p-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded transition shadow-sm" 
+              title="Accept"
+            >
               <CheckCircle size={14} />
             </button>
-            <button onClick={() => handleAction(item, 'Reject')} className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" title="Reject">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAction(item, 'Reject');
+              }} 
+              className="p-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded transition shadow-sm" 
+              title="Reject"
+            >
               <XCircle size={14} />
             </button>
           </>
-        ) : (
-          <button onClick={() => handleView(item)} className="p-1 bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white rounded transition shadow-sm" title="View Dispatch">
-            <Eye size={14} />
-          </button>
         )}
       </td>
     </tr>
   );
 
   const renderCard = (item, idx) => (
-    <div key={item.id || idx} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
+    <div 
+      key={item.id || idx} 
+      onClick={() => handleView(item)}
+      className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer"
+    >
       <div className="flex justify-between items-center pb-2 border-b border-slate-50">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-900 uppercase truncate max-w-[150px]">{item.customerName || '-'}</span>
@@ -169,19 +187,27 @@ export default function DispatchList({ onConvertToInvoice }) {
       </div>
 
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">
-        {item.status === 'Active' ? (
+        {item.status === 'Active' && (
           <>
-            <button onClick={() => handleAction(item, 'Accept')} className="text-xs font-black text-emerald-600 hover:text-emerald-800">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAction(item, 'Accept');
+              }} 
+              className="text-xs font-black text-emerald-600 hover:text-emerald-800"
+            >
               Accept
             </button>
-            <button onClick={() => handleAction(item, 'Reject')} className="text-xs font-black text-red-600 hover:text-red-800">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAction(item, 'Reject');
+              }} 
+              className="text-xs font-black text-red-600 hover:text-red-800"
+            >
               Reject
             </button>
           </>
-        ) : (
-          <button onClick={() => handleView(item)} className="text-xs font-black text-sky-600 hover:text-sky-800 flex items-center gap-1">
-            <Eye size={12} /> View
-          </button>
         )}
       </div>
     </div>

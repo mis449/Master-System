@@ -54,13 +54,13 @@ export default function InventoryForm() {
       const code = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
       const summary = summaryMap[code] || {};
 
-      const openingQty = summary.opening_qty || 0;
-      const purchaseQty = summary.purchase_qty || 0;
-      const salesQty = summary.sales_qty || 0;
-      const purchaseReturnQty = summary.purchase_return_qty || 0;
-      const salesReturnQty = summary.sales_return_qty || 0;
+      const openingQty = Number((summary.opening_qty || 0).toFixed(1));
+      const purchaseQty = Number((summary.purchase_qty || 0).toFixed(1));
+      const salesQty = Number((summary.sales_qty || 0).toFixed(1));
+      const purchaseReturnQty = Number((summary.purchase_return_qty || 0).toFixed(1));
+      const salesReturnQty = Number((summary.sales_return_qty || 0).toFixed(1));
 
-      const currentQty = (item.StockQty || 0) + (summary.closing_qty || 0);
+      const currentQty = Number(((item.StockQty || 0) + (summary.closing_qty || 0)).toFixed(1));
       const stockLevel = currentQty >= 50 ? 'Stock Full' : 'Stock Low';
 
       return {
@@ -116,9 +116,9 @@ export default function InventoryForm() {
 
     return (
       <tr key={item.ItmID || item.ItemCode} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer">
-        <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{globalIdx}</td>
-        <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap">{item.ItemCode}</td>
-        <td className="px-4 py-3 text-justify text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
+        <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap w-[80px]">{globalIdx}</td>
+        <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap w-[150px]">{item.ItemCode}</td>
+        <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.BrandName}</td>
         <td className="px-4 py-3 text-center text-xs text-slate-700 font-medium whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
         <td className="px-4 py-3 text-center text-[15px] text-slate-500 font-bold whitespace-nowrap">{item.openingQty}</td>

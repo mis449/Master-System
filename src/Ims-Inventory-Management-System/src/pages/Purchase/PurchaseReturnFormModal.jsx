@@ -263,7 +263,7 @@ export default function PurchaseReturnFormModal({ isOpen, onClose, onSave, initi
       title={initialData && initialData.id && !isConversion ? "Edit Purchase Return" : (isConversion ? "New Purchase Return (From Purchase)" : "New Purchase Return")}
       onSubmit={handleSubmit}
       submitText={isSubmitting ? 'Saving...' : (initialData && initialData.id && !isConversion ? 'Update Purchase Return' : 'Save Purchase Return')}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="space-y-6">
         

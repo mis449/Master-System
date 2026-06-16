@@ -232,7 +232,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
       onSubmit={handleSubmit}
       hideHeader={true}
       hideFooter={true}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="flex flex-col h-full min-h-[70vh]">
         
