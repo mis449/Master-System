@@ -18,6 +18,9 @@ export default function PurchaseModule() {
     setActiveTab('Purchase Return');
   };
 
+
+  
+
   const clearConversionContext = () => {
     setConversionContext(null);
   };
