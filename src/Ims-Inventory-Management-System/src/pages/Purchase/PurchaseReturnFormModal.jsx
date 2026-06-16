@@ -17,6 +17,7 @@ export default function PurchaseReturnFormModal({ isOpen, onClose, onSave, initi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [editingVendor, setEditingVendor] = useState(null);
   
   const { items: inventoryItems, fetchItems } = useDataStore();
 
@@ -277,7 +278,14 @@ export default function PurchaseReturnFormModal({ isOpen, onClose, onSave, initi
         <VendorDetailsSection 
           basicInfo={basicInfo} 
           setBasicInfo={setBasicInfo} 
-          onOpenVendorModal={() => setIsVendorModalOpen(true)} 
+          onOpenVendorModal={() => {
+            setEditingVendor(null);
+            setIsVendorModalOpen(true);
+          }} 
+          onEditVendor={(vendor) => {
+            setEditingVendor(vendor);
+            setIsVendorModalOpen(true);
+          }}
         />
 
         <div className="min-h-[250px] py-4">
@@ -316,9 +324,10 @@ export default function PurchaseReturnFormModal({ isOpen, onClose, onSave, initi
     <NewVendorModal
       isOpen={isVendorModalOpen}
       onClose={() => setIsVendorModalOpen(false)}
+      initialData={editingVendor}
       onSave={(vendor) => {
         setBasicInfo(prev => ({ ...prev, vendor: vendor.vendorName }));
-        toast.success(`Vendor "${vendor.vendorName}" added!`);
+        toast.success(`Vendor "${vendor.vendorName}" saved!`);
       }}
     />
     </>

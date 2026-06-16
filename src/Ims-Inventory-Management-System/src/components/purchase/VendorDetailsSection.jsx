@@ -47,9 +47,16 @@ export default function VendorDetailsSection({
             <button 
               type="button" 
               onClick={() => {
-                const matchedVendor = vendors.find(v => v.name === basicInfo.vendor || v.company === basicInfo.vendor);
-                if (matchedVendor && onEditVendor) {
-                  onEditVendor(matchedVendor);
+                const vendorNameStr = (basicInfo.vendor || '').toLowerCase().trim();
+                const matchedVendor = vendors.find(v => 
+                  (v.name || '').toLowerCase().trim() === vendorNameStr || 
+                  (v.company || '').toLowerCase().trim() === vendorNameStr
+                );
+                
+                console.log("Edit Vendor clicked", { onEditVendor, vendorNameStr, matchedVendor });
+                
+                if (onEditVendor) {
+                  onEditVendor(matchedVendor || { vendorName: basicInfo.vendor });
                 } else {
                   toast.error("Vendor details not found.");
                 }

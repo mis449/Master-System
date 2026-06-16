@@ -138,7 +138,12 @@ export const createInvoice = async (data) => {
     details: data.details || data
   };
 
-  const { data: result, error } = await supabase.from('invoice').insert([insertData]).select().single();
+  const { data: result, error } = await supabase
+    .from('invoice')
+    .insert([insertData])
+    .headers({ Prefer: 'reload-schema' })
+    .select()
+    .single();
   if (error) throw error;
   
   return { ...data, id: result.id, invoiceNo: result.invoice_no };
@@ -195,11 +200,15 @@ export const updateInvoice = async (id, updates) => {
     .from('invoice')
     .update(updateData)
     .eq('id', String(id))
+    .headers({ Prefer: 'reload-schema' })
     .select()
     .single();
     
-  if (error) throw error;
-  return { ...updates, id: result.id, invoiceNo: result.invoice_no };
+  if (error) {
+    console.error('⚡ Supabase UPDATE error details →', JSON.stringify(error, null, 2));
+    throw error;
+  }
+  return { ...result, invoiceNo: result.invoice_no };
 };
 
 export const deleteInvoice = async (id) => {

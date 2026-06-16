@@ -19,6 +19,7 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [editingVendor, setEditingVendor] = useState(null);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [printOrientation, setPrintOrientation] = useState('Portrait');
   const [purchaseStatus, setPurchaseStatus] = useState('Active');
@@ -287,7 +288,14 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
         <VendorDetailsSection 
           basicInfo={basicInfo} 
           setBasicInfo={setBasicInfo} 
-          onOpenVendorModal={() => setIsVendorModalOpen(true)} 
+          onOpenVendorModal={() => {
+            setEditingVendor(null);
+            setIsVendorModalOpen(true);
+          }} 
+          onEditVendor={(vendor) => {
+            setEditingVendor(vendor);
+            setIsVendorModalOpen(true);
+          }}
         />
 
         <div className="min-h-[250px] py-4">
@@ -325,9 +333,10 @@ export default function PurchaseFormModal({ isOpen, onClose, onSave, initialData
     <NewVendorModal
       isOpen={isVendorModalOpen}
       onClose={() => setIsVendorModalOpen(false)}
+      initialData={editingVendor}
       onSave={(vendor) => {
         setBasicInfo(prev => ({ ...prev, vendor: vendor.vendorName }));
-        toast.success(`Vendor "${vendor.vendorName}" added!`);
+        toast.success(`Vendor "${vendor.vendorName}" saved!`);
       }}
     />
 

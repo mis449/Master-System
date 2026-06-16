@@ -121,25 +121,41 @@ export const createQuotation = async (data) => {
     remarks: data.remarks || notes.remarks || '',
     terms_conditions: data.terms_conditions || notes.termsAndConditions || '',
     
-    gross_amount: data.gross_amount || summary.grossAmount || 0,
-    discount_amount: data.discount_amount || summary.discountAmount || 0,
-    tax_amount: data.tax_amount || summary.taxAmount || 0,
-    round_off_amount: data.round_off_amount || summary.roundOffAmount || 0,
-    total_amount: data.total_amount || summary.totalAmount || 0,
-    
-    item_code: firstItem.itemCode || '',
-    item_description: firstItem.description || '',
-    item_quantity: firstItem.quantity || 0,
-    item_unit_price: firstItem.unitPrice || 0,
-    item_discount_percent: firstItem.discountPercent || 0,
-    item_tax_percent: firstItem.taxPercent || 0,
-    item_net_amount: firstItem.netAmount || 0,
+    // ----- monetary totals (force numbers) -----
+    gross_amount: Number(data.gross_amount ?? summary.grossAmount ?? 0),
+    discount_amount: Number(data.discount_amount ?? summary.discountAmount ?? 0),
+    tax_amount: Number(data.tax_amount ?? summary.taxAmount ?? 0),
+    round_off_amount: Number(data.round_off_amount ?? summary.roundOffAmount ?? 0),
+    total_amount: Number(data.total_amount ?? summary.totalAmount ?? 0),
 
-    details: data.details || data
+    // ----- first‑item shortcuts (force numbers) -----
+    item_code: firstItem.itemCode ?? '',
+    item_description: firstItem.description ?? '',
+    item_quantity: Number(firstItem.quantity ?? 0),
+    item_unit_price: Number(firstItem.unitPrice ?? 0),
+    item_discount_percent: Number(firstItem.discountPercent ?? 0),
+    item_tax_percent: Number(firstItem.taxPercent ?? 0),
+    item_net_amount: Number(firstItem.netAmount ?? 0),
+
+    // ----- full JSON payload (must be a plain object) -----
+    details: data.details ?? data
   };
 
-  const { data: result, error } = await supabase.from('quotation').insert([insertData]).select().single();
-  if (error) throw error;
+  // Ensure we don't send undefined values – Supabase rejects them
+  const cleanInsertData = Object.fromEntries(
+    Object.entries(insertData).filter(([, v]) => v !== undefined)
+  );
+
+  // Remove columns that might not be present in the Supabase schema cache
+  delete cleanInsertData.internal_notes;
+  delete cleanInsertData.remarks;
+  delete cleanInsertData.terms_conditions;
+  console.log('🔎 CLEANED QUOTATION PAYLOAD →', JSON.stringify(cleanInsertData));
+  const { data: result, error } = await supabase.from('quotation').insert([cleanInsertData]).select().single();
+  if (error) {
+    console.error('⚡ Supabase INSERT error details →', JSON.stringify(error, null, 2));
+    throw error;
+  }
   
   return { ...data, id: result.id, quotationNo: result.quotation_no };
 };
@@ -169,9 +185,10 @@ export const updateQuotation = async (id, updates) => {
   if (updates.price_list !== undefined || basicInfo.priceList !== undefined) updateData.price_list = updates.price_list || basicInfo.priceList;
   if (updates.payment_terms !== undefined || basicInfo.paymentTerms !== undefined) updateData.payment_terms = updates.payment_terms || basicInfo.paymentTerms;
   
-  if (updates.internal_notes !== undefined || otherInfo.internalNotes !== undefined) updateData.internal_notes = updates.internal_notes || otherInfo.internalNotes;
-  if (updates.remarks !== undefined || notes.remarks !== undefined) updateData.remarks = updates.remarks || notes.remarks;
-  if (updates.terms_conditions !== undefined || notes.termsAndConditions !== undefined) updateData.terms_conditions = updates.terms_conditions || notes.termsAndConditions;
+  // The following fields are temporarily omitted because the Supabase schema cache does not recognise them yet.
+  // if (updates.internal_notes !== undefined || otherInfo.internalNotes !== undefined) updateData.internal_notes = updates.internal_notes || otherInfo.internalNotes;
+  // if (updates.remarks !== undefined || notes.remarks !== undefined) updateData.remarks = updates.remarks || notes.remarks;
+  // if (updates.terms_conditions !== undefined || notes.termsAndConditions !== undefined) updateData.terms_conditions = updates.terms_conditions || notes.termsAndConditions;
   
   if (updates.gross_amount !== undefined || summary.grossAmount !== undefined) updateData.gross_amount = updates.gross_amount || summary.grossAmount || 0;
   if (updates.discount_amount !== undefined || summary.discountAmount !== undefined) updateData.discount_amount = updates.discount_amount || summary.discountAmount || 0;
@@ -182,23 +199,31 @@ export const updateQuotation = async (id, updates) => {
   const itemsList = d.items || updates.items || [];
   if (itemsList.length > 0) {
     const firstItem = itemsList[0];
-    updateData.item_code = firstItem.itemCode || '';
-    updateData.item_description = firstItem.description || '';
-    updateData.item_quantity = firstItem.quantity || 0;
-    updateData.item_unit_price = firstItem.unitPrice || 0;
-    updateData.item_discount_percent = firstItem.discountPercent || 0;
-    updateData.item_tax_percent = firstItem.taxPercent || 0;
-    updateData.item_net_amount = firstItem.netAmount || 0;
+    updateData.item_code = firstItem.itemCode ?? '';
+    updateData.item_description = firstItem.description ?? '';
+    updateData.item_quantity = Number(firstItem.quantity ?? 0);
+    updateData.item_unit_price = Number(firstItem.unitPrice ?? 0);
+    updateData.item_discount_percent = Number(firstItem.discountPercent ?? 0);
+    updateData.item_tax_percent = Number(firstItem.taxPercent ?? 0);
+    updateData.item_net_amount = Number(firstItem.netAmount ?? 0);
   }
+
+  // Clean undefined fields before update
+  const cleanUpdateData = Object.fromEntries(
+    Object.entries(updateData).filter(([, v]) => v !== undefined)
+  );
 
   const { data: result, error } = await supabase
     .from('quotation')
-    .update(updateData)
+    .update(cleanUpdateData)
     .eq('id', String(id))
     .select()
     .single();
     
-  if (error) throw error;
+  if (error) {
+    console.error('⚡ Supabase UPDATE error details →', JSON.stringify(error, null, 2));
+    throw error;
+  }
   return { ...updates, id: result.id, quotationNo: result.quotation_no };
 };
 
