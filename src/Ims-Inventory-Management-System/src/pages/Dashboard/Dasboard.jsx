@@ -21,6 +21,7 @@ export default function Dasboard() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportSelectedBrand, setExportSelectedBrand] = useState('All Brands');
   const [exportActionType, setExportActionType] = useState('PDF');
+  const [exportOrientation, setExportOrientation] = useState('landscape');
 
   // Filters State
   const [filters, setFilters] = useState({
@@ -153,7 +154,7 @@ export default function Dasboard() {
     if (exportActionType === 'Excel') {
       exportToExcel(dataToExport);
     } else {
-      exportToPdf(dataToExport, exportActionType === 'Print');
+      exportToPdf(dataToExport, exportActionType === 'Print', exportOrientation);
     }
 
     setIsExportModalOpen(false);
@@ -185,8 +186,8 @@ export default function Dasboard() {
     toast.success('Excel downloaded successfully');
   };
 
-  const exportToPdf = (data, isPrint = false) => {
-    const doc = new jsPDF('l', 'mm', 'a4'); // Always landscape for inventory
+  const exportToPdf = (data, isPrint = false, orientation = 'landscape') => {
+    const doc = new jsPDF(orientation === 'landscape' ? 'l' : 'p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -232,8 +233,8 @@ export default function Dasboard() {
       body: tableRows,
       theme: 'grid',
       styles: {
-        fontSize: 7,
-        cellPadding: 3,
+        fontSize: orientation === 'landscape' ? 10 : 8,
+        cellPadding: orientation === 'landscape' ? 4 : 3,
         overflow: 'linebreak',
         font: 'helvetica',
         lineColor: [226, 232, 240], // slate-200
@@ -737,6 +738,36 @@ export default function Dasboard() {
                   <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
                 </div>
               </div>
+
+              {exportActionType !== 'Excel' && (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Page Orientation</label>
+                  <div className="flex gap-3 mt-2">
+                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportOrientation === 'landscape' ? 'bg-sky-50 border-sky-500 text-sky-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                      <input 
+                        type="radio" 
+                        name="orientation" 
+                        value="landscape" 
+                        checked={exportOrientation === 'landscape'} 
+                        onChange={() => setExportOrientation('landscape')} 
+                        className="hidden"
+                      />
+                      <span className="font-semibold text-sm">Horizontal</span>
+                    </label>
+                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportOrientation === 'portrait' ? 'bg-sky-50 border-sky-500 text-sky-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                      <input 
+                        type="radio" 
+                        name="orientation" 
+                        value="portrait" 
+                        checked={exportOrientation === 'portrait'} 
+                        onChange={() => setExportOrientation('portrait')} 
+                        className="hidden"
+                      />
+                      <span className="font-semibold text-sm">Vertical</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-sky-50 text-sky-800 p-3 rounded-lg text-xs font-medium border border-sky-100 flex items-start gap-2">
                 <Filter size={16} className="mt-0.5 text-sky-600 flex-shrink-0" />

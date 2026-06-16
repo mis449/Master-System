@@ -246,7 +246,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                 <th className="p-3 border-b border-slate-200 text-right">Disc Amt</th>
                 <th className="p-3 border-b border-slate-200 text-center">Tax %</th>
                 <th className="p-3 border-b border-slate-200 text-right">Tax Amt</th>
-                <th className="p-3 border-b border-slate-200 text-right">Net Amt</th>
+                <th className="p-3 border-b border-slate-200 text-right w-32">Net Amt</th>
                 <th className="p-3 border-b border-slate-200 text-center w-36">Action</th>
               </tr>
             </thead>
@@ -315,34 +315,9 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                     <td className="p-3 text-center">{taxPct}</td>
                     <td className="p-3 text-right">{Math.round(taxAmt).toLocaleString()}</td>
                     <td className="p-3 text-right font-black text-slate-900">
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end text-emerald-700">
                         <span className="mr-1">₹</span>
-                        <input 
-                          type="number" 
-                          value={netAmt ? Math.round(netAmt) : ''} 
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const qty = Number(item.dispatchQty) || 1;
-                            const disc = (Number(item.discountPercent) || 0) / 100;
-                            const tax = (Number(item.taxPercent) || 0) / 100;
-                            const netVal = Number(val) || 0;
-                            const denom = qty * (1 - disc) * (1 + tax);
-                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
-                            setItems(prev => prev.map(p => p.id === item.id ? { ...p, unitPrice: Number(newUnitPrice).toFixed(4) } : p));
-                          }} 
-                          onBlur={(e) => {
-                            const val = e.target.value;
-                            const qty = Number(item.dispatchQty) || 1;
-                            const disc = (Number(item.discountPercent) || 0) / 100;
-                            const tax = (Number(item.taxPercent) || 0) / 100;
-                            const netVal = Number(val) || 0;
-                            const denom = qty * (1 - disc) * (1 + tax);
-                            const newUnitPrice = denom !== 0 ? netVal / denom : 0;
-                            if (item.itemCode && newUnitPrice) updateItemPrice(item.itemCode, newUnitPrice);
-                          }}
-                          className="w-full max-w-[80px] border border-emerald-200 text-xs px-1 py-1 rounded outline-none text-right font-bold text-emerald-700 bg-emerald-50 focus:bg-white focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                          placeholder="0"
-                        />
+                        <span>{netAmt ? Math.round(netAmt).toLocaleString() : '0'}</span>
                       </div>
                     </td>
                     <td className="p-3 text-center">

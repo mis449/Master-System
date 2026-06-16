@@ -16,6 +16,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [vendorToEdit, setVendorToEdit] = useState(null);
   const [purchaseStatus, setPurchaseStatus] = useState('Active');
   const [supplyStatus, setSupplyStatus] = useState('-');
   
@@ -242,7 +243,14 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
         <VendorDetailsSection 
           basicInfo={basicInfo} 
           setBasicInfo={setBasicInfo} 
-          onOpenVendorModal={() => setIsVendorModalOpen(true)} 
+          onOpenVendorModal={() => {
+            setVendorToEdit(null);
+            setIsVendorModalOpen(true);
+          }} 
+          onEditVendor={(vendor) => {
+            setVendorToEdit(vendor);
+            setIsVendorModalOpen(true);
+          }}
           onVendorSelect={(vendor) => {
             setBasicInfo(prev => ({
               ...prev,
@@ -290,6 +298,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
     <CatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} onSubmitCart={handleCatalogSubmit} />
     <NewVendorModal
       isOpen={isVendorModalOpen}
+      initialData={vendorToEdit}
       onClose={() => setIsVendorModalOpen(false)}
       onSave={(vendor) => {
         setBasicInfo(prev => ({ ...prev, vendor: vendor.vendorName }));

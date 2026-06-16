@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
-import { PackageSearch, Users, Copy, Trash2, X, Undo2, Image as ImageIcon } from 'lucide-react';
+import { PackageSearch, Users, Copy, Trash2, X, Undo2, Image as ImageIcon, Edit } from 'lucide-react';
 import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
 import { createQuotation, updateQuotation } from '../../services/quotationService';
@@ -21,6 +21,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [customerToEdit, setCustomerToEdit] = useState(null);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const [quotationStatus, setQuotationStatus] = useState('Active');
@@ -32,7 +33,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
-  const { items: inventoryItems, fetchItems, addCustomer } = useDataStore();
+  const { items: inventoryItems, fetchItems, addCustomer, customers } = useDataStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -460,9 +461,24 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               <option value="Horizontal">Horizontal</option>
               <option value="Vertical">Vertical</option>
             </select>
-            <button type="button" className="text-[11px] font-bold bg-white text-slate-700 border border-slate-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-slate-50 shadow-sm">
-              Check Stock
-            </button>
+            {basicInfo.customer && (
+              <button 
+                type="button" 
+                onClick={() => {
+                  const matchedCustomer = customers.find(c => c.name === basicInfo.customer);
+                  if (matchedCustomer) {
+                    setCustomerToEdit(matchedCustomer);
+                    setIsCustomerModalOpen(true);
+                  } else {
+                    toast.error("Customer details not found.");
+                  }
+                }}
+                className="text-[11px] font-bold bg-white text-sky-600 border border-sky-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-sky-50 shadow-sm transition"
+                title="Edit Customer Details"
+              >
+                <Edit size={12} /> Edit Customer
+              </button>
+            )}
           </div>
           <div className="flex gap-3 items-center flex-wrap">
             {(quotationStatus === 'Active') && (
@@ -476,14 +492,14 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
                     onClick={() => handleQuickStatusUpdate('Accepted')}
                     className="text-[11px] font-bold bg-white text-emerald-700 border border-emerald-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-emerald-50 shadow-sm"
                   >
-                    Accept ✓
+                    Accept
                   </button>
                   <button 
                     type="button" 
                     onClick={() => handleQuickStatusUpdate('Rejected')}
                     className="text-[11px] font-bold bg-white text-rose-700 border border-rose-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-rose-50 shadow-sm"
                   >
-                    Reject ✗
+                    Reject
                   </button>
                 </div>
               </>
@@ -518,7 +534,10 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         <CustomerDetailsSection 
           basicInfo={basicInfo} 
           setBasicInfo={setBasicInfo} 
-          onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+          onOpenCustomerModal={() => {
+            setCustomerToEdit(null);
+            setIsCustomerModalOpen(true);
+          }}
           onCustomerSelect={(custObj) => {
             if (!custObj) return;
             setBasicInfo(prev => ({
@@ -578,7 +597,11 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
     {/* Nested Modals */}
     <NewCustomerModal 
       isOpen={isCustomerModalOpen} 
-      onClose={() => setIsCustomerModalOpen(false)} 
+      initialData={customerToEdit}
+      onClose={() => {
+        setIsCustomerModalOpen(false);
+        setCustomerToEdit(null);
+      }} 
       onSave={(customerData) => {
         const custName = customerData.company || customerData.customer || 'New Customer';
         setBasicInfo(prev => ({ 

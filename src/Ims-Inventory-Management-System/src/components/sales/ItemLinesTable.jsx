@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag } from 'lucide-react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
@@ -24,7 +24,9 @@ export default function ItemLinesTable({
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState(null);
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [draggableItemId, setDraggableItemId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [searchTerms, setSearchTerms] = useState({});
   const dropdownRefs = useRef({});
@@ -76,7 +78,7 @@ export default function ItemLinesTable({
          <button type="button" onClick={addSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Section</button>
          <button type="button" onClick={addSubSection} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><Plus size={14}/> Add Sub-Section</button>
          <button type="button" onClick={() => setIsCatalogOpen(true)} className="text-xs font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-50 border border-slate-200 shadow-sm"><FileText size={14}/> Catalog</button>
-         <button type="button" onClick={() => setIsAddProductOpen(true)} className="text-xs font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
+         <button type="button" onClick={() => { setProductToEdit(null); setIsAddProductOpen(true); }} className="text-xs font-bold bg-sky-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-sky-700 shadow-sm"><Box size={14}/> Add Product</button>
          {openBrandDiscount && (
            <button type="button" onClick={openBrandDiscount} className="text-xs font-bold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple-100 border border-purple-100 shadow-sm ml-auto"><Tag size={14}/> Brand Discount</button>
          )}
@@ -130,7 +132,7 @@ export default function ItemLinesTable({
           return (
             <div 
               key={item.id} 
-              draggable={!!reorderItemLines}
+              draggable={reorderItemLines && draggableItemId === item.id}
               onDragStart={(e) => handleDragStart(e, index)}
               onDragEnter={(e) => handleDragEnter(e, index)}
               onDragOver={handleDragOver}
@@ -138,7 +140,12 @@ export default function ItemLinesTable({
               className={`flex items-center gap-2 p-2 md:px-2 md:py-3 rounded-xl md:rounded-none md:border-b shadow-sm md:shadow-none bg-white border border-slate-100 ${isSub ? 'ml-4 border-l-2 border-l-slate-300' : 'border-l-4 border-l-sky-500 bg-sky-50/40'} ${draggedIndex === index ? 'opacity-50' : ''}`}
             >
               {reorderItemLines && (
-                <div className="cursor-grab hover:text-sky-600 text-slate-400">
+                <div 
+                  className="cursor-grab hover:text-sky-600 text-slate-400"
+                  onMouseDown={() => setDraggableItemId(item.id)}
+                  onMouseUp={() => setDraggableItemId(null)}
+                  onMouseLeave={() => setDraggableItemId(null)}
+                >
                   <Move size={16} />
                 </div>
               )}
@@ -175,7 +182,7 @@ export default function ItemLinesTable({
         return (
           <div 
             key={item.id} 
-            draggable={!!reorderItemLines}
+            draggable={reorderItemLines && draggableItemId === item.id}
             onDragStart={(e) => handleDragStart(e, index)}
             onDragEnter={(e) => handleDragEnter(e, index)}
             onDragOver={handleDragOver}
@@ -186,7 +193,12 @@ export default function ItemLinesTable({
               <div className="md:hidden text-[10px] font-bold text-slate-500 uppercase">Item Code</div>
               <div className="flex gap-1 items-center">
                 {reorderItemLines && (
-                  <div className="cursor-grab hover:text-sky-600 text-slate-400 hidden md:block">
+                  <div 
+                    className="cursor-grab hover:text-sky-600 text-slate-400 hidden md:block"
+                    onMouseDown={() => setDraggableItemId(item.id)}
+                    onMouseUp={() => setDraggableItemId(null)}
+                    onMouseLeave={() => setDraggableItemId(null)}
+                  >
                     <Move size={16} />
                   </div>
                 )}
@@ -219,11 +231,11 @@ export default function ItemLinesTable({
                       const code = (i.ItemCode || i.code || '').toLowerCase();
                       const name = (i.ItemName || i.name || '').toLowerCase();
                       return code.includes(term) || name.includes(term);
-                    }).slice(0, 30);
+                    }).slice(0, 1000);
                     if (filtered.length === 0) return null;
                     return (
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[200] overflow-hidden" style={{animation: 'fadeInDown 0.15s ease-out'}}>
-                        <div className="max-h-56 overflow-y-auto">
+                      <div className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[200] min-w-[350px] sm:min-w-[450px] max-w-[90vw] overflow-hidden" style={{animation: 'fadeInDown 0.15s ease-out'}}>
+                        <div className="max-h-64 overflow-y-auto">
                           {filtered.map((inv) => {
                             const code = inv.ItemCode || inv.code;
                             const name = inv.ItemName || inv.name;
@@ -239,15 +251,14 @@ export default function ItemLinesTable({
                                   setSearchTerms(prev => ({...prev, [item.id]: code}));
                                   setTimeout(() => document.getElementById(`qty-${item.id}`)?.focus(), 10);
                                 }}
-                                className={`px-3 py-2 cursor-pointer flex items-center gap-2 transition-colors border-b border-slate-50 last:border-0 ${
+                                className={`px-3 py-2 cursor-pointer relative flex items-center transition-colors border-b border-slate-50 last:border-0 ${
                                   isSelected ? 'bg-sky-50' : 'hover:bg-slate-50'
                                 }`}
                               >
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide flex-shrink-0 ${
-                                  isSelected ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
-                                }`}>{code}</span>
-                                <span className="text-xs text-slate-600 truncate">{name}</span>
-                                {isSelected && <span className="ml-auto text-sky-600 text-xs">✓</span>}
+                                <span className="text-[11px] text-slate-700 whitespace-normal pr-6 font-medium">
+                                  {code}:-{name} -({code})
+                                </span>
+                                {isSelected && <span className="absolute right-3 text-sky-600 text-xs font-bold">✓</span>}
                               </div>
                             );
                           })}
@@ -379,8 +390,28 @@ export default function ItemLinesTable({
               </div>
             )}
 
-            <div className="col-span-2 md:col-span-1 flex justify-end md:justify-center pt-2 md:pt-0 border-t border-slate-100 md:border-0 mt-2 md:mt-0">
-              <button type="button" onClick={() => removeItemLine(item.id)} disabled={items.length === 1} className="p-1.5 text-red-400 hover:text-red-650 hover:bg-red-50 rounded transition-colors disabled:opacity-30">
+            <div className="col-span-2 md:col-span-1 flex justify-end md:justify-center pt-2 md:pt-0 border-t border-slate-100 md:border-0 mt-2 md:mt-0 gap-1">
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (!item.itemCode) {
+                    toast.error("Please select an item code first.");
+                    return;
+                  }
+                  const matchedInventoryItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
+                  if (matchedInventoryItem) {
+                    setProductToEdit(matchedInventoryItem);
+                    setIsAddProductOpen(true);
+                  } else {
+                    toast.error("Product details not found.");
+                  }
+                }} 
+                className="p-1.5 text-sky-500 hover:text-sky-700 hover:bg-sky-50 rounded transition-colors"
+                title="Edit Product"
+              >
+                <Edit size={14} />
+              </button>
+              <button type="button" onClick={() => removeItemLine(item.id)} disabled={items.length === 1} className="p-1.5 text-red-400 hover:text-red-650 hover:bg-red-50 rounded transition-colors disabled:opacity-30" title="Delete Line">
                 <Trash2 size={14} />
               </button>
             </div>
@@ -388,7 +419,14 @@ export default function ItemLinesTable({
         );
       })}
       {/* Add Product Modal */}
-      <AddProductModal isOpen={isAddProductOpen} onClose={() => setIsAddProductOpen(false)} />
+      <AddProductModal 
+        isOpen={isAddProductOpen} 
+        initialData={productToEdit}
+        onClose={() => {
+          setIsAddProductOpen(false);
+          setProductToEdit(null);
+        }} 
+      />
     </div>
   );
 }

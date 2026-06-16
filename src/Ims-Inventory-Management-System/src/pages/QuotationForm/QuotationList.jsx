@@ -6,10 +6,12 @@ import { TabSwitcher } from '../../components/StandardButtons';
 import QuotationFormModal from './QuotationFormModal';
 import { getQuotations, deleteQuotation, createQuotation, updateQuotation } from '../../services/quotationService';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
+import useDataStore from '../../store/dataStore';
 
 export default function QuotationList({ onConvertToInvoice }) {
   const [quotations, setQuotations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { customers, fetchCustomers } = useDataStore();
   
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -38,6 +40,7 @@ export default function QuotationList({ onConvertToInvoice }) {
 
   useEffect(() => {
     fetchQuotationsData();
+    fetchCustomers();
   }, []);
 
   const handleClearFilters = () => {
@@ -70,7 +73,7 @@ export default function QuotationList({ onConvertToInvoice }) {
       item.customerName || '-',
       item.state || '-',
       item.mobileNumber || '-',
-      item.salesPerson || '-',
+      item.displaySalesPerson || '-',
       `Rs. ${Number(item.totalAmount || 0).toLocaleString('en-IN')}`,
       item.status === 'Final' ? 'Completed' : (item.status || 'Draft')
     ]);
@@ -95,7 +98,19 @@ export default function QuotationList({ onConvertToInvoice }) {
 
   // Filter Logic
   const filteredQuotations = useMemo(() => {
-    return quotations.filter(q => {
+    const enrichedQuotations = quotations.map(q => {
+      const cust = customers.find(c => 
+        (c.name === q.customerName) || 
+        (c.company === q.customerName) || 
+        (c.firstName && q.customerName.includes(c.firstName))
+      );
+      return {
+        ...q,
+        displaySalesPerson: cust?.salesPerson || q.salesPerson
+      };
+    });
+
+    return enrichedQuotations.filter(q => {
       // Filter by active tab
       if (activeTab !== 'All') {
         if (activeTab === 'Completed' && (q.status === 'Final' || q.status === 'Completed')) {
@@ -112,12 +127,12 @@ export default function QuotationList({ onConvertToInvoice }) {
           (q.quotationNo || '').toLowerCase().includes(query) ||
           (q.customerName || '').toLowerCase().includes(query) ||
           (q.mobileNumber || '').toLowerCase().includes(query) ||
-          (q.salesPerson || '').toLowerCase().includes(query)
+          (q.displaySalesPerson || '').toLowerCase().includes(query)
         );
       }
       return true;
     }).reverse();
-  }, [quotations, filters, activeTab]);
+  }, [quotations, filters, activeTab, customers]);
 
   const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage) || 1;
   const paginatedQuotations = filteredQuotations.slice(
@@ -150,7 +165,7 @@ export default function QuotationList({ onConvertToInvoice }) {
       <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.customerName || '-'}</td>
       <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.state || '-'}</td>
       <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.mobileNumber || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.salesPerson || '-'}</td>
+      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.displaySalesPerson || '-'}</td>
       <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
       <td className="px-4 py-3 text-center whitespace-nowrap text-xs">
         <span className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-bold ${getStatusColor(item.status)}`}>
@@ -185,7 +200,7 @@ export default function QuotationList({ onConvertToInvoice }) {
       </div>
       <div className="grid grid-cols-2 gap-y-2 text-xs">
         <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Customer</span> <span className="font-semibold text-slate-800">{item.customerName}</span></div>
-        <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Sales Person</span> <span className="text-slate-600">{item.salesPerson}</span></div>
+        <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Sales Person</span> <span className="text-slate-600">{item.displaySalesPerson}</span></div>
         <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Amount</span> <span className="font-bold text-emerald-600">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</span></div>
 
       </div>

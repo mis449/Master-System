@@ -3,7 +3,7 @@
 export const employees = [
   {
     id: 'emp-001',
-    name: 'Pratap Kumar',
+    name: 'Krisha',
     email: 'pratap@company.com',
     image: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Engineering',
@@ -31,7 +31,7 @@ export const employees = [
   },
   {
     id: 'emp-002',
-    name: 'Chetan Sharma',
+    name: 'Dushyant',
     email: 'chetan@company.com',
     image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Design',
@@ -59,7 +59,7 @@ export const employees = [
   },
   {
     id: 'emp-003',
-    name: 'Digendra Patel',
+    name: 'Sneha',
     email: 'digendra@company.com',
     image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Marketing',
@@ -87,7 +87,7 @@ export const employees = [
   },
   {
     id: 'emp-004',
-    name: 'Durgesh Gupta',
+    name: 'Siddhant',
     email: 'durgesh@company.com',
     image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Sales',
@@ -115,7 +115,7 @@ export const employees = [
   },
   {
     id: 'emp-005',
-    name: 'Vikash Singh',
+    name: 'Naman',
     email: 'vikash@company.com',
     image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Engineering',
@@ -143,7 +143,7 @@ export const employees = [
   },
   {
     id: 'emp-006',
-    name: 'Anubhav Kumar',
+    name: 'Khushi',
     email: 'anubhav@company.com',
     image: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'IT',
@@ -171,7 +171,7 @@ export const employees = [
   },
   {
     id: 'emp-007',
-    name: 'Muzammil Ahmed',
+    name: 'Deepak',
     email: 'muzammil@company.com',
     image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Operations',
@@ -199,7 +199,7 @@ export const employees = [
   },
   {
     id: 'emp-008',
-    name: 'Pooja Verma',
+    name: 'Jainam',
     email: 'pooja@company.com',
     image: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'HR',
@@ -227,7 +227,7 @@ export const employees = [
   },
   {
     id: 'emp-009',
-    name: 'Ritu Singh',
+    name: 'Mayur',
     email: 'ritu@company.com',
     image: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=600',
     department: 'Finance',

@@ -20,10 +20,52 @@ const INITIAL_STATE = {
   priceList: 'MRP'
 };
 
-export default function NewVendorModal({ isOpen, onClose, onSave }) {
+export default function NewVendorModal({ isOpen, onClose, onSave, initialData }) {
   const [formData, setFormData] = useState(INITIAL_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addVendor } = useDataStore();
+  const { addVendor, salesPersons, fetchSalesPersons } = useDataStore();
+
+  React.useEffect(() => {
+    fetchSalesPersons();
+  }, [fetchSalesPersons]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        // Handle parsing 'Mr. VendorName'
+        let salutation = 'Mr.';
+        let fullName = initialData.vendorName || initialData.name || '';
+        
+        const salutations = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
+        for (const sal of salutations) {
+          if (fullName.startsWith(sal)) {
+            salutation = sal;
+            fullName = fullName.substring(sal.length).trim();
+            break;
+          }
+        }
+
+        setFormData({
+          salutation: initialData.salutation || salutation,
+          fullName: initialData.first_name ? `${initialData.first_name} ${initialData.last_name}`.trim() : fullName,
+          company: initialData.company || '',
+          gstin: initialData.gstin || '',
+          pan: initialData.pan || '',
+          address: initialData.address || '',
+          areaPinCode: initialData.areaPinCode || initialData.area_pin_code || '',
+          cityState: initialData.cityState || initialData.city_state || '',
+          email: initialData.email || '',
+          mobile: initialData.mobile || '',
+          salesPerson: initialData.salesPerson || initialData.sales_person || '',
+          gstTreatment: initialData.gstTreatment || initialData.gst_treatment || 'Regular_OR_UnRegd',
+          gstType: initialData.gstType || initialData.gst_type || 'CGST + SGST',
+          priceList: initialData.priceList || initialData.price_list || 'MRP'
+        });
+      } else {
+        setFormData(INITIAL_STATE);
+      }
+    }
+  }, [isOpen, initialData]);
 
   const fetchCityState = async (pinCode) => {
     try {
@@ -111,12 +153,17 @@ export default function NewVendorModal({ isOpen, onClose, onSave }) {
     setIsSubmitting(true);
     try {
       const vendorName = `${formData.salutation} ${formData.fullName}`.trim();
-      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const finalData = { ...formData, vendorName };
+      const finalData = { 
+        ...formData, 
+        vendorName,
+        name: vendorName,
+        id: initialData?.id 
+      };
+      
       addVendor(finalData);
 
-      toast.success('Vendor added successfully!');
+      toast.success(initialData ? 'Vendor updated successfully!' : 'Vendor added successfully!');
       if (onSave) {
         onSave(finalData);
       }
@@ -133,9 +180,9 @@ export default function NewVendorModal({ isOpen, onClose, onSave }) {
     <ModalForm
       isOpen={isOpen}
       onClose={onClose}
-      title="New Vendor Master"
+      title={initialData ? "Edit Vendor Master" : "New Vendor Master"}
       onSubmit={handleSubmit}
-      submitText={isSubmitting ? 'Saving...' : 'Save New'}
+      submitText={isSubmitting ? 'Saving...' : (initialData ? 'Update Details' : 'Save New')}
       maxWidth="max-w-4xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -261,9 +308,9 @@ export default function NewVendorModal({ isOpen, onClose, onSave }) {
               className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
             >
               <option value="">Select</option>
-              <option value="Admin">Admin</option>
-              <option value="Manager">Manager</option>
-              <option value="Sales Executive">Sales Executive</option>
+              {salesPersons.map((sp) => (
+                <option key={sp.id} value={sp.sales_person}>{sp.sales_person}</option>
+              ))}
             </select>
           </div>
 

@@ -7,6 +7,7 @@ import thirdImg from '../../../../assets/third.png';
 import pgLogo from '../../Assets/pglogo.png';
 import upiImg from '../../../../assets/upi.png';
 import locationQrImg from '../../../../assets/locationqr1.png';
+import useDataStore from '../../store/dataStore';
 
 export default function PremiumPurchasePrint({ 
   initialData, 
@@ -25,7 +26,18 @@ export default function PremiumPurchasePrint({
 
   const purchaseNo = initialData?.docNo || headerInfo?.billNo || 'Draft';
   const createdOn = initialData?.docDate || initialData?.date || new Date().toISOString().split('T')[0];
-  const salesperson = otherInfo?.salesPerson || initialData?.salesPerson || 'Admin';
+  const staticSalesperson = otherInfo?.salesPerson || initialData?.salesPerson || 'Admin';
+
+  // Robust vendor lookup (assuming vendors are stored in useDataStore.getState().vendors)
+  // For purchase, basicInfo.vendor or basicInfo.vendorName is used
+  const vendors = useDataStore.getState().vendors || [];
+  const linkedVendor = vendors.find(v => 
+    (v.name === basicInfo?.vendor) || 
+    (v.company === basicInfo?.vendor) ||
+    (v.name === basicInfo?.vendorName)
+  );
+
+  const dynamicSalesperson = linkedVendor?.sales_person || staticSalesperson;
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -153,7 +165,7 @@ export default function PremiumPurchasePrint({
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Buyer</td>
                     <td className="pr-2 py-0.5">:</td>
-                    <td className="py-0.5 uppercase">{salesperson}</td>
+                    <td className="py-0.5 uppercase">{dynamicSalesperson}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Reference No</td>

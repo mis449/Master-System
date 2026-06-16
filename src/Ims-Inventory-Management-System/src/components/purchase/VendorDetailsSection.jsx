@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users } from 'lucide-react';
+import { Calendar, Users, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
 import SearchableDropdown from '../SearchableDropdown';
@@ -8,6 +8,7 @@ export default function VendorDetailsSection({
   basicInfo, 
   setBasicInfo, 
   onOpenVendorModal,
+  onEditVendor,
   onVendorSelect 
 }) {
   const { vendors, fetchVendors } = useDataStore();
@@ -42,7 +43,24 @@ export default function VendorDetailsSection({
       <div className="flex justify-between items-center mb-4 border-b border-teal-100 pb-2">
         <h3 className="text-sm font-bold text-teal-800 uppercase tracking-wider">Vendor Information</h3>
         <div className="flex gap-2">
-          <button type="button" onClick={onOpenVendorModal} className="text-xs font-bold bg-white text-teal-600 border border-teal-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-teal-50 transition">
+          {basicInfo.vendor && (
+            <button 
+              type="button" 
+              onClick={() => {
+                const matchedVendor = vendors.find(v => v.name === basicInfo.vendor || v.company === basicInfo.vendor);
+                if (matchedVendor && onEditVendor) {
+                  onEditVendor(matchedVendor);
+                } else {
+                  toast.error("Vendor details not found.");
+                }
+              }} 
+              className="text-xs font-bold bg-white text-sky-600 border border-sky-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-sky-50 transition shadow-sm"
+              title="Edit Vendor"
+            >
+              <Edit size={14} /> Edit Vendor
+            </button>
+          )}
+          <button type="button" onClick={onOpenVendorModal} className="text-xs font-bold bg-white text-teal-600 border border-teal-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-teal-50 transition shadow-sm">
             <Users size={14} /> New Vendor
           </button>
         </div>

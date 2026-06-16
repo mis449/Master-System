@@ -25,7 +25,18 @@ export default function PremiumQuotationPrint({
 
   const quotationNo = initialData?.quotationNo || initialData?.docNo || 'Draft';
   const createdOn = initialData?.date || initialData?.docDate || new Date().toISOString().split('T')[0];
-  const salesperson = otherInfo?.salesPerson || initialData?.salesPerson || 'Admin';
+  const staticSalesperson = otherInfo?.salesPerson || initialData?.salesPerson || 'Admin';
+
+  // Robust customer lookup
+  const customers = useDataStore.getState().customers || [];
+  const linkedCustomer = customers.find(c => 
+    (c.name === basicInfo?.customer) || 
+    (c.company === basicInfo?.customer) || 
+    (c.firstName && basicInfo?.customer?.includes(c.firstName))
+  );
+
+  const dynamicSalesperson = linkedCustomer?.salesPerson || staticSalesperson;
+  const dynamicSalesNumber = linkedCustomer?.salesNo || otherInfo?.salesNumber || '-';
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -153,12 +164,12 @@ export default function PremiumQuotationPrint({
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Salesperson</td>
                     <td className="pr-2 py-0.5">:</td>
-                    <td className="py-0.5 uppercase">{salesperson}</td>
+                    <td className="py-0.5 uppercase">{dynamicSalesperson}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Sales Number</td>
                     <td className="pr-2 py-0.5">:</td>
-                    <td className="py-0.5">{otherInfo?.salesNumber || useDataStore.getState().customers?.find(c => c.name === basicInfo?.customer)?.salesNo || '-'}</td>
+                    <td className="py-0.5">{dynamicSalesNumber}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap align-top pt-2">Scan to reach us</td>
@@ -269,7 +280,13 @@ export default function PremiumQuotationPrint({
               else if (row.type === 'subtotal') weight = 0.5;
               else weight = 1.0; 
 
-              if (currentWeight + weight > MAX_WEIGHT && currentPageRows.filter(r => r.type === 'product').length > 0) {
+              const isNewSection = row.type === 'section_header';
+
+              if (isNewSection && currentPageRows.length > 0) {
+                pages.push(currentPageRows);
+                currentPageRows = [];
+                currentWeight = 0;
+              } else if (currentWeight + weight > MAX_WEIGHT && currentPageRows.filter(r => r.type === 'product').length > 0) {
                 // Prevent orphan headers at bottom
                 let poppedHeaders = [];
                 while (

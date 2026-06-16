@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import ModalForm from '../../components/ModalForm';
+import useDataStore from '../../store/dataStore';
 
-export default function NewCustomerModal({ isOpen, onClose, onSave }) {
-  const [formData, setFormData] = useState({
+export default function NewCustomerModal({ isOpen, onClose, onSave, initialData }) {
+  const { salesPersons, fetchSalesPersons } = useDataStore();
+
+  const defaultFormData = {
     title: 'Mr.',
     fullName: '',
     company: '',
@@ -19,7 +22,42 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
     gstTreatment: 'Regular_OR_UnRegd',
     gstType: 'CGST + SGST',
     priceList: 'MRP'
-  });
+  };
+
+  const [formData, setFormData] = useState(defaultFormData);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchSalesPersons();
+      if (initialData) {
+        // Try to construct fullName from first_name / last_name or use name
+        let parsedFullName = initialData.firstName ? `${initialData.firstName} ${initialData.lastName || ''}`.trim() : '';
+        if (!parsedFullName && initialData.name) {
+          parsedFullName = initialData.name.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.)\s+/i, '');
+        }
+        
+        setFormData({
+          title: initialData.title || 'Mr.',
+          fullName: parsedFullName,
+          company: initialData.company || '',
+          gstin: initialData.gstin || '',
+          pan: initialData.pan || '',
+          address: initialData.address || '',
+          areaPinCode: initialData.areaPinCode || '',
+          cityState: initialData.cityState || '',
+          email: initialData.email || '',
+          mobile: initialData.mobile || '',
+          salesPerson: initialData.salesPerson || '',
+          salesNo: initialData.salesNo || '',
+          gstTreatment: initialData.gstTreatment || 'Regular_OR_UnRegd',
+          gstType: initialData.gstType || 'CGST + SGST',
+          priceList: initialData.priceList || 'MRP'
+        });
+      } else {
+        setFormData(defaultFormData);
+      }
+    }
+  }, [isOpen, initialData]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,6 +162,11 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
           fetchCityState(pinMatch[0]);
         }
       }
+    } else if (field === 'salesPerson') {
+      const selectedSP = salesPersons.find(sp => sp.sales_person === value);
+      if (selectedSP && selectedSP.mobile_number) {
+        setFormData(prev => ({ ...prev, salesNo: selectedSP.mobile_number }));
+      }
     }
   };
 
@@ -131,9 +174,9 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
     <ModalForm
       isOpen={isOpen}
       onClose={onClose}
-      title="New Customer Master"
+      title={initialData ? "Edit Customer Master" : "New Customer Master"}
       onSubmit={handleSubmit}
-      submitText={isSubmitting ? 'Saving...' : 'Save New'}
+      submitText={isSubmitting ? 'Saving...' : (initialData ? 'Update Details' : 'Save New')}
       maxWidth="max-w-4xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -261,16 +304,14 @@ export default function NewCustomerModal({ isOpen, onClose, onSave }) {
               className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
             >
               <option value="">Select</option>
-              <option value="Krisha">Krisha</option> 
-              <option value="Deepak">Dushyant</option>
-              <option value="Jainam">Sneha</option>
-              <option value="Khushi">Siddhant</option>
-              <option value="Mayur">Naman</option>
+              {salesPersons.map((sp) => (
+                <option key={sp.id} value={sp.sales_person}>{sp.sales_person}</option>
+              ))}
             </select>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <label className="sm:w-1/3 text-sm font-bold text-slate-700">Sales No</label>
+            <label className="sm:w-1/3 text-sm font-bold text-slate-700">SP Mobile</label>
             <input 
               type="text" 
               value={formData.salesNo} 

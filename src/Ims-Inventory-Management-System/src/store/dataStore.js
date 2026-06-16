@@ -9,6 +9,23 @@ const useDataStore = create((set, get) => ({
   inventorySummary: [],
   customers: [],
   vendors: [],
+  salesPersons: [],
+
+  // Fetch sales persons from Supabase
+  fetchSalesPersons: async () => {
+    try {
+      const { data, error } = await supabase.from('sales_person_master').select('*');
+      if (error) throw error;
+      
+      if (data) {
+        set({ salesPersons: data });
+      } else {
+        set({ salesPersons: [] });
+      }
+    } catch (e) {
+      console.error('Error fetching sales persons:', e);
+    }
+  },
 
   // Fetch customers from Supabase
   fetchCustomers: async () => {
@@ -120,7 +137,9 @@ const useDataStore = create((set, get) => ({
     try {
       // Check if exists
       const current = get().customers;
-      const existing = current.find(c => c.name === custName);
+      const existing = customerData.id 
+        ? current.find(c => String(c.id) === String(customerData.id))
+        : current.find(c => c.name === custName);
       
       if (existing && existing.id) {
         await supabase.from('customer').update(newCustomer).eq('id', existing.id);
@@ -163,7 +182,9 @@ const useDataStore = create((set, get) => ({
 
     try {
       const current = get().vendors;
-      const existing = current.find(v => v.name === vendorName);
+      const existing = vendorData.id 
+        ? current.find(v => String(v.id) === String(vendorData.id))
+        : current.find(v => v.name === vendorName);
       
       if (existing && existing.id) {
         await supabase.from('vendor').update(newVendor).eq('id', existing.id);
