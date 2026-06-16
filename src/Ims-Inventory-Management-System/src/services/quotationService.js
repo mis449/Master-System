@@ -1,104 +1,113 @@
 import { supabase } from '../supabaseClient';
 
+const mapQuotationRow = (item) => {
+  if (!item) return null;
+  const details = item.details || {};
+  const basic = details.basicInfo || {};
+  const other = details.otherInfo || {};
+  const sum = details.summary || {};
+
+  let itemsList = item.items || details.items || [];
+
+  // If no items in JSON but we have individual item columns, reconstruct the item line
+  if (itemsList.length === 0 && item.item_code) {
+    itemsList = [{
+      id: Date.now(),
+      type: 'item',
+      itemCode: item.item_code || '',
+      description: item.item_description || '',
+      quantity: item.item_quantity || 0,
+      unitPrice: item.item_unit_price || 0,
+      discountPercent: item.item_discount_percent || 0,
+      taxPercent: item.item_tax_percent || 0,
+      netAmount: item.item_net_amount || 0
+    }];
+  }
+
+  let state = item.customer_state || other.state || '-';
+  if (!item.customer_state && basic.cityState) {
+    state = basic.cityState.includes('/')
+      ? basic.cityState.split('/')[1]?.trim()
+      : basic.cityState;
+  }
+
+  return {
+    ...details,
+    id: item.id,
+    quotationNo: item.quotation_no,
+    customerName: item.customer_name || basic.customer || '',
+    date: item.date,
+    status: item.status,
+    supplyStatus: item.supply_status,
+
+    customer_address: item.customer_address || basic.address || '',
+    customer_area_pin_code: item.customer_area_pin_code || basic.areaPinCode || '',
+    customer_city_state: item.customer_city_state || basic.cityState || '',
+    customer_state: item.customer_state || basic.state || '',
+    customer_email: item.customer_email || basic.email || '',
+    customer_mobile: item.customer_mobile || basic.mobile || '',
+    validity_date: item.validity_date || basic.validityDate || '',
+    price_list: item.price_list || basic.priceList || '',
+    payment_terms: item.payment_terms || basic.paymentTerms || '',
+    gross_amount: item.gross_amount || sum.grossAmount || 0,
+    discount_amount: item.discount_amount || sum.discountAmount || 0,
+    tax_amount: item.tax_amount || sum.taxAmount || 0,
+    round_off_amount: item.round_off_amount || sum.roundOffAmount || 0,
+    total_amount: item.total_amount || sum.totalAmount || 0,
+
+    items: itemsList,
+
+    item_code: item.item_code || '',
+    item_description: item.item_description || '',
+    item_quantity: item.item_quantity || 0,
+    item_unit_price: item.item_unit_price || 0,
+    item_discount_percent: item.item_discount_percent || 0,
+    item_tax_percent: item.item_tax_percent || 0,
+    item_net_amount: item.item_net_amount || 0,
+
+    details: details,
+    state: state,
+    mobileNumber: item.customer_mobile || basic.mobile || other.mobile || '-',
+    salesPerson: other.salesPerson || 'Admin',
+    totalAmount: item.total_amount || sum.totalAmount || 0
+  };
+};
+
 export const getQuotations = async () => {
-  const { data, error } = await supabase.from('quotation').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('quotation')
+    .select('*')
+    .order('created_at', { ascending: false });
   if (error) {
-    console.error("Error fetching quotations:", error);
+    console.error('Error fetching quotations:', error);
     return [];
   }
-  return data.map(item => {
-    const details = item.details || {};
-    const basic = details.basicInfo || {};
-    const other = details.otherInfo || {};
-    const sum = details.summary || {};
-    
-    let itemsList = item.items || details.items || [];
-    
-    // If no items in JSON but we have individual item columns, reconstruct the item line
-    if (itemsList.length === 0 && item.item_code) {
-      itemsList = [{
-        id: Date.now(),
-        type: 'item',
-        itemCode: item.item_code || '',
-        description: item.item_description || '',
-        quantity: item.item_quantity || 0,
-        unitPrice: item.item_unit_price || 0,
-        discountPercent: item.item_discount_percent || 0,
-        taxPercent: item.item_tax_percent || 0,
-        netAmount: item.item_net_amount || 0
-      }];
-    }
-    
-    let state = item.customer_state || other.state || '-';
-    if (!item.customer_state && basic.cityState) {
-       state = basic.cityState.includes('/') ? basic.cityState.split('/')[1]?.trim() : basic.cityState;
-    }
-
-    return {
-      ...details,
-      id: item.id,
-      quotationNo: item.quotation_no,
-      customerName: item.customer_name || basic.customer || '',
-      date: item.date,
-      status: item.status,
-      supplyStatus: item.supply_status,
-      
-      // Mapped columns
-      customer_address: item.customer_address || basic.address || '',
-      customer_area_pin_code: item.customer_area_pin_code || basic.areaPinCode || '',
-      customer_city_state: item.customer_city_state || basic.cityState || '',
-      customer_state: item.customer_state || basic.state || '',
-      customer_email: item.customer_email || basic.email || '',
-      customer_mobile: item.customer_mobile || basic.mobile || '',
-      validity_date: item.validity_date || basic.validityDate || '',
-      price_list: item.price_list || basic.priceList || '',
-      payment_terms: item.payment_terms || basic.paymentTerms || '',
-      internal_notes: item.internal_notes || other.internalNotes || '',
-      remarks: item.remarks || details.notes?.remarks || '',
-      terms_conditions: item.terms_conditions || details.notes?.termsAndConditions || '',
-      gross_amount: item.gross_amount || sum.grossAmount || 0,
-      discount_amount: item.discount_amount || sum.discountAmount || 0,
-      tax_amount: item.tax_amount || sum.taxAmount || 0,
-      round_off_amount: item.round_off_amount || sum.roundOffAmount || 0,
-      total_amount: item.total_amount || sum.totalAmount || 0,
-
-      items: itemsList,
-
-      // Export individual item fields just in case UI wants to read them directly
-      item_code: item.item_code || '',
-      item_description: item.item_description || '',
-      item_quantity: item.item_quantity || 0,
-      item_unit_price: item.item_unit_price || 0,
-      item_discount_percent: item.item_discount_percent || 0,
-      item_tax_percent: item.item_tax_percent || 0,
-      item_net_amount: item.item_net_amount || 0,
-      
-      details: details,
-      state: state,
-      mobileNumber: item.customer_mobile || basic.mobile || other.mobile || '-',
-      salesPerson: other.salesPerson || 'Admin',
-      totalAmount: item.total_amount || sum.totalAmount || 0
-    };
-  });
+  return data.map(mapQuotationRow);
 };
 
 export const createQuotation = async (data) => {
-  const { data: lastRecord } = await supabase.from('quotation').select('quotation_no').order('created_at', { ascending: false }).limit(1);
+  const { data: lastRecord } = await supabase
+    .from('quotation')
+    .select('quotation_no')
+    .order('created_at', { ascending: false })
+    .limit(1);
+
   let nextNum = 1;
   if (lastRecord && lastRecord.length > 0 && lastRecord[0].quotation_no) {
     const match = lastRecord[0].quotation_no.match(/\d+$/);
     if (match) nextNum = parseInt(match[0], 10) + 1;
   }
   const docNo = `QUOT-${String(nextNum).padStart(4, '0')}`;
-  
+
   const d = data.details || {};
   const basicInfo = d.basicInfo || {};
-  const otherInfo = d.otherInfo || {};
-  const notes = d.notes || {};
   const summary = d.summary || {};
-  
-  const firstItem = (d.items && d.items.length > 0) ? d.items[0] : (data.items && data.items.length > 0 ? data.items[0] : {});
-  
+
+  const firstItem = (d.items && d.items.length > 0)
+    ? d.items[0]
+    : (data.items && data.items.length > 0 ? data.items[0] : {});
+
+  // Only include columns that actually exist in the quotation table
   const insertData = {
     id: String(Date.now()),
     quotation_no: docNo,
@@ -106,7 +115,7 @@ export const createQuotation = async (data) => {
     date: data.date || new Date().toISOString().split('T')[0],
     status: data.status || 'Active',
     supply_status: data.supplyStatus || '-',
-    
+
     customer_address: data.customer_address || basicInfo.address || '',
     customer_area_pin_code: data.customer_area_pin_code || basicInfo.areaPinCode || '',
     customer_city_state: data.customer_city_state || basicInfo.cityState || '',
@@ -116,19 +125,13 @@ export const createQuotation = async (data) => {
     validity_date: data.validity_date || basicInfo.validityDate || '',
     price_list: data.price_list || basicInfo.priceList || '',
     payment_terms: data.payment_terms || basicInfo.paymentTerms || '',
-    
-    internal_notes: data.internal_notes || otherInfo.internalNotes || '',
-    remarks: data.remarks || notes.remarks || '',
-    terms_conditions: data.terms_conditions || notes.termsAndConditions || '',
-    
-    // ----- monetary totals (force numbers) -----
+
     gross_amount: Number(data.gross_amount ?? summary.grossAmount ?? 0),
     discount_amount: Number(data.discount_amount ?? summary.discountAmount ?? 0),
     tax_amount: Number(data.tax_amount ?? summary.taxAmount ?? 0),
     round_off_amount: Number(data.round_off_amount ?? summary.roundOffAmount ?? 0),
     total_amount: Number(data.total_amount ?? summary.totalAmount ?? 0),
 
-    // ----- first‑item shortcuts (force numbers) -----
     item_code: firstItem.itemCode ?? '',
     item_description: firstItem.description ?? '',
     item_quantity: Number(firstItem.quantity ?? 0),
@@ -137,65 +140,88 @@ export const createQuotation = async (data) => {
     item_tax_percent: Number(firstItem.taxPercent ?? 0),
     item_net_amount: Number(firstItem.netAmount ?? 0),
 
-    // ----- full JSON payload (must be a plain object) -----
-    details: data.details ?? data
+    // Store full details as JSONB — only safe structured object, never the whole spread
+    details: data.details || {}
   };
 
-  // Ensure we don't send undefined values – Supabase rejects them
+  // Clean undefined values
   const cleanInsertData = Object.fromEntries(
     Object.entries(insertData).filter(([, v]) => v !== undefined)
   );
 
-  // Remove columns that might not be present in the Supabase schema cache
-  delete cleanInsertData.internal_notes;
-  delete cleanInsertData.remarks;
-  delete cleanInsertData.terms_conditions;
-  console.log('🔎 CLEANED QUOTATION PAYLOAD →', JSON.stringify(cleanInsertData));
-  const { data: result, error } = await supabase.from('quotation').insert([cleanInsertData]).select().single();
+  const { data: result, error } = await supabase
+    .from('quotation')
+    .insert([cleanInsertData])
+    .select()
+    .single();
+
   if (error) {
     console.error('⚡ Supabase INSERT error details →', JSON.stringify(error, null, 2));
     throw error;
   }
-  
-  return { ...data, id: result.id, quotationNo: result.quotation_no };
+
+  return mapQuotationRow(result);
 };
 
 export const updateQuotation = async (id, updates) => {
   const updateData = {};
+
   if (updates.status) updateData.status = updates.status;
   if (updates.supplyStatus) updateData.supply_status = updates.supplyStatus;
-  if (updates.customerName || updates.customer) updateData.customer_name = updates.customerName || updates.customer;
+  if (updates.customerName || updates.customer)
+    updateData.customer_name = updates.customerName || updates.customer;
   if (updates.details) updateData.details = updates.details;
-  
-  if (Object.keys(updateData).length === 0) updateData.details = updates;
+
+  // If nothing specific was set, only save the details JSONB (never spread whole updates as top-level)
+  if (Object.keys(updateData).length === 0) updateData.details = updates.details || {};
 
   const d = updates.details || updates || {};
   const basicInfo = d.basicInfo || {};
   const otherInfo = d.otherInfo || {};
-  const notes = d.notes || {};
   const summary = d.summary || {};
-  
-  if (updates.customer_address !== undefined || basicInfo.address !== undefined) updateData.customer_address = updates.customer_address || basicInfo.address;
-  if (updates.customer_area_pin_code !== undefined || basicInfo.areaPinCode !== undefined) updateData.customer_area_pin_code = updates.customer_area_pin_code || basicInfo.areaPinCode;
-  if (updates.customer_city_state !== undefined || basicInfo.cityState !== undefined) updateData.customer_city_state = updates.customer_city_state || basicInfo.cityState;
-  if (updates.customer_state !== undefined || basicInfo.state !== undefined) updateData.customer_state = updates.customer_state || basicInfo.state;
-  if (updates.customer_email !== undefined || basicInfo.email !== undefined) updateData.customer_email = updates.customer_email || basicInfo.email;
-  if (updates.customer_mobile !== undefined || basicInfo.mobile !== undefined) updateData.customer_mobile = updates.customer_mobile || basicInfo.mobile;
-  if (updates.validity_date !== undefined || basicInfo.validityDate !== undefined) updateData.validity_date = updates.validity_date || basicInfo.validityDate;
-  if (updates.price_list !== undefined || basicInfo.priceList !== undefined) updateData.price_list = updates.price_list || basicInfo.priceList;
-  if (updates.payment_terms !== undefined || basicInfo.paymentTerms !== undefined) updateData.payment_terms = updates.payment_terms || basicInfo.paymentTerms;
-  
-  // The following fields are temporarily omitted because the Supabase schema cache does not recognise them yet.
-  // if (updates.internal_notes !== undefined || otherInfo.internalNotes !== undefined) updateData.internal_notes = updates.internal_notes || otherInfo.internalNotes;
-  // if (updates.remarks !== undefined || notes.remarks !== undefined) updateData.remarks = updates.remarks || notes.remarks;
-  // if (updates.terms_conditions !== undefined || notes.termsAndConditions !== undefined) updateData.terms_conditions = updates.terms_conditions || notes.termsAndConditions;
-  
-  if (updates.gross_amount !== undefined || summary.grossAmount !== undefined) updateData.gross_amount = updates.gross_amount || summary.grossAmount || 0;
-  if (updates.discount_amount !== undefined || summary.discountAmount !== undefined) updateData.discount_amount = updates.discount_amount || summary.discountAmount || 0;
-  if (updates.tax_amount !== undefined || summary.taxAmount !== undefined) updateData.tax_amount = updates.tax_amount || summary.taxAmount || 0;
-  if (updates.round_off_amount !== undefined || summary.roundOffAmount !== undefined) updateData.round_off_amount = updates.round_off_amount || summary.roundOffAmount || 0;
-  if (updates.total_amount !== undefined || summary.totalAmount !== undefined) updateData.total_amount = updates.total_amount || summary.totalAmount || 0;
-  
+
+  const customerAddress = updates.customer_address || updates.customerAddress || basicInfo.address;
+  if (customerAddress !== undefined) updateData.customer_address = customerAddress;
+
+  const customerAreaPinCode = updates.customer_area_pin_code || updates.areaPinCode || basicInfo.areaPinCode;
+  if (customerAreaPinCode !== undefined) updateData.customer_area_pin_code = customerAreaPinCode;
+
+  const customerCityState = updates.customer_city_state || updates.cityState || basicInfo.cityState;
+  if (customerCityState !== undefined) updateData.customer_city_state = customerCityState;
+
+  const customerState = updates.customer_state || updates.state || basicInfo.state || otherInfo.state;
+  if (customerState !== undefined) updateData.customer_state = customerState;
+
+  const customerEmail = updates.customer_email || updates.customerEmail || basicInfo.email;
+  if (customerEmail !== undefined) updateData.customer_email = customerEmail;
+
+  const customerMobile = updates.customer_mobile || updates.mobileNumber || updates.mobile || basicInfo.mobile || otherInfo.mobile;
+  if (customerMobile !== undefined) updateData.customer_mobile = customerMobile;
+
+  const validityDate = updates.validity_date || updates.validityDate || basicInfo.validityDate;
+  if (validityDate !== undefined) updateData.validity_date = validityDate;
+
+  const priceList = updates.price_list || updates.priceList || basicInfo.priceList;
+  if (priceList !== undefined) updateData.price_list = priceList;
+
+  const paymentTerms = updates.payment_terms || updates.paymentTerms || basicInfo.paymentTerms;
+  if (paymentTerms !== undefined) updateData.payment_terms = paymentTerms;
+
+  const grossAmount = updates.gross_amount ?? updates.grossAmount ?? summary.grossAmount;
+  if (grossAmount !== undefined) updateData.gross_amount = Number(grossAmount);
+
+  const discountAmount = updates.discount_amount ?? updates.discountAmount ?? summary.discountAmount;
+  if (discountAmount !== undefined) updateData.discount_amount = Number(discountAmount);
+
+  const taxAmount = updates.tax_amount ?? updates.taxAmount ?? summary.taxAmount;
+  if (taxAmount !== undefined) updateData.tax_amount = Number(taxAmount);
+
+  const roundOffAmount = updates.round_off_amount ?? updates.roundOffAmount ?? summary.roundOffAmount;
+  if (roundOffAmount !== undefined) updateData.round_off_amount = Number(roundOffAmount);
+
+  const totalAmount = updates.total_amount ?? updates.totalAmount ?? summary.totalAmount;
+  if (totalAmount !== undefined) updateData.total_amount = Number(totalAmount);
+
   const itemsList = d.items || updates.items || [];
   if (itemsList.length > 0) {
     const firstItem = itemsList[0];
@@ -208,7 +234,7 @@ export const updateQuotation = async (id, updates) => {
     updateData.item_net_amount = Number(firstItem.netAmount ?? 0);
   }
 
-  // Clean undefined fields before update
+  // Clean undefined values
   const cleanUpdateData = Object.fromEntries(
     Object.entries(updateData).filter(([, v]) => v !== undefined)
   );
@@ -219,12 +245,12 @@ export const updateQuotation = async (id, updates) => {
     .eq('id', String(id))
     .select()
     .single();
-    
+
   if (error) {
     console.error('⚡ Supabase UPDATE error details →', JSON.stringify(error, null, 2));
     throw error;
   }
-  return { ...updates, id: result.id, quotationNo: result.quotation_no };
+  return mapQuotationRow(result);
 };
 
 export const deleteQuotation = async (id) => {

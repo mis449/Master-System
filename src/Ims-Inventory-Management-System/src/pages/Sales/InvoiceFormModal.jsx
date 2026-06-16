@@ -196,27 +196,33 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
   const removeItemLine = (id) => { if (items.length > 1) setItems(prev => prev.filter(item => item.id !== id)); };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!basicInfo.customer) { toast.error('Customer name is required'); return; }
 
     setIsSubmitting(true);
     try {
-      const isExistingInvoice = initialData && initialData.invoiceNo;
+      const isExistingInvoice = initialData && initialData.id;
       const invoiceData = {
-        invoiceNo: isExistingInvoice ? initialData.invoiceNo : `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+        // Pass id so InvoiceList knows this is an update
+        ...(isExistingInvoice ? { id: initialData.id } : {}),
+        invoiceNo: isExistingInvoice ? initialData.invoiceNo : undefined,
         date: isExistingInvoice ? initialData.date : new Date().toISOString().split('T')[0],
         customerName: basicInfo.customer,
+        customer: basicInfo.customer,
         mobileNumber: basicInfo.mobile || otherInfo.mobile || initialData?.mobileNumber || '-',
-        state: basicInfo.cityState ? (basicInfo.cityState.includes('/') ? basicInfo.cityState.split('/')[1]?.trim() : basicInfo.cityState) : (otherInfo.state || initialData?.state || '-'),
+        state: basicInfo.cityState
+          ? (basicInfo.cityState.includes('/') ? basicInfo.cityState.split('/')[1]?.trim() : basicInfo.cityState)
+          : (otherInfo.state || initialData?.state || '-'),
         salesPerson: otherInfo.salesPerson || 'Admin',
         totalAmount: summary.totalAmount,
-        status: 'Active',
+        status: initialData?.status || 'Active',
+        paymentStatus: initialData?.paymentStatus || '-',
         details: { basicInfo, items, otherInfo, notes, summary }
       };
 
-      // Mock save
       onSave(invoiceData);
     } catch (error) {
+      console.error('Invoice submit error:', error);
       toast.error('Failed to save invoice');
     } finally {
       setIsSubmitting(false);
