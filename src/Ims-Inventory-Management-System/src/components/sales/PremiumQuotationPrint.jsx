@@ -428,9 +428,9 @@ export default function PremiumQuotationPrint({
                                 )}
                               </td>
                               <td className="py-1.5 px-2 text-left align-top">
-                                <div className="font-bold text-slate-900 text-[12px]">{item.itemCode || '-'}</div>
+                                <div className="font-bold text-slate-900 text-[11px]">{item.itemCode || '-'}</div>
                                 {item.description && (
-                                  <div className="text-slate-600 text-[10px] mt-1 pr-2 leading-snug">
+                                  <div className="text-slate-600 text-[9px] mt-0.5 pr-2 leading-tight">
                                     {(() => {
                                       const desc = item.description;
                                       const code = item.itemCode;
@@ -452,13 +452,13 @@ export default function PremiumQuotationPrint({
                                 )}
                               </td>
                               <td className="py-1.5 px-1 text-center align-top">
-                                <div className="text-slate-800 text-[13px]">{item.quantity}</div>
-                                <div className="text-slate-600 text-[11px] mt-0.5 uppercase">PCS</div>
+                                <div className="text-slate-800 text-[11px]">{item.quantity}</div>
+                                <div className="text-slate-600 text-[9px] mt-0.5 uppercase">PCS</div>
                               </td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)}%` : '-'}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[13px] whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)}%` : '-'}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[11px] whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                             </tr>
                           );
                         })}
