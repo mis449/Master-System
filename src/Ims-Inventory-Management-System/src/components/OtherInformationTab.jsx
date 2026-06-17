@@ -17,7 +17,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
       
       {/* Ship to */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Ship to
         </label>
         <input 
@@ -30,7 +30,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Project */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Project
         </label>
         <input 
@@ -43,7 +43,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Cust.Ref.Number */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Cust.Ref.Number
         </label>
         <input 
@@ -56,7 +56,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Sales Person */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Sales Person
         </label>
         <input 
@@ -69,7 +69,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Ref.Source Type */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Ref.Source Type
         </label>
         <input 
@@ -82,7 +82,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Main Agent */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Main Agent
         </label>
         <input 
@@ -95,7 +95,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Architect Name */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Architect Name
         </label>
         <input 
@@ -108,7 +108,7 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
 
       {/* Sales Number */}
       <div className="space-y-1.5">
-        <label className="block text-sm md:text-base text-slate-700 font-bold uppercase tracking-wider">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
           Sales Number
         </label>
         <input 

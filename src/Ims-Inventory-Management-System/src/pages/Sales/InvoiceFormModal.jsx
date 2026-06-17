@@ -121,7 +121,11 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
     if (item) {
       setItems(prev => {
         const newItems = prev.map(p => p.id === rowId ? {
-          ...p, itemCode: code, description: item.ItemName || item.name || '', unitPrice: Number(item.MRP || item.price || 0)
+          ...p,
+          itemCode: code,
+          description: item.ItemName || item.name || '',
+          unitPrice: Number(item.MRP || item.price || 0),
+          thumbnail: item.Thumbnail || item.product_image_url || ''
         } : p);
         if (prev[prev.length - 1].id === rowId) newItems.push(getEmptyItem('item'));
         return newItems;

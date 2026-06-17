@@ -75,20 +75,26 @@ export default function PremiumQuotationPrint({
 
   return (
     <div className="w-full text-slate-800 font-sans print:!bg-transparent" id="premium-quotation-print" style={{ backgroundColor: '#f8fafc' }}>
-      <style type="text/css" media="print">
+      <style>
         {`
-          @page {
-            size: A4;
-            margin: 0;
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          #premium-quotation-print, #premium-quotation-print * {
+            font-family: 'Inter', -apple-system, sans-serif !important;
           }
-          html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100% !important;
-          }
-          #premium-quotation-print {
-            margin: 0 !important;
-            padding: 0 !important;
+          @media print {
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              height: 100% !important;
+            }
+            #premium-quotation-print {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
           }
         `}
       </style>
@@ -359,19 +365,19 @@ export default function PremiumQuotationPrint({
                       <thead className="table-header-group">
                         {firstSectionRow && (
                           <tr>
-                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
+                            <th colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
                               {firstSectionRow.name} {firstSectionRow.isContinuation ? '(Contd.)' : ''}
                             </th>
                           </tr>
                         )}
-                        <tr className="bg-white text-slate-800 font-semibold border-y border-black text-[13px] tracking-wide">
-                          <th className="py-[2px] px-2 text-center w-[18%]">Image</th>
-                          <th className="py-[2px] px-2 text-left w-[41%] whitespace-nowrap">Product Details</th>
-                          <th className="py-[2px] px-1 text-center w-[5%]">Qty</th>
-                          <th className="py-[2px] px-1 text-right w-[10%]">MRP</th>
-                          <th className="py-[2px] px-1 text-right w-[5%]">Dis%</th>
-                          <th className="py-[2px] px-1 text-right w-[9%]">Net rate</th>
-                          <th className="py-[2px] px-2 text-right w-[12%]">Amount</th>
+                        <tr className="bg-white text-slate-800 font-medium border-y border-black text-[11px] tracking-wider uppercase">
+                          <th className="py-1 px-2 text-center w-[12%]">Image</th>
+                          <th className="py-1 px-2 text-left w-[44%]">Product Details</th>
+                          <th className="py-1 px-1 text-center w-[6%]">Qty</th>
+                          <th className="py-1 px-1 text-right w-[11%]">MRP</th>
+                          <th className="py-1 px-1 text-right w-[8%]">Dis %</th>
+                          <th className="py-1 px-1 text-right w-[9%]">Net Rate</th>
+                          <th className="py-1 px-2 text-right w-[10%]">Amount</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -379,7 +385,7 @@ export default function PremiumQuotationPrint({
                           if (item.type === 'section_header') {
                             return (
                               <tr key={`sec-${idx}`} className="break-inside-avoid">
-                                <td colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest">
+                                <td colSpan="7" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
                                   {item.name} {item.isContinuation ? '(Contd.)' : ''}
                                 </td>
                               </tr>
@@ -422,21 +428,37 @@ export default function PremiumQuotationPrint({
                                 )}
                               </td>
                               <td className="py-1.5 px-2 text-left align-top">
-                                <div className="font-bold text-slate-900 text-[11px]">{item.itemCode || '-'}</div>
+                                <div className="font-bold text-slate-900 text-[12px]">{item.itemCode || '-'}</div>
                                 {item.description && (
                                   <div className="text-slate-600 text-[10px] mt-1 pr-2 leading-snug">
-                                    {item.description}
+                                    {(() => {
+                                      const desc = item.description;
+                                      const code = item.itemCode;
+                                      if (!desc) return '';
+                                      if (!code) return desc;
+                                      const escapedCode = code.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                      const regexPatterns = [
+                                        new RegExp(`\\s*-\\s*\\(\\s*${escapedCode}\\s*\\)`, 'i'),
+                                        new RegExp(`\\s*\\(\\s*${escapedCode}\\s*\\)`, 'i'),
+                                        new RegExp(`\\s*-\\s*${escapedCode}`, 'i')
+                                      ];
+                                      let cleaned = desc;
+                                      for (const pattern of regexPatterns) {
+                                        cleaned = cleaned.replace(pattern, '');
+                                      }
+                                      return cleaned.trim();
+                                    })()}
                                   </div>
                                 )}
                               </td>
                               <td className="py-1.5 px-1 text-center align-top">
                                 <div className="text-slate-800 text-[13px]">{item.quantity}</div>
-                                <div className="text-slate-600 text-[10px] mt-0.5 uppercase">PCS</div>
+                                <div className="text-slate-600 text-[11px] mt-0.5 uppercase">PCS</div>
                               </td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(2)}%` : '-'}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[12px] whitespace-nowrap">₹{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[12px] whitespace-nowrap">₹{item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)}%` : '-'}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[13px] whitespace-nowrap">{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                              <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[13px] whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                             </tr>
                           );
                         })}

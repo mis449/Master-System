@@ -7,6 +7,7 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
   const { salesPersons, fetchSalesPersons } = useDataStore();
 
   const defaultFormData = {
+    id: '',
     title: 'Mr.',
     fullName: '',
     company: '',
@@ -39,6 +40,7 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
         }
         
         setFormData({
+          id: initialData.id || '',
           title: initialData.title || 'Mr.',
           fullName: parsedFullName,
           company: initialData.company || '',

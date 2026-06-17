@@ -132,7 +132,8 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
           ...p,
           itemCode: code,
           description: item.ItemName || item.name || '',
-          unitPrice: Number(item.MRP || item.price || 0)
+          unitPrice: Number(item.MRP || item.price || 0),
+          thumbnail: item.Thumbnail || item.product_image_url || ''
         } : p);
         if (prev[prev.length - 1].id === rowId) {
           newItems.push(getEmptyItem('item'));
