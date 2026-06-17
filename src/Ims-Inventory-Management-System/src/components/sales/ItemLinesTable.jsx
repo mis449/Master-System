@@ -334,7 +334,7 @@ export default function ItemLinesTable({
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Qty</div>
-              <input id={`qty-${item.id}`} type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input id={`qty-${item.id}`} type="number" min="0" step="any" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
 
             {/* Act Disp and Rem Qty Columns */}

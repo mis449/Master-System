@@ -25,11 +25,11 @@ export default function SalesModule() {
   };
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 bg-slate-50 h-full flex flex-col min-h-0">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6 w-full flex-1 flex flex-col min-h-0">
         
         {/* Module Header & Tabs */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-shrink-0">
           <div className="flex gap-2 bg-slate-100/50 p-1 rounded-xl overflow-x-auto">
             {['Quotation', 'Invoice', 'Sales Return'].map((tab) => (
               <button
@@ -48,7 +48,7 @@ export default function SalesModule() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Quotation' && (
             <QuotationList 
               onConvertToInvoice={handleConvertToInvoice} 

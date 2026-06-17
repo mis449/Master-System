@@ -305,6 +305,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                         <button type="button" onClick={() => handleUpdateDispatchQty(item.id, -1)} className="w-7 h-full text-slate-500 hover:bg-slate-100 flex items-center justify-center border-r border-slate-200 font-black">-</button>
                         <input 
                           type="number"
+                          min="0"
+                          step="any"
                           value={item.dispatchQty}
                           onChange={(e) => setExactDispatchQty(item.id, e.target.value)}
                           className="w-10 h-full text-center text-xs font-bold text-sky-700 focus:outline-none focus:bg-sky-50"
@@ -409,6 +411,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                   <input 
                     type="number"
                     min="0"
+                    step="any"
                     value={tempQty}
                     onChange={(e) => {
                       const val = e.target.value;

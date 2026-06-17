@@ -39,7 +39,10 @@ const DataTable = ({
       {/* Desktop Table View (Hidden on Mobile) */}
       <div className="hidden md:flex flex-col flex-1 min-h-0 overflow-hidden">
         <DragScrollTable className="w-full flex-1 min-h-0">
-          <table className={`w-full relative border-collapse ${minWidth}`}>
+          <table 
+            className="w-full relative border-collapse"
+            style={{ minWidth }}
+          >
             <thead className="bg-slate-50/80 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
               <tr>
                 {headers.map((header, index) => (
