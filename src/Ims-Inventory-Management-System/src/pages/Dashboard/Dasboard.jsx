@@ -22,6 +22,8 @@ export default function Dasboard() {
   const [exportSelectedBrand, setExportSelectedBrand] = useState('All Brands');
   const [exportActionType, setExportActionType] = useState('PDF');
   const [exportOrientation, setExportOrientation] = useState('landscape');
+  const [selectedItemCodes, setSelectedItemCodes] = useState([]);
+  const [exportRange, setExportRange] = useState('all'); // 'all' | 'selected'
 
   // Filters State
   const [filters, setFilters] = useState({
@@ -136,18 +138,25 @@ export default function Dasboard() {
 
   const openExportModal = (type) => {
     setExportActionType(type);
+    if (selectedItemCodes.length > 0) {
+      setExportRange('selected');
+    } else {
+      setExportRange('all');
+    }
     setIsExportModalOpen(true);
   };
 
   const handleExportSubmit = () => {
     // Determine data to export
     let dataToExport = filteredStocks;
-    if (exportSelectedBrand !== 'All Brands') {
+    if (exportRange === 'selected') {
+      dataToExport = computedStocks.filter(item => selectedItemCodes.includes(item.ItemCode || item.code));
+    } else if (exportSelectedBrand !== 'All Brands') {
       dataToExport = filteredStocks.filter(item => (item.BrandName || item.brand) === exportSelectedBrand);
     }
 
     if (dataToExport.length === 0) {
-      toast.error(`No data found for ${exportSelectedBrand}`);
+      toast.error(exportRange === 'selected' ? 'No selected items found' : `No data found for ${exportSelectedBrand}`);
       return;
     }
 
@@ -195,7 +204,7 @@ export default function Dasboard() {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42); // slate-900
-    doc.text('Brand Wise Inventory Report', 14, 20);
+    doc.text(exportRange === 'selected' ? 'Selected Inventory Report' : 'Brand Wise Inventory Report', 14, 20);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
@@ -203,7 +212,7 @@ export default function Dasboard() {
     doc.text(`Company: PAREKH GALLERIUM`, 14, 28);
     
     doc.setFont('helvetica', 'normal');
-    doc.text(`Brand Filter: ${exportSelectedBrand}`, 14, 34);
+    doc.text(exportRange === 'selected' ? `Export Scope: Selected Products Only` : `Brand Filter: ${exportSelectedBrand}`, 14, 34);
     doc.text(`Total Products: ${data.length}`, 14, 40);
 
     doc.text(`Report Date: ${format(new Date(), 'dd/MM/yyyy HH:mm:ss')}`, pageWidth - 14, 28, { align: 'right' });
@@ -284,7 +293,23 @@ export default function Dasboard() {
     setIsModalOpen(true);
   };
 
+  const isAllSelectedOnCurrentPage = paginatedStocks.length > 0 && paginatedStocks.every(item => selectedItemCodes.includes(item.ItemCode || item.code));
+
   const tableHeaders = [
+    <input 
+      type="checkbox" 
+      checked={isAllSelectedOnCurrentPage}
+      onChange={(e) => {
+        const pageCodes = paginatedStocks.map(item => item.ItemCode || item.code);
+        if (e.target.checked) {
+          setSelectedItemCodes(prev => Array.from(new Set([...prev, ...pageCodes])));
+        } else {
+          setSelectedItemCodes(prev => prev.filter(c => !pageCodes.includes(c)));
+        }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      className="rounded border-slate-350 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
+    />,
     "Serial No", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
     "Opening Qty", "Purchase Qty", "Sales Qty", "Purchase Return Qty", "Sales Return Qty", "Current Qty", "Stock Level"
   ];
@@ -296,6 +321,21 @@ export default function Dasboard() {
 
     return (
       <tr key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer">
+        <td className="px-4 py-3 text-center w-[50px]" onClick={(e) => e.stopPropagation()}>
+          <input 
+            type="checkbox" 
+            checked={selectedItemCodes.includes(item.ItemCode || item.code)}
+            onChange={(e) => {
+              const code = item.ItemCode || item.code;
+              if (e.target.checked) {
+                setSelectedItemCodes(prev => [...prev, code]);
+              } else {
+                setSelectedItemCodes(prev => prev.filter(c => c !== code));
+              }
+            }}
+            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
+          />
+        </td>
         <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap w-[80px]">{globalIdx}</td>
         <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap w-[150px]">{item.ItemCode}</td>
         <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
@@ -323,10 +363,25 @@ export default function Dasboard() {
     const isFull = item.stockLevel === 'Stock Full';
     const priceVal = Number(item.MRP || 0);
 
+    const code = item.ItemCode || item.code;
     return (
       <div key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="bg-white rounded-lg border border-slate-100 shadow-sm p-3 space-y-2.5 transition-all hover:shadow-md hover:border-sky-100 cursor-pointer">
         <div className="flex justify-between items-start pb-2 border-b border-slate-50 gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-shrink-0 mr-1" onClick={(e) => e.stopPropagation()}>
+              <input 
+                type="checkbox" 
+                checked={selectedItemCodes.includes(code)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedItemCodes(prev => [...prev, code]);
+                  } else {
+                    setSelectedItemCodes(prev => prev.filter(c => c !== code));
+                  }
+                }}
+                className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
+              />
+            </div>
             <span className="w-5 h-5 mt-0.5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0">
               {globalIdx}
             </span>
@@ -719,25 +774,61 @@ export default function Dasboard() {
             </div>
             
             <div className="p-5 space-y-4">
+              {/* Export Range Selector */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Select Brand Filter</label>
-                <p className="text-xs text-slate-500 mb-3">Choose a specific brand to export, or select 'All Brands' for a complete inventory report.</p>
-                <div className="relative">
-                  <select
-                    value={exportSelectedBrand}
-                    onChange={(e) => setExportSelectedBrand(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 appearance-none cursor-pointer transition-all"
-                  >
-                    <option value="All Brands">📦 All Brands (Complete Inventory)</option>
-                    <optgroup label="Available Brands">
-                      {brandsList.map(brand => (
-                        <option key={brand} value={brand}>{brand}</option>
-                      ))}
-                    </optgroup>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+                <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Export Scope</label>
+                <p className="text-xs text-slate-500 mb-3">Choose whether to export all filtered products or only the manually selected items.</p>
+                <div className="flex gap-3 mt-2">
+                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportRange === 'all' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold'}`}>
+                    <input 
+                      type="radio" 
+                      name="exportRange" 
+                      value="all" 
+                      checked={exportRange === 'all'} 
+                      onChange={() => setExportRange('all')} 
+                      className="hidden"
+                    />
+                    <span className="text-xs md:text-sm">All Products</span>
+                  </label>
+                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedItemCodes.length === 0 ? 'opacity-40 cursor-not-allowed border-slate-100 text-slate-350' :
+                    exportRange === 'selected' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold'
+                  }`}>
+                    <input 
+                      type="radio" 
+                      name="exportRange" 
+                      value="selected" 
+                      disabled={selectedItemCodes.length === 0}
+                      checked={exportRange === 'selected'} 
+                      onChange={() => setExportRange('selected')} 
+                      className="hidden"
+                    />
+                    <span className="text-xs md:text-sm">Selected ({selectedItemCodes.length})</span>
+                  </label>
                 </div>
               </div>
+
+              {exportRange === 'all' && (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Select Brand Filter</label>
+                  <p className="text-xs text-slate-500 mb-3">Choose a specific brand to export, or select 'All Brands' for a complete inventory report.</p>
+                  <div className="relative">
+                    <select
+                      value={exportSelectedBrand}
+                      onChange={(e) => setExportSelectedBrand(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 appearance-none cursor-pointer transition-all"
+                    >
+                      <option value="All Brands">📦 All Brands (Complete Inventory)</option>
+                      <optgroup label="Available Brands">
+                        {brandsList.map(brand => (
+                          <option key={brand} value={brand}>{brand}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+                  </div>
+                </div>
+              )}
 
               {exportActionType !== 'Excel' && (
                 <div>

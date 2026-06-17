@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit } from 'lucide-react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit, X } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
@@ -25,6 +25,8 @@ export default function ItemLinesTable({
   const updateItemImage = useDataStore(state => state.updateItemImage);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
+  const [editingImageItem, setEditingImageItem] = useState(null);
+  const [tempImageUrl, setTempImageUrl] = useState('');
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [draggableItemId, setDraggableItemId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
@@ -292,11 +294,8 @@ export default function ItemLinesTable({
               title="Click to update image URL"
               onClick={() => {
                 if (!item.itemCode) return;
-                const newUrl = prompt("Enter new Image URL for " + item.itemCode + " (leave empty to remove):", imageUrl);
-                if (newUrl !== null) {
-                  handleItemChange(item.id, 'thumbnail', newUrl.trim());
-                  updateItemImage(item.itemCode, newUrl.trim());
-                }
+                setEditingImageItem({ id: item.id, itemCode: item.itemCode, imageUrl: imageUrl });
+                setTempImageUrl(imageUrl || '');
               }}
             >
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase w-full text-center">Image</div>
@@ -435,6 +434,98 @@ export default function ItemLinesTable({
           setProductToEdit(null);
         }} 
       />
+
+      {/* Edit Image Modal with live preview */}
+      {editingImageItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Update Product Image</h3>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Item Code: <span className="text-sky-600 font-semibold">{editingImageItem.itemCode}</span></p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setEditingImageItem(null)} 
+                className="text-slate-400 hover:text-slate-600 p-1.5 hover:bg-slate-100 rounded-lg transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              {/* Preview Area */}
+              <div className="flex flex-col items-center justify-center border border-dashed border-slate-200 rounded-xl p-2 bg-slate-50/50 min-h-[240px]">
+                {tempImageUrl ? (
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <img 
+                      src={tempImageUrl} 
+                      alt="Preview" 
+                      className="max-h-[200px] w-auto max-w-full rounded-lg object-contain border border-slate-200 bg-white p-1"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const element = document.getElementById('preview-error-msg');
+                        if (element) element.style.display = 'flex';
+                      }}
+                      onLoad={(e) => {
+                        e.target.style.display = 'block';
+                        const element = document.getElementById('preview-error-msg');
+                        if (element) element.style.display = 'none';
+                      }}
+                    />
+                    <div id="preview-error-msg" className="hidden flex-col items-center justify-center text-rose-500">
+                      <ImageIcon size={48} className="text-rose-400 stroke-[1.5]" />
+                      <span className="text-[11px] font-medium mt-1">Invalid Image Link</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-400">
+                    <ImageIcon size={48} className="stroke-[1.5]" />
+                    <span className="text-[11px] font-medium mt-1">No Image Link</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Input */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] text-slate-500 font-bold uppercase tracking-wider">Image URL</label>
+                <textarea
+                  value={tempImageUrl}
+                  onChange={(e) => setTempImageUrl(e.target.value)}
+                  placeholder="Paste your image URL here..."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-xs md:text-sm h-[80px] resize-none bg-white outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+              <button
+                type="button"
+                onClick={() => setEditingImageItem(null)}
+                className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const finalUrl = tempImageUrl.trim();
+                  handleItemChange(editingImageItem.id, 'thumbnail', finalUrl);
+                  updateItemImage(editingImageItem.itemCode, finalUrl);
+                  setEditingImageItem(null);
+                  toast.success("Image updated successfully!");
+                }}
+                className="px-3 py-1.5 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm transition"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
