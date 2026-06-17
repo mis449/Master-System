@@ -37,8 +37,8 @@ export default function PremiumQuotationPrint({
 
   const dynamicSalesperson = linkedCustomer?.salesPerson || staticSalesperson;
   const dynamicSalesNumber = linkedCustomer?.salesNo || otherInfo?.salesNumber || '-';
-  const dynamicQuortperson = linkedCustomer?.quortPerson || '-';
-  const dynamicQuortMobile = linkedCustomer?.quortMobileNumber || '-';
+  const dynamicQuortperson = linkedCustomer?.quortPerson || otherInfo?.quortPerson || '-';
+  const dynamicQuortMobile = linkedCustomer?.quortMobileNumber || otherInfo?.quortMobile || '-';
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -97,7 +97,7 @@ export default function PremiumQuotationPrint({
       {/* ── PAGE 1: Cover + Client Info (merged) ── */}
       <PageWrapper>
         {/* Header: Logo + Doc details */}
-        <div className="flex flex-col" style={{ height: '245mm' }}>
+        <div className="flex flex-col" style={{ height: '265mm' }}>
           {/* Header: Logo + Doc details */}
           <div className="flex justify-between items-center mb-2 shrink-0">
             <div>

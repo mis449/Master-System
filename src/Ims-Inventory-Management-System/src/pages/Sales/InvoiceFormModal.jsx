@@ -41,7 +41,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
   const [items, setItems] = useState([getEmptyItem()]);
 
   const [otherInfo, setOtherInfo] = useState({
-    salesPerson: '', referenceNumber: '', customerReference: '', expectedDeliveryDate: '', internalNotes: '', mobile: '', state: ''
+    salesPerson: '', salesNumber: '', quortPerson: '', quortMobile: '', referenceNumber: '', customerReference: '', expectedDeliveryDate: '', internalNotes: '', mobile: '', state: ''
   });
 
   const [notes, setNotes] = useState({
@@ -293,6 +293,9 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
               setOtherInfo(prev => ({
                 ...prev,
                 salesPerson: custObj.salesPerson || prev.salesPerson,
+                salesNumber: custObj.salesNo || prev.salesNumber,
+                quortPerson: custObj.quortPerson || prev.quortPerson,
+                quortMobile: custObj.quortMobileNumber || prev.quortMobile,
                 mobile: custObj.mobile || prev.mobile,
                 state: custObj.cityState ? custObj.cityState.split('/')[1]?.trim() : prev.state
               }));
@@ -360,7 +363,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
           email: c.email || '',
           mobile: c.mobile || ''
         }));
-        setOtherInfo(prev => ({ ...prev, mobile: c.mobile || prev.mobile, state: c.cityState ? c.cityState.split('/')[1]?.trim() : prev.state, salesPerson: c.salesPerson || prev.salesPerson }));
+        setOtherInfo(prev => ({ ...prev, mobile: c.mobile || prev.mobile, state: c.cityState ? c.cityState.split('/')[1]?.trim() : prev.state, salesPerson: c.salesPerson || prev.salesPerson, quortPerson: c.quortPerson || prev.quortPerson, quortMobile: c.quortMobileNumber || prev.quortMobile }));
         addCustomer(c);
       }} 
     />

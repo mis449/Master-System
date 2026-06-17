@@ -134,6 +134,8 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [otherInfo, setOtherInfo] = useState({
     salesPerson: '',
     salesNumber: '',
+    quortPerson: '',
+    quortMobile: '',
     referenceNumber: '',
     customerReference: '',
     expectedDeliveryDate: '',
@@ -554,6 +556,8 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               ...prev,
               salesPerson: custObj.salesPerson || prev.salesPerson,
               salesNumber: custObj.salesNo || prev.salesNumber,
+              quortPerson: custObj.quortPerson || prev.quortPerson,
+              quortMobile: custObj.quortMobileNumber || prev.quortMobile,
               mobile: custObj.mobile || prev.mobile,
               state: custObj.cityState ? custObj.cityState.split('/')[1]?.trim() : prev.state
             }));
@@ -618,6 +622,8 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           ...prev,
           salesPerson: customerData.salesPerson || prev.salesPerson,
           salesNumber: customerData.salesNo || prev.salesNumber,
+          quortPerson: customerData.quortPerson || prev.quortPerson,
+          quortMobile: customerData.quortMobileNumber || prev.quortMobile,
           mobile: customerData.mobile || prev.mobile,
           state: customerData.cityState ? customerData.cityState.split('/')[1]?.trim() : prev.state
         }));
