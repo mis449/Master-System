@@ -11,13 +11,14 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
   const [activeDispatchItem, setActiveDispatchItem] = useState(null);
   const [tempQty, setTempQty] = useState(0);
 
-  const { items: inventoryItems, fetchItems, updateItemPrice } = useDataStore();
+  const { items: inventoryItems, fetchItems, updateItemPrice, inventorySummary, fetchInventorySummary } = useDataStore();
 
   useEffect(() => {
     if (isOpen) {
       fetchItems(true);
+      fetchInventorySummary();
     }
-  }, [isOpen, fetchItems]);
+  }, [isOpen, fetchItems, fetchInventorySummary]);
 
   useEffect(() => {
     if (initialData && initialData.details && initialData.details.items) {
@@ -30,7 +31,12 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
 
           // Find corresponding inventory item to get live stock
           const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
-          const stock = invItem ? Number(invItem.StockQty || 0) : 0;
+          let stock = 0;
+          if (invItem) {
+            const itemCodeLower = (invItem.ItemCode || invItem.code || '').toString().trim().toLowerCase();
+            const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
+            stock = Number(((invItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+          }
 
           // Preserve user-modified dispatchQty if the item already exists in state
           const existingItem = prevItems.find(i => i.id === item.id);

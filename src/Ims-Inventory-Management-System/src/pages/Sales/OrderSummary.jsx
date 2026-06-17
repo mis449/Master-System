@@ -31,7 +31,7 @@ export default function OrderSummary() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  const { items: inventoryItems, fetchItems, customers, fetchCustomers } = useDataStore();
+  const { items: inventoryItems, fetchItems, customers, fetchCustomers, inventorySummary, fetchInventorySummary } = useDataStore();
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -50,6 +50,7 @@ export default function OrderSummary() {
     fetchOrders();
     fetchItems(false);
     fetchCustomers();
+    fetchInventorySummary();
   }, []);
 
   // Use global customers from local storage
@@ -95,7 +96,12 @@ export default function OrderSummary() {
         if (item.type !== 'item' || !item.itemCode) return;
         
         const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
-        const stockQty = invItem ? Number(invItem.StockQty || 0) : 0;
+        let stockQty = 0;
+        if (invItem) {
+          const itemCodeLower = (invItem.ItemCode || invItem.code || '').toString().trim().toLowerCase();
+          const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
+          stockQty = Number(((invItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+        }
         
         const orderedQty = Number(item.quantity || 0);
         const dispatchedQty = Number(item.dispatchedQty || 0);

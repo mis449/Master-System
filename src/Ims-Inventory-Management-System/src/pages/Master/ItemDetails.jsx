@@ -8,7 +8,7 @@ import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
 
 export default function ItemDetails() {
-  const { items, isLoading, error, fetchItems, addNewItem, updateItem } = useDataStore();
+  const { items, isLoading, error, fetchItems, addNewItem, updateItem, inventorySummary, fetchInventorySummary } = useDataStore();
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -48,7 +48,8 @@ export default function ItemDetails() {
   // Fetch items on mount
   useEffect(() => {
     fetchItems(true);
-  }, [fetchItems]);
+    fetchInventorySummary();
+  }, [fetchItems, fetchInventorySummary]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -157,6 +158,10 @@ export default function ItemDetails() {
   const renderRow = ( item, idx) => {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const priceVal = Number(item.MRP || item.price || 0);
+    const itemCodeLower = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
+    const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
+    const liveStockQty = Number(((item.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+
     return (
       <tr key={item.ItmID || item.code} className="hover:bg-sky-50/25 transition-colors border-b border-gray-100">
         <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{globalIdx}</td>
@@ -173,7 +178,7 @@ export default function ItemDetails() {
         <td className="px-4 py-3 text-justify text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-700 whitespace-nowrap">{item.BrandName}</td>
         <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
-        <td className="px-4 py-3 text-center text-xs text-sky-600 font-black whitespace-nowrap">{item.StockQty || 0}</td>
+        <td className="px-4 py-3 text-center text-xs text-sky-600 font-black whitespace-nowrap">{liveStockQty}</td>
         <td className="px-4 py-3 text-center whitespace-nowrap">
           <button 
             onClick={() => handleEditClick(item)}
@@ -190,6 +195,10 @@ export default function ItemDetails() {
   const renderCard = (item, idx) => {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const priceVal = Number(item.MRP || item.price || 0);
+    const itemCodeLower = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
+    const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
+    const liveStockQty = Number(((item.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+
     return (
       <div key={item.ItmID || item.code} className="bg-white rounded-xl border border-sky-50 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
         <div className="flex justify-between items-start pb-3 border-b border-slate-50 gap-3">
@@ -212,7 +221,7 @@ export default function ItemDetails() {
           </div>
           <div>
             <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Stock</span>
-            <span className="text-sky-600 font-bold text-base">{item.StockQty || 0}</span>
+            <span className="text-sky-600 font-bold text-base">{liveStockQty}</span>
           </div>
           <div className="col-span-2 pt-2 border-t border-slate-200/30 flex justify-between items-center mt-1">
             <span className="text-gray-400 block uppercase text-[10px] tracking-tight">Unit Price / MRP</span>
