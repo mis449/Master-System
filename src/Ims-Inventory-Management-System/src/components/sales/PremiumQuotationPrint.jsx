@@ -37,6 +37,8 @@ export default function PremiumQuotationPrint({
 
   const dynamicSalesperson = linkedCustomer?.salesPerson || staticSalesperson;
   const dynamicSalesNumber = linkedCustomer?.salesNo || otherInfo?.salesNumber || '-';
+  const dynamicQuortperson = linkedCustomer?.quortPerson || '-';
+  const dynamicQuortMobile = linkedCustomer?.quortMobileNumber || '-';
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -170,6 +172,16 @@ export default function PremiumQuotationPrint({
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Sales Number</td>
                     <td className="pr-2 py-0.5">:</td>
                     <td className="py-0.5">{dynamicSalesNumber}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Quotation Person</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5 uppercase">{dynamicQuortperson}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-semibold pr-3 py-0.5 whitespace-nowrap">Quort Mobile</td>
+                    <td className="pr-2 py-0.5">:</td>
+                    <td className="py-0.5">{dynamicQuortMobile}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold pr-3 py-0.5 whitespace-nowrap align-top pt-2">Scan to reach us</td>

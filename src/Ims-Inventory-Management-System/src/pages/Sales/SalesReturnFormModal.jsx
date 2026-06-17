@@ -27,7 +27,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
-  const { items: inventoryItems, fetchItems } = useDataStore();
+  const { items: inventoryItems, fetchItems, addCustomer } = useDataStore();
 
   useEffect(() => {
     if (isOpen) fetchItems(true);
@@ -334,7 +334,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
       onSave={(c) => {
         setBasicInfo(prev => ({ 
           ...prev, 
-          customer: c.company || 'New Customer', 
+          customer: c.company || c.customer || 'New Customer', 
           address: c.address || prev.address,
           areaPinCode: c.areaPinCode || '',
           cityState: c.cityState || '',
@@ -342,6 +342,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
           mobile: c.mobile || ''
         }));
         setOtherInfo(prev => ({ ...prev, mobile: c.mobile || prev.mobile, state: c.cityState ? c.cityState.split('/')[1]?.trim() : prev.state, salesPerson: c.salesPerson || prev.salesPerson }));
+        addCustomer(c);
       }} 
     />
     <CatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} onSubmitCart={handleCatalogSubmit} />

@@ -52,7 +52,9 @@ const useDataStore = create((set, get) => ({
           priceList: c.price_list,
           areaPinCode: c.area_pin_code,
           cityState: c.city_state,
-          email: c.email
+          email: c.email,
+          quortPerson: c.quort_person,
+          quortMobileNumber: c.quort_mobile_number
         }));
         
         // Filter out dummy default customers if they have no other data attached
@@ -131,7 +133,9 @@ const useDataStore = create((set, get) => ({
       price_list: customerData.priceList || customerData.price_list || '',
       area_pin_code: customerData.areaPinCode || customerData.area_pin_code || '',
       city_state: customerData.cityState || customerData.city_state || '',
-      email: customerData.email || ''
+      email: customerData.email || '',
+      quort_person: customerData.quortPerson || customerData.quort_person || '',
+      quort_mobile_number: customerData.quortMobileNumber || customerData.quortMobile || customerData.quort_mobile_number || ''
     };
 
     try {

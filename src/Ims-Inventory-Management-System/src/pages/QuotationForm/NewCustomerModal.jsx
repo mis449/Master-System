@@ -19,6 +19,8 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
     mobile: '',
     salesPerson: '',
     salesNo: '',
+    quortPerson: '',
+    quortMobileNumber: '',
     gstTreatment: 'Regular_OR_UnRegd',
     gstType: 'CGST + SGST',
     priceList: 'MRP'
@@ -49,6 +51,8 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
           mobile: initialData.mobile || '',
           salesPerson: initialData.salesPerson || '',
           salesNo: initialData.salesNo || '',
+          quortPerson: initialData.quortPerson || '',
+          quortMobileNumber: initialData.quortMobileNumber || '',
           gstTreatment: initialData.gstTreatment || 'Regular_OR_UnRegd',
           gstType: initialData.gstType || 'CGST + SGST',
           priceList: initialData.priceList || 'MRP'
@@ -61,10 +65,38 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateMobile = (mobile) => {
+    if (!mobile) return 'Mobile number is required';
+    const cleanMobile = mobile.replace(/[^0-9]/g, '');
+    
+    if (cleanMobile.length !== 10) {
+      return 'Mobile number must be exactly 10 digits';
+    }
+    
+    // Check for repetitive digits (e.g. 0000000000, 9999999999)
+    if (/^(\d)\1{9}$/.test(cleanMobile)) {
+      return 'Repetitive mobile numbers (like 0000000000) are not allowed';
+    }
+    
+    // Check for sequential digits
+    const sequentialPatterns = ['1234567890', '0123456789', '9876543210'];
+    if (sequentialPatterns.includes(cleanMobile)) {
+      return 'Demo sequential mobile numbers are not allowed';
+    }
+    
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fullName || !formData.areaPinCode || !formData.mobile || !formData.gstType) {
       toast.error('Please fill all required fields');
+      return;
+    }
+
+    const mobileError = validateMobile(formData.mobile);
+    if (mobileError) {
+      toast.error(mobileError);
       return;
     }
 
@@ -166,6 +198,12 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
       const selectedSP = salesPersons.find(sp => sp.sales_person === value);
       if (selectedSP && selectedSP.mobile_number) {
         setFormData(prev => ({ ...prev, salesNo: selectedSP.mobile_number }));
+      }
+    } else if (field === 'quortPerson') {
+      const selectedQP = salesPersons.find(qp => qp.sales_person === value);
+      if (selectedQP) {
+        const number = selectedQP.mobile_number || selectedQP.sales_no || '';
+        setFormData(prev => ({ ...prev, quortMobileNumber: number }));
       }
     }
   };
@@ -316,6 +354,30 @@ export default function NewCustomerModal({ isOpen, onClose, onSave, initialData 
               type="text" 
               value={formData.salesNo} 
               onChange={(e) => handleChange('salesNo', e.target.value)}
+              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <label className="sm:w-1/3 text-sm font-bold text-slate-700">Quotation Person</label>
+            <select 
+              value={formData.quortPerson} 
+              onChange={(e) => handleChange('quortPerson', e.target.value)}
+              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+            >
+              <option value="">Select</option>
+              {salesPersons.map((qp) => (
+                <option key={qp.id} value={qp.sales_person}>{qp.sales_person}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <label className="sm:w-1/3 text-sm font-bold text-slate-700">Quort Mobile</label>
+            <input 
+              type="text" 
+              value={formData.quortMobileNumber} 
+              onChange={(e) => handleChange('quortMobileNumber', e.target.value)}
               className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
             />
           </div>

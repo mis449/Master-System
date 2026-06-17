@@ -301,6 +301,8 @@ CREATE TABLE public.customer (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   sales_no text,
+  quort_person text,
+  quort_mobile_number text,
   CONSTRAINT customer_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.vendor (
