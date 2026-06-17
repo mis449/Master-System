@@ -23,6 +23,12 @@ export default function ItemLinesTable({
 }) {
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
+  const inventorySummary = useDataStore(state => state.inventorySummary);
+  const fetchInventorySummary = useDataStore(state => state.fetchInventorySummary);
+
+  useEffect(() => {
+    fetchInventorySummary();
+  }, [fetchInventorySummary]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
   const [editingImageItem, setEditingImageItem] = useState(null);
@@ -184,6 +190,14 @@ export default function ItemLinesTable({
         const defaultImageUrl = matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '';
         const imageUrl = item.thumbnail !== undefined ? item.thumbnail : defaultImageUrl;
 
+        // Compute dynamic live stock qty
+        let liveStockQty = '-';
+        if (matchedInventoryItem) {
+          const codeLower = (matchedInventoryItem.ItemCode || matchedInventoryItem.code || '').toString().trim().toLowerCase();
+          const summary = inventorySummary?.find(s => s.item_code?.toString().trim().toLowerCase() === codeLower);
+          liveStockQty = Number(((matchedInventoryItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+        }
+
         return (
           <div 
             key={item.id} 
@@ -315,7 +329,7 @@ export default function ItemLinesTable({
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Stock</div>
-              <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1.5 rounded text-center text-slate-600 font-bold select-none">{matchedInventoryItem ? (matchedInventoryItem.StockQty || matchedInventoryItem.stock || 0) : '-'}</div>
+              <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1.5 rounded text-center text-slate-600 font-bold select-none">{liveStockQty}</div>
             </div>
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
