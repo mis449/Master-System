@@ -46,8 +46,8 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!newItemData.ItemCode || !newItemData.ItemName) {
-      toast.error('Item Code and Item Name are required');
+    if (!newItemData.ItemCode || !newItemData.ItemName || !newItemData.BrandName) {
+      toast.error('Item Code, Item Name and Brand are required');
       return;
     }
     
@@ -108,7 +108,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Brand</label>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
               <button
                 type="button"
                 onClick={() => {
@@ -124,6 +124,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
             {showBrandInput ? (
               <input
                 type="text"
+                required
                 value={newItemData.BrandName}
                 onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
@@ -134,9 +135,10 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
               <select
                 value={newItemData.BrandName}
                 onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
+                required
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
               >
-                <option value="">Select a brand</option>
+                <option value="">Select a brand *</option>
                 {uniqueBrands.map((brand, idx) => (
                   <option key={idx} value={brand}>{brand}</option>
                 ))}

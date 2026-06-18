@@ -153,33 +153,60 @@ export default function Dasboard() {
     if (selectedItemCodes.length > 0) {
       setExportRange('selected');
     } else {
-      setExportRange('all');
+      setExportRange('filtered');
     }
     setModalSearchQuery('');
     setIsExportModalOpen(true);
   };
 
-  const handleExportSubmit = () => {
+  const handleExportSubmit = async () => {
     // Determine data to export
-    let dataToExport = filteredStocks;
+    let dataToExport = [];
     if (exportRange === 'selected') {
       dataToExport = computedStocks.filter(item => selectedItemCodes.includes(item.ItemCode || item.code));
-    } else if (exportSelectedBrand !== 'All Brands') {
-      dataToExport = filteredStocks.filter(item => (item.BrandName || item.brand) === exportSelectedBrand);
+    } else if (exportRange === 'filtered') {
+      if (exportSelectedBrand !== 'All Brands') {
+        dataToExport = filteredStocks.filter(item => (item.BrandName || item.brand) === exportSelectedBrand);
+      } else {
+        dataToExport = filteredStocks;
+      }
+    } else { // 'all' - Complete Catalog
+      if (exportSelectedBrand !== 'All Brands') {
+        dataToExport = computedStocks.filter(item => (item.BrandName || item.brand) === exportSelectedBrand);
+      } else {
+        dataToExport = computedStocks;
+      }
     }
 
     if (dataToExport.length === 0) {
-      toast.error(exportRange === 'selected' ? 'No selected items found' : `No data found for ${exportSelectedBrand}`);
+      toast.error(
+        exportRange === 'selected' 
+          ? 'No selected items found' 
+          : exportRange === 'filtered' 
+            ? 'No items found in filtered view' 
+            : 'No inventory items found'
+      );
       return;
     }
 
     if (exportActionType === 'Excel') {
       exportToExcel(dataToExport);
+      setIsExportModalOpen(false);
     } else {
-      exportToPdf(dataToExport, exportActionType === 'Print', exportOrientation);
+      const toastId = toast.loading(
+        dataToExport.length > 200 
+          ? `Generating PDF with ${dataToExport.length} items (Text-Only to optimize)...` 
+          : 'Generating PDF with images...'
+      );
+      try {
+        await exportToPdf(dataToExport, exportActionType === 'Print', exportOrientation);
+        toast.success('PDF generated successfully', { id: toastId });
+        setIsExportModalOpen(false);
+      } catch (err) {
+        console.error('PDF generation error:', err);
+        toast.error('Failed to generate PDF', { id: toastId });
+      }
     }
-
-    setIsExportModalOpen(false);
   };
 
   const exportToExcel = (data) => {
@@ -208,7 +235,57 @@ export default function Dasboard() {
     toast.success('Excel downloaded successfully');
   };
 
-  const exportToPdf = (data, isPrint = false, orientation = 'landscape') => {
+  const exportToPdf = async (data, isPrint = false, orientation = 'landscape') => {
+    // Helper to convert Image URL to Base64 data URI
+    const loadImageBase64 = (url) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        
+        // If it's a web URL (http/https), route it through a public CORS-enabled image proxy
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          img.src = `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+        } else {
+          img.src = url;
+        }
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          try {
+            const dataURL = canvas.toDataURL('image/jpeg', 0.75); // compress to reduce PDF size
+            resolve(dataURL);
+          } catch (e) {
+            resolve(null);
+          }
+        };
+        img.onerror = () => resolve(null);
+      });
+    };
+
+    // Determine whether to load images (limit to <= 200 items to avoid out-of-memory or browser freezing)
+    const shouldLoadImages = data.length <= 200;
+
+    const itemsWithImages = shouldLoadImages
+      ? await Promise.all(
+          data.map(async (item) => {
+            const imgUrl = item.Thumbnail || item.product_image_url || '';
+            let base64 = null;
+            if (imgUrl) {
+              if (imgUrl.startsWith('data:image/')) {
+                base64 = imgUrl;
+              } else {
+                base64 = await loadImageBase64(imgUrl);
+              }
+            }
+            return { ...item, imageBase64: base64 };
+          })
+        )
+      : data.map(item => ({ ...item, imageBase64: null }));
+
     const doc = new jsPDF(orientation === 'landscape' ? 'l' : 'p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -217,7 +294,12 @@ export default function Dasboard() {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42); // slate-900
-    doc.text(exportRange === 'selected' ? 'Selected Inventory Report' : 'Brand Wise Inventory Report', 14, 20);
+    
+    let reportTitle = 'Brand Wise Inventory Report';
+    if (exportRange === 'selected') reportTitle = 'Selected Inventory Report';
+    else if (exportRange === 'filtered') reportTitle = 'Filtered Inventory Report';
+    
+    doc.text(reportTitle, 14, 20);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
@@ -225,7 +307,11 @@ export default function Dasboard() {
     doc.text(`Company: PAREKH GALLERIUM`, 14, 28);
     
     doc.setFont('helvetica', 'normal');
-    doc.text(exportRange === 'selected' ? `Export Scope: Selected Products Only` : `Brand Filter: ${exportSelectedBrand}`, 14, 34);
+    let scopeText = 'Complete Inventory';
+    if (exportRange === 'selected') scopeText = 'Selected Products Only';
+    else if (exportRange === 'filtered') scopeText = 'Filtered View';
+    
+    doc.text(`Export Scope: ${scopeText} | Brand: ${exportSelectedBrand}`, 14, 34);
     doc.text(`Total Products: ${data.length}`, 14, 40);
 
     doc.text(`Report Date: ${format(new Date(), 'dd/MM/yyyy HH:mm:ss')}`, pageWidth - 14, 28, { align: 'right' });
@@ -236,9 +322,10 @@ export default function Dasboard() {
     doc.line(14, 43, pageWidth - 14, 43);
 
     // Table Data
-    const tableColumn = ["SN", "Item Code", "Item Name", "Brand", "MRP", "Op. Qty", "Pur. Qty", "Sal. Qty", "Cur. Stock"];
-    const tableRows = data.map((item, idx) => [
+    const tableColumn = ["SN", "Image", "Item Code", "Item Name", "Brand", "MRP", "Op. Qty", "Pur. Qty", "Sal. Qty", "Cur. Stock"];
+    const tableRows = itemsWithImages.map((item, idx) => [
       idx + 1,
+      '', // Placeholder for image
       item.ItemCode || item.code || '',
       item.ItemName || item.name || '',
       item.BrandName || item.brand || '',
@@ -255,12 +342,13 @@ export default function Dasboard() {
       body: tableRows,
       theme: 'grid',
       styles: {
-        fontSize: orientation === 'landscape' ? 10 : 8,
-        cellPadding: orientation === 'landscape' ? 4 : 3,
-        overflow: 'linebreak',
+        fontSize: orientation === 'landscape' ? 9 : 7.5,
+        cellPadding: orientation === 'landscape' ? 2.5 : 2,
+        overflow: 'ellipsize', // Force text to single line with ellipsis
         font: 'helvetica',
         lineColor: [226, 232, 240], // slate-200
         lineWidth: 0.1,
+        valign: 'middle' // vertically center contents
       },
       headStyles: {
         fillColor: [14, 165, 233], // sky-500
@@ -269,21 +357,48 @@ export default function Dasboard() {
         halign: 'center',
         valign: 'middle'
       },
+      bodyStyles: {
+        minCellHeight: orientation === 'landscape' ? 20 : 16 // ensure adequate row height for larger images
+      },
       alternateRowStyles: {
         fillColor: [248, 250, 252] // slate-50
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 10 },
-        1: { halign: 'left', cellWidth: 25, fontStyle: 'bold' },
-        2: { halign: 'left', cellWidth: 'auto' }, // Item name
-        3: { halign: 'left', cellWidth: 22 },
-        4: { halign: 'right', cellWidth: 22 },
-        5: { halign: 'center', cellWidth: 16 },
-        6: { halign: 'center', cellWidth: 16, textColor: [5, 150, 105] }, // emerald
-        7: { halign: 'center', cellWidth: 16, textColor: [225, 29, 72] }, // rose
-        8: { halign: 'center', cellWidth: 20, fontStyle: 'bold', textColor: [2, 132, 199] }, // sky-600
+        0: { halign: 'center', cellWidth: orientation === 'landscape' ? 8 : 7 },
+        1: { halign: 'center', cellWidth: orientation === 'landscape' ? 22 : 18 }, // Image
+        2: { halign: 'center', cellWidth: orientation === 'landscape' ? 35 : 25, fontStyle: 'bold' }, // Item Code
+        3: { halign: 'left', cellWidth: 'auto' }, // Item name
+        4: { halign: 'center', cellWidth: orientation === 'landscape' ? 22 : 18 }, // Brand
+        5: { halign: 'right', cellWidth: orientation === 'landscape' ? 22 : 18 }, // MRP
+        6: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12 }, // Op Qty
+        7: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, textColor: [5, 150, 105] }, // Pur Qty
+        8: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, textColor: [225, 29, 72] }, // Sal Qty
+        9: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, fontStyle: 'bold', textColor: [2, 132, 199] }, // Cur Stock
       },
-      didDrawPage: function (data) {
+      didDrawCell: function (cellData) {
+        // Draw the image if it is the image column (index 1) in the body section
+        if (cellData.section === 'body' && cellData.column.index === 1) {
+          const item = itemsWithImages[cellData.row.index];
+          if (item && item.imageBase64) {
+            const cellWidth = cellData.cell.width;
+            const cellHeight = cellData.cell.height;
+            const imgSize = Math.min(cellWidth, cellHeight) - 2; // slight padding
+            const x = cellData.cell.x + (cellWidth - imgSize) / 2;
+            const y = cellData.cell.y + (cellHeight - imgSize) / 2;
+            try {
+              const match = item.imageBase64.match(/^data:image\/([a-zA-Z+]+);base64,/);
+              let format = 'JPEG';
+              if (match && match[1]) {
+                format = match[1].toUpperCase() === 'JPG' ? 'JPEG' : match[1].toUpperCase();
+              }
+              doc.addImage(item.imageBase64, format, x, y, imgSize, imgSize);
+            } catch (err) {
+              console.error('Error drawing image inside PDF table:', err);
+            }
+          }
+        }
+      },
+      didDrawPage: function (pageData) {
         // Footer
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
@@ -297,7 +412,6 @@ export default function Dasboard() {
       window.open(doc.output('bloburl'), '_blank');
     } else {
       doc.save(`Brand_Wise_Inventory_Report_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
-      toast.success('PDF downloaded successfully');
     }
   };
 
@@ -323,7 +437,7 @@ export default function Dasboard() {
       onClick={(e) => e.stopPropagation()}
       className="rounded border-slate-350 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
     />,
-    "Serial No", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
+    "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
     "Opening Qty", "Purchase Qty", "Sales Qty", "Purchase Return Qty", "Sales Return Qty", "Current Qty", "Stock Level"
   ];
 
@@ -350,6 +464,15 @@ export default function Dasboard() {
           />
         </td>
         <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap w-[80px]">{globalIdx}</td>
+        <td className="px-4 py-3 text-center w-[60px]">
+          {item.Thumbnail ? (
+            <img src={item.Thumbnail} alt={item.ItemName} className="w-9 h-9 rounded-lg object-cover border border-slate-200 mx-auto bg-slate-50" />
+          ) : (
+            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+              <Box size={14} />
+            </div>
+          )}
+        </td>
         <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap w-[150px]">{item.ItemCode}</td>
         <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.BrandName}</td>
@@ -398,7 +521,14 @@ export default function Dasboard() {
             <span className="w-5 h-5 mt-0.5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0">
               {globalIdx}
             </span>
-            <span className="text-xs font-bold text-slate-900 uppercase break-words whitespace-normal leading-tight">{item.ItemName}</span>
+            {item.Thumbnail ? (
+              <img src={item.Thumbnail} alt={item.ItemName} className="w-7 h-7 rounded object-cover border border-slate-200 bg-slate-50 flex-shrink-0 mt-0.5" />
+            ) : (
+              <div className="w-7 h-7 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0 mt-0.5">
+                <Box size={12} />
+              </div>
+            )}
+            <span className="text-xs font-bold text-slate-900 uppercase break-words whitespace-normal leading-tight ml-1">{item.ItemName}</span>
           </div>
           <span className="bg-slate-50 text-slate-800 border border-slate-200 px-2 py-0.5 rounded text-[9px] font-black uppercase flex-shrink-0 mt-0.5">
             {item.ItemCode}
@@ -790,9 +920,9 @@ export default function Dasboard() {
               {/* Export Range Selector */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Export Scope</label>
-                <p className="text-xs text-slate-500 mb-3">Choose whether to export all filtered products or only the manually selected items.</p>
-                <div className="flex gap-3 mt-2">
-                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportRange === 'all' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold'}`}>
+                <p className="text-xs text-slate-500 mb-3">Select the range of products you wish to export.</p>
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportRange === 'all' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50 font-semibold'}`}>
                     <input 
                       type="radio" 
                       name="exportRange" 
@@ -801,10 +931,21 @@ export default function Dasboard() {
                       onChange={() => setExportRange('all')} 
                       className="hidden"
                     />
-                    <span className="text-xs md:text-sm">All Products</span>
+                    <span className="text-[11px] sm:text-xs">Complete Catalog ({computedStocks.length})</span>
+                  </label>
+                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${exportRange === 'filtered' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50 font-semibold'}`}>
+                    <input 
+                      type="radio" 
+                      name="exportRange" 
+                      value="filtered" 
+                      checked={exportRange === 'filtered'} 
+                      onChange={() => setExportRange('filtered')} 
+                      className="hidden"
+                    />
+                    <span className="text-[11px] sm:text-xs">Filtered View ({filteredStocks.length})</span>
                   </label>
                   <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border cursor-pointer transition-all ${
-                    exportRange === 'selected' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold'
+                    exportRange === 'selected' ? 'bg-sky-50 border-sky-500 text-sky-700 font-bold' : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50 font-semibold'
                   }`}>
                     <input 
                       type="radio" 
@@ -814,12 +955,12 @@ export default function Dasboard() {
                       onChange={() => setExportRange('selected')} 
                       className="hidden"
                     />
-                    <span className="text-xs md:text-sm">Selected ({selectedItemCodes.length})</span>
+                    <span className="text-[11px] sm:text-xs">Selected ({selectedItemCodes.length})</span>
                   </label>
                 </div>
               </div>
 
-              {exportRange === 'all' && (
+              {exportRange !== 'selected' && (
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Select Brand Filter</label>
                   <p className="text-xs text-slate-500 mb-3">Choose a specific brand to export, or select 'All Brands' for a complete inventory report.</p>
@@ -829,7 +970,7 @@ export default function Dasboard() {
                       onChange={(e) => setExportSelectedBrand(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 appearance-none cursor-pointer transition-all"
                     >
-                      <option value="All Brands">📦 All Brands (Complete Inventory)</option>
+                      <option value="All Brands">📦 All Brands</option>
                       <optgroup label="Available Brands">
                         {brandsList.map(brand => (
                           <option key={brand} value={brand}>{brand}</option>

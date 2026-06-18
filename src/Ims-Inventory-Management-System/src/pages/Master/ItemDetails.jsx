@@ -63,8 +63,8 @@ export default function ItemDetails() {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
-    if (!newItemData.ItemCode || !newItemData.ItemName) {
-      toast.error('Item Code and Item Name are required');
+    if (!newItemData.ItemCode || !newItemData.ItemName || !newItemData.BrandName) {
+      toast.error('Item Code, Item Name and Brand are required');
       return;
     }
     
@@ -96,8 +96,8 @@ export default function ItemDetails() {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
-    if (!editFormData.ItemCode || !editFormData.ItemName) {
-      toast.error('Item Code and Item Name are required');
+    if (!editFormData.ItemCode || !editFormData.ItemName || !editFormData.BrandName) {
+      toast.error('Item Code, Item Name and Brand are required');
       return;
     }
     
@@ -425,9 +425,10 @@ export default function ItemDetails() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand *</label>
                 <input
                   type="text"
+                  required
                   value={newItemData.BrandName}
                   onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
@@ -526,9 +527,10 @@ export default function ItemDetails() {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand *</label>
                 <input
                   type="text"
+                  required
                   value={editFormData.BrandName}
                   onChange={(e) => setEditFormData({ ...editFormData, BrandName: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"

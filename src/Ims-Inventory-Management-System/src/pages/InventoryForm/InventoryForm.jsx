@@ -105,7 +105,7 @@ export default function InventoryForm() {
   );
 
   const tableHeaders = [
-    "Serial No", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
+    "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
     "Opening Qty", "Purchase Qty", "Sales Qty", "Purchase Return Qty", "Sales Return Qty", "Current Qty", "Stock Level"
   ];
 
@@ -117,6 +117,15 @@ export default function InventoryForm() {
     return (
       <tr key={item.ItmID || item.ItemCode} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer">
         <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap w-[80px]">{globalIdx}</td>
+        <td className="px-4 py-3 text-center w-[60px]">
+          {item.Thumbnail ? (
+            <img src={item.Thumbnail} alt={item.ItemName} className="w-9 h-9 rounded-lg object-cover border border-slate-200 mx-auto bg-slate-50" />
+          ) : (
+            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+              <Box size={14} />
+            </div>
+          )}
+        </td>
         <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap w-[150px]">{item.ItemCode}</td>
         <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.BrandName}</td>
@@ -150,7 +159,14 @@ export default function InventoryForm() {
             <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 flex-shrink-0">
               {globalIdx}
             </span>
-            <span className="text-xs md:text-sm font-bold text-slate-900 uppercase truncate">{item.ItemName}</span>
+            {item.Thumbnail ? (
+              <img src={item.Thumbnail} alt={item.ItemName} className="w-7 h-7 rounded object-cover border border-slate-200 bg-slate-50 flex-shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                <Box size={12} />
+              </div>
+            )}
+            <span className="text-xs md:text-sm font-bold text-slate-900 uppercase truncate ml-1">{item.ItemName}</span>
           </div>
           <span className="bg-slate-100 text-slate-800 border border-slate-200 px-2 py-1 rounded text-[9px] md:text-[10px] font-black uppercase flex-shrink-0 ml-2">
             {item.ItemCode}
