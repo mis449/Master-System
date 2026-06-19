@@ -11,8 +11,7 @@ import SalesHeader from '../../components/sales/SalesHeader';
 
 import NewCustomerModal from '../QuotationForm/NewCustomerModal';
 import CatalogModal from '../QuotationForm/CatalogModal';
-import OtherInformationTab from '../../components/OtherInformationTab';
-import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
+import InvoicePrintPreview from '../../components/sales/InvoicePrintPreview';
 import { X, Image as ImageIcon } from 'lucide-react';
 import BrandDiscountModal from '../QuotationForm/BrandDiscountModal';
 
@@ -439,7 +438,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
         
         {/* Unified Print Preview Container */}
         <div className={`w-full mx-auto flex flex-col flex-1 min-h-0 mt-10 shadow-2xl rounded-2xl ${
-          printOrientation === 'Horizontal' ? 'max-w-4xl' : 'max-w-3xl'
+          printOrientation === 'Horizontal' ? 'max-w-[315mm]' : 'max-w-4xl'
         }`}>
           
           {/* Top Control Bar */}
@@ -474,16 +473,15 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
           </div>
           
           {/* Document Sheet Scrollable Area */}
-          <div className="flex-1 w-full overflow-y-auto min-h-0 rounded-b-2xl" id="sales-return-print-area">
-            <PremiumQuotationPrint 
+          <div className="flex-1 w-full overflow-auto min-h-0 rounded-b-2xl bg-slate-500/10 p-4 md:p-6 flex flex-col items-center" id="sales-return-print-area">
+            <InvoicePrintPreview 
               initialData={initialData}
               basicInfo={basicInfo}
               otherInfo={otherInfo}
               items={items}
               summary={summary}
-              notes={notes}
-              inventoryItems={inventoryItems}
-              documentTitle="Sales Return"
+              orientation={printOrientation}
+              documentTitle="SALES RETURN"
             />
           </div>
         </div>

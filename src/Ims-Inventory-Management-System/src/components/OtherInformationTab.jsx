@@ -119,6 +119,97 @@ export default function OtherInformationTab({ otherInfo, setOtherInfo, quotation
         />
       </div>
 
+      {/* Transportation Mode */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          Transportation Mode
+        </label>
+        <input 
+          type="text" 
+          value={info.transportationMode || ''} 
+          onChange={(e) => handleChange('transportationMode', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* Vehicle No. */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          Vehicle No.
+        </label>
+        <input 
+          type="text" 
+          value={info.vehicleNo || ''} 
+          onChange={(e) => handleChange('vehicleNo', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* Date of Supply */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          Date of Supply
+        </label>
+        <input 
+          type="date" 
+          value={info.dateOfSupply || ''} 
+          onChange={(e) => handleChange('dateOfSupply', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* Place of Supply */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          Place of Supply
+        </label>
+        <input 
+          type="text" 
+          value={info.placeOfSupply || ''} 
+          onChange={(e) => handleChange('placeOfSupply', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* PO/Ref. Date */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          PO/Ref. Date
+        </label>
+        <input 
+          type="date" 
+          value={info.poDate || ''} 
+          onChange={(e) => handleChange('poDate', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* Ack No. */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          Ack. No.
+        </label>
+        <input 
+          type="text" 
+          value={info.ackNo || ''} 
+          onChange={(e) => handleChange('ackNo', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
+      {/* IRN No. */}
+      <div className="space-y-1.5">
+        <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">
+          IRN No.
+        </label>
+        <input 
+          type="text" 
+          value={info.irnNo || ''} 
+          onChange={(e) => handleChange('irnNo', e.target.value)} 
+          className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm md:text-base h-[44px] bg-white outline-none shadow-sm transition-all" 
+        />
+      </div>
+
     </div>
   );
 }

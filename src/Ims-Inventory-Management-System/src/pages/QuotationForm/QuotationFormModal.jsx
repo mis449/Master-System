@@ -564,37 +564,80 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
             }));
           }}
         />
-
         {/* Custom Tab Navigation */}
-        {/* Tab Contents */}
-        <div className="min-h-[250px] py-4">
-          <ItemLinesTable 
-            items={items}
-            inventoryItems={inventoryItems}
-            handleItemChange={handleItemChange}
-            handleItemCodeSelect={handleItemCodeSelect}
-            removeItemLine={removeItemLine}
-            addItemLine={addItemLine}
-            addSection={addSection}
-            addSubSection={addSubSection}
-            copySection={copySection}
-            setIsCatalogOpen={setIsCatalogOpen}
-            reorderItemLines={(dragIndex, dropIndex) => {
-              setItems(prev => {
-                const newItems = [...prev];
-                const draggedItem = newItems[dragIndex];
-                newItems.splice(dragIndex, 1);
-                newItems.splice(dropIndex, 0, draggedItem);
-                return newItems;
-              });
-            }}
-            showStatus={initialData && initialData.status === 'In Progress'}
-            openBrandDiscount={() => setIsBrandDiscountOpen(true)}
-          />
-          <SummaryCard 
-            summary={summary} 
-            onFinalAmountChange={(val) => setSummary(prev => ({ ...prev, finalAmount: val }))} 
-          />
+        <div className="min-h-[250px] py-4 space-y-4">
+          <SalesTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          
+          {activeTab === 'ItemLines' && (
+            <>
+              <ItemLinesTable 
+                items={items}
+                inventoryItems={inventoryItems}
+                handleItemChange={handleItemChange}
+                handleItemCodeSelect={handleItemCodeSelect}
+                removeItemLine={removeItemLine}
+                addItemLine={addItemLine}
+                addSection={addSection}
+                addSubSection={addSubSection}
+                copySection={copySection}
+                setIsCatalogOpen={setIsCatalogOpen}
+                reorderItemLines={(dragIndex, dropIndex) => {
+                  setItems(prev => {
+                    const newItems = [...prev];
+                    const draggedItem = newItems[dragIndex];
+                    newItems.splice(dragIndex, 1);
+                    newItems.splice(dropIndex, 0, draggedItem);
+                    return newItems;
+                  });
+                }}
+                showStatus={initialData && initialData.status === 'In Progress'}
+                openBrandDiscount={() => setIsBrandDiscountOpen(true)}
+              />
+              <SummaryCard 
+                summary={summary} 
+                onFinalAmountChange={(val) => setSummary(prev => ({ ...prev, finalAmount: val }))} 
+              />
+            </>
+          )}
+
+          {activeTab === 'OtherInfo' && (
+            <OtherInformationTab 
+              otherInfo={otherInfo} 
+              setOtherInfo={setOtherInfo} 
+            />
+          )}
+
+          {activeTab === 'Notes' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-2 py-4">
+              <div className="space-y-1.5">
+                <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">Remarks</label>
+                <textarea 
+                  value={notes.remarks || ''} 
+                  onChange={(e) => setNotes(prev => ({ ...prev, remarks: e.target.value }))}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-sm bg-white outline-none"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">Terms &amp; Conditions</label>
+                <textarea 
+                  value={notes.termsAndConditions || ''} 
+                  onChange={(e) => setNotes(prev => ({ ...prev, termsAndConditions: e.target.value }))}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-sm bg-white outline-none"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm md:text-base text-slate-700 font-semibold uppercase tracking-wider">Additional Notes</label>
+                <textarea 
+                  value={notes.additionalNotes || ''} 
+                  onChange={(e) => setNotes(prev => ({ ...prev, additionalNotes: e.target.value }))}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-sm bg-white outline-none"
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </ModalForm>
@@ -740,7 +783,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         
         {/* Unified Print Preview Container */}
         <div className={`w-full mx-auto flex flex-col flex-1 min-h-0 mt-10 shadow-2xl rounded-2xl ${
-          printOrientation === 'Horizontal' ? 'max-w-4xl' : 'max-w-3xl'
+          printOrientation === 'Horizontal' ? 'max-w-[315mm]' : 'max-w-3xl'
         }`}>
           
           {/* Top Control Bar */}
