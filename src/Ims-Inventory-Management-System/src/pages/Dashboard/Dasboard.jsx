@@ -322,7 +322,7 @@ export default function Dasboard() {
     doc.line(14, 43, pageWidth - 14, 43);
 
     // Table Data
-    const tableColumn = ["SN", "Image", "Item Code", "Item Name", "Brand", "MRP", "Op. Qty", "Pur. Qty", "Sal. Qty", "Cur. Stock"];
+    const tableColumn = ["SN", "Image", "Item Code", "Item Name", "Brand", "MRP", "Stock"];
     const tableRows = itemsWithImages.map((item, idx) => [
       idx + 1,
       '', // Placeholder for image
@@ -330,9 +330,6 @@ export default function Dasboard() {
       item.ItemName || item.name || '',
       item.BrandName || item.brand || '',
       `Rs ${Number(item.MRP || 0).toLocaleString('en-IN')}`,
-      item.openingQty || 0,
-      item.purchaseQty || 0,
-      item.salesQty || 0,
       item.currentQty || 0
     ]);
 
@@ -370,10 +367,7 @@ export default function Dasboard() {
         3: { halign: 'left', cellWidth: 'auto' }, // Item name
         4: { halign: 'center', cellWidth: orientation === 'landscape' ? 22 : 18 }, // Brand
         5: { halign: 'right', cellWidth: orientation === 'landscape' ? 22 : 18 }, // MRP
-        6: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12 }, // Op Qty
-        7: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, textColor: [5, 150, 105] }, // Pur Qty
-        8: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, textColor: [225, 29, 72] }, // Sal Qty
-        9: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, fontStyle: 'bold', textColor: [2, 132, 199] }, // Cur Stock
+        6: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, fontStyle: 'bold', textColor: [2, 132, 199] }, // Stock
       },
       didDrawCell: function (cellData) {
         // Draw the image if it is the image column (index 1) in the body section
