@@ -28,7 +28,7 @@ import { getPurchaseOrders } from '../../services/PurchaseOrderService';
 import { getPurchaseReturns } from '../../services/PurchaseReturnService';
 
 export default function ItemTracker() {
-  const { items, fetchItems, transactions, fetchTransactions, isLoading } = useDataStore();
+  const { items, fetchItems, transactions, fetchTransactions, inventorySummary, fetchInventorySummary, isLoading } = useDataStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItemCode, setSelectedItemCode] = useState('');
   const [localTransactions, setLocalTransactions] = useState([]);
@@ -41,6 +41,7 @@ export default function ItemTracker() {
   useEffect(() => {
     fetchItems();
     fetchTransactions();
+    fetchInventorySummary();
 
     // Fetch local transactions for testing period
     const fetchLocal = async () => {
@@ -54,31 +55,85 @@ export default function ItemTracker() {
         ]);
 
         const mapped = [];
-        const extract = (records, type) => {
+
+        // Helper: extract items from a record with proper field mapping per source
+        // Falls back to top-level item_code/item_quantity columns if items array is empty
+        const extractFrom = (records, type, getParty, getRef, getItemsList) => {
           (records || []).forEach(record => {
-            const items = record.details?.items || record.items || [];
-            items.forEach(item => {
-              if (item.type === 'heading' || (!item.itemCode && !item.code)) return;
+            let itemsList = getItemsList(record);
+
+            // Fallback: if items array is empty but record has top-level item_code column
+            if ((!itemsList || itemsList.length === 0) && record.item_code) {
+              itemsList = [{
+                itemCode: record.item_code,
+                description: record.item_description || '',
+                quantity: Number(record.item_quantity) || 0,
+                type: 'item'
+              }];
+            }
+
+            if (!itemsList || itemsList.length === 0) return;
+
+            itemsList.forEach(item => {
+              if (!item) return;
+              const code = item.itemCode || item.code || item.item_code || item.ItemCode || '';
+              if (!code) return;
+              if (item.type === 'heading' || item.type === 'section' || item.type === 'subsection') return;
               mapped.push({
                 id: `${record.id}-${item.id || Math.random()}`,
-                date: record.date || record.invoiceDate || record.orderDate,
-                type: type,
-                itemCode: item.itemCode || item.code,
-                itemName: item.description || item.itemName,
-                vendorName: record.vendorName || record.customerName || record.company || record.customer,
-                qty: Number(item.quantity || item.qty || item.dispatchQty || 0),
-                remarks: record.remarks || record.quotationNo || record.invoiceNo || record.purchaseNo || ''
+                date: record.date || record.invoiceDate || record.orderDate || record.docDate || '',
+                type,
+                itemCode: code,
+                itemName: item.description || item.itemName || item.item_description || item.ItemName || '',
+                vendorName: getParty(record),
+                qty: Number(item.quantity || item.qty || item.dispatchQty || item.item_quantity || 0),
+                remarks: getRef(record)
               });
             });
           });
         };
 
-        extract(quotations, 'Sales Order');
-        extract(invoices, 'Sales Invoice');
-        extract(salesReturns, 'Sales Return');
-        extract(purchases, 'Purchase');
-        extract(purchaseOrders, 'Purchase Order');
-        extract(purchaseReturns, 'Purchase Return');
+        // Sales Orders (Quotations) — items: record.items (top-level, already extracted by mapQuotationRow)
+        extractFrom(quotations, 'Quotation',
+          r => r.customerName || r.customer || r.company || '',
+          r => r.quotationNo || r.docNo || r.id || '',
+          r => r.items || r.details?.items || []
+        );
+
+        // Sales Invoices — items in record.items or record.details.items
+        extractFrom(invoices, 'Invoice',
+          r => r.customerName || r.customer || r.company || '',
+          r => r.invoiceNo || r.docNo || r.id || '',
+          r => r.items || r.details?.items || []
+        );
+
+        // Sales Returns — items in record.items or record.details.items
+        extractFrom(salesReturns, 'Sales Return',
+          r => r.customerName || r.customer || r.company || '',
+          r => r.SalesReturnNo || r.return_no || r.docNo || r.id || '',
+          r => r.items || r.details?.items || []
+        );
+
+        // Purchases — items stored in record.details.items (mapped from purchase_items relational table)
+        extractFrom(purchases, 'Purchase',
+          r => r.vendorName || r.vendor || r.company || '',
+          r => r.purchaseNo || r.docNo || r.id || '',
+          r => r.details?.items || r.items || []
+        );
+
+        // Purchase Orders — items in record.details.items or record.items
+        extractFrom(purchaseOrders, 'Purchase Order',
+          r => r.vendorName || r.vendor || r.company || '',
+          r => r.purchaseOrderNo || r.docNo || r.id || '',
+          r => r.details?.items || r.items || []
+        );
+
+        // Purchase Returns — items in record.details.items or record.items
+        extractFrom(purchaseReturns, 'Purchase Return',
+          r => r.vendorName || r.vendor || r.company || '',
+          r => r.purchaseReturnNo || r.docNo || r.id || '',
+          r => r.details?.items || r.items || []
+        );
 
         setLocalTransactions(mapped);
       } catch (e) {
@@ -88,10 +143,11 @@ export default function ItemTracker() {
     fetchLocal();
   }, [fetchItems, fetchTransactions]);
 
-  // Combine remote and local transactions
+  // Use only localTransactions (service-fetched from invoice/purchase/etc tables)
+  // to avoid double-counting with inventory_transactions store
   const allTransactions = useMemo(() => {
-    return [...transactions, ...localTransactions];
-  }, [transactions, localTransactions]);
+    return localTransactions;
+  }, [localTransactions]);
 
   // Derive unique transaction types and parties for filters
   const uniqueTypes = useMemo(() => {
@@ -142,19 +198,38 @@ export default function ItemTracker() {
       let change = 0;
       const type = (tx.type || '').toLowerCase();
       
-      if (type.includes('purchase') && !type.includes('return')) {
+      // Normalize type to handle all variants from different sources
+      const isPurchase = type === 'purchase';
+      const isPurchaseOrder = type === 'purchase order';
+      const isPurchaseReturn = type === 'purchase return' || type === 'purchase_return';
+      const isSalesInvoice = type === 'sales invoice' || type === 'sales' || type === 'invoice';
+      const isSalesOrder = type === 'sales order' || type === 'quotation';
+      const isSalesReturn = type === 'sales return' || type === 'sales_return';
+
+      if (isPurchase) {
+        // Purchase adds stock
         change = qty;
         totalPurchased += qty;
-      } else if (type.includes('sale') && !type.includes('return')) {
+      } else if (isPurchaseOrder) {
+        // Purchase Order is pending — does NOT affect actual stock
+        change = 0;
+      } else if (isPurchaseReturn) {
+        // Purchase Return reduces stock
+        change = -qty;
+        totalPurchased = Math.max(0, totalPurchased - qty);
+      } else if (isSalesInvoice) {
+        // Sales Invoice reduces stock
         change = -qty;
         totalSold += qty;
-      } else if (type.includes('purchase return')) {
-        change = -qty;
-      } else if (type.includes('sales return')) {
+      } else if (isSalesOrder) {
+        // Sales Order is pending — does NOT affect actual stock
+        change = 0;
+      } else if (isSalesReturn) {
+        // Sales Return adds stock back
         change = qty;
+        totalSold = Math.max(0, totalSold - qty);
       } else if (type.includes('dispatch')) {
-        // Dispatches reduce stock if they are separate from sales
-        change = -qty; 
+        change = -qty;
         totalSold += qty;
       }
       
@@ -189,21 +264,59 @@ export default function ItemTracker() {
       });
     }
 
+    // Calculate pending orders quantity
+    const totalPendingOrders = sortedTx
+      .filter(tx => {
+        const typeL = (tx.type || '').toLowerCase();
+        return typeL === 'sales order' || typeL === 'quotation';
+      })
+      .reduce((sum, tx) => sum + Number(tx.qty || 0), 0);
+
+    const lastActualTx = enriched.find(tx => {
+      const t = (tx.type || '').toLowerCase();
+      return t !== 'sales order' && t !== 'quotation' && t !== 'purchase order';
+    });
     const lastTx = enriched.length > 0 ? enriched[0] : null;
+
+    const itemCodeLower = selectedItemCode.toString().trim().toLowerCase();
+    const itemDetails = items.find(i => {
+      const code = (i.itemCode || i.code || i.ItemCode || '').toString().trim().toLowerCase();
+      return code === itemCodeLower;
+    });
+
+    const dbSummary = (inventorySummary || []).find(s => 
+      s.item_code?.toString().trim().toLowerCase() === itemCodeLower
+    ) || {};
+
+    const currentStockVal = itemDetails 
+      ? Number(((itemDetails.StockQty || 0) + (dbSummary.closing_qty || 0)).toFixed(1))
+      : balance;
+
+    const totalPurchasedVal = dbSummary.purchase_qty !== undefined
+      ? Number((dbSummary.purchase_qty || 0).toFixed(1))
+      : totalPurchased;
+
+    const totalSoldVal = dbSummary.sales_qty !== undefined
+      ? Number((dbSummary.sales_qty || 0).toFixed(1))
+      : totalSold;
 
     return {
       history: filtered,
       summary: {
-        currentStock: balance,
-        totalPurchased,
-        totalSold,
-        lastTransactionDate: lastTx ? lastTx.date : null
+        currentStock: currentStockVal,
+        totalPurchased: totalPurchasedVal,
+        totalSold: totalSoldVal,
+        totalPendingOrders,
+        lastTransactionDate: lastActualTx ? lastActualTx.date : (lastTx ? lastTx.date : null)
       }
     };
-  }, [selectedItemCode, allTransactions, dateRange, typeFilter, partyFilter]);
+  }, [selectedItemCode, allTransactions, dateRange, typeFilter, partyFilter, items, inventorySummary]);
 
   const { history, summary } = trackerData;
-  const selectedItemDetails = items.find(i => i.itemCode === selectedItemCode);
+  const selectedItemDetails = items.find(i => {
+    const code = (i.itemCode || i.code || i.ItemCode || '').toString().trim().toLowerCase();
+    return code === (selectedItemCode || '').toString().trim().toLowerCase();
+  });
 
   // --- PDF Export Logic ---
   const generatePdfDoc = () => {
@@ -311,7 +424,7 @@ export default function ItemTracker() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full min-h-screen bg-slate-50/50">
+    <div className="p-4 sm:p-6 lg:p-8 w-full h-full overflow-y-auto bg-slate-50/50 pb-12">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -425,7 +538,7 @@ export default function ItemTracker() {
                 <Box size={24} className="text-sky-600" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-800">{selectedItemDetails.description || 'Unknown Item'}</h3>
+                <h3 className="text-lg font-black text-slate-800">{selectedItemDetails.ItemName || selectedItemDetails.description || 'Unknown Item'}</h3>
                 <div className="flex items-center gap-4 mt-1 text-sm text-slate-500 font-medium">
                   <span className="flex items-center gap-1"><Hash size={14} /> {selectedItemCode}</span>
                   {selectedItemDetails.brand && <span className="flex items-center gap-1"><Filter size={14} /> {selectedItemDetails.brand}</span>}
@@ -435,30 +548,41 @@ export default function ItemTracker() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Current Stock */}
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Current Stock</span>
                 <Box size={18} className="text-sky-500" />
               </div>
-              <p className="text-2xl font-black text-slate-800">{summary.currentStock || 0}</p>
+              <p className={`text-2xl font-black ${summary.currentStock < 0 ? 'text-rose-600' : summary.currentStock === 0 ? 'text-slate-400' : 'text-slate-800'}`}>
+                {summary.currentStock ?? 0}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-1">Purchased − Sold</p>
             </div>
             
+            {/* Total Purchased */}
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Total Purchased</span>
                 <TrendingUp size={18} className="text-emerald-500" />
               </div>
-              <p className="text-2xl font-black text-slate-800">{summary.totalPurchased || 0}</p>
+              <p className="text-2xl font-black text-emerald-600">{summary.totalPurchased ?? 0}</p>
+              <p className="text-[10px] text-slate-400 mt-1">From purchase records</p>
             </div>
             
+            {/* Total Sold */}
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Total Sold</span>
                 <TrendingDown size={18} className="text-rose-500" />
               </div>
-              <p className="text-2xl font-black text-slate-800">{summary.totalSold || 0}</p>
+              <p className="text-2xl font-black text-rose-600">{summary.totalSold ?? 0}</p>
+              {summary.totalPendingOrders > 0 && (
+                <p className="text-[10px] text-amber-500 mt-1 font-semibold">+ {summary.totalPendingOrders} pending orders</p>
+              )}
             </div>
 
+            {/* Last Transaction */}
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-500 uppercase">Last Transaction</span>
@@ -472,9 +596,9 @@ export default function ItemTracker() {
 
           {/* Timeline / Data Table */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
               <table className="w-full text-center text-sm">
-                <thead>
+                <thead className="sticky top-0 z-10">
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-xs">
                     <th className="px-6 py-4 text-center">Date</th>
                     <th className="px-6 py-4 text-center">Type</th>
@@ -484,40 +608,62 @@ export default function ItemTracker() {
                     <th className="px-6 py-4 text-center">Remarks/Ref</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                 <tbody className="divide-y divide-slate-100">
                   {history.length > 0 ? (
-                    history.map((tx, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-600 font-medium text-center">
-                          {tx.date ? format(new Date(tx.date), 'dd-MMM-yyyy') : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider
-                            ${(tx.type || '').toLowerCase().includes('purchase') ? 'bg-emerald-100 text-emerald-700' : 
-                              (tx.type || '').toLowerCase().includes('sale') ? 'bg-rose-100 text-rose-700' : 
-                              'bg-sky-100 text-sky-700'}`}
-                          >
-                            {tx.type || 'Unknown'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-800 font-medium capitalize text-center">
-                          {tx.vendorName || tx.customerName || tx.company || tx.customer || '-'}
-                        </td>
-                        <td className="px-6 py-4 text-center whitespace-nowrap">
-                          <span className={`font-black ${tx.change > 0 ? 'text-emerald-600' : tx.change < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
-                            {tx.change > 0 ? '+' : ''}{tx.change}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center whitespace-nowrap">
-                          <span className="font-black text-slate-800 px-3 py-1 bg-slate-100 rounded-lg">
-                            {tx.currentStock}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-500 text-xs text-center">
-                          {tx.remarks || '-'}
-                        </td>
-                      </tr>
-                    ))
+                    history.map((tx, idx) => {
+                      const typeL = (tx.type || '').toLowerCase();
+                      const badgeColor = typeL === 'purchase' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                        : typeL === 'purchase order' ? 'bg-teal-100 text-teal-700 border border-teal-200'
+                        : typeL === 'purchase return' ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                        : (typeL === 'sales invoice' || typeL === 'invoice') ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                        : (typeL === 'sales order' || typeL === 'quotation') ? 'bg-pink-100 text-pink-700 border border-pink-200'
+                        : typeL === 'sales return' ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                        : 'bg-sky-100 text-sky-700 border border-sky-200';
+                      
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-3 whitespace-nowrap text-slate-600 font-medium text-center">
+                            {tx.date ? format(new Date(tx.date), 'dd-MMM-yyyy') : '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${badgeColor}`}>
+                              {tx.type || 'Unknown'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="font-semibold text-slate-800 text-sm">{tx.vendorName || '-'}</div>
+                            {tx.itemName && <div className="text-slate-400 text-xs mt-0.5 truncate max-w-[180px] mx-auto">{tx.itemName}</div>}
+                          </td>
+                          <td className="px-6 py-3 text-center whitespace-nowrap">
+                            {(typeL === 'sales order' || typeL === 'quotation' || typeL === 'purchase order') ? (
+                              <span className="font-black text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase tracking-wider">
+                                Pending ({tx.qty})
+                              </span>
+                            ) : (
+                              <span className={`font-black text-base ${tx.change > 0 ? 'text-emerald-600' : tx.change < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+                                {tx.change > 0 ? '+' : ''}{tx.change}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3 text-center whitespace-nowrap">
+                            {(typeL === 'sales order' || typeL === 'quotation' || typeL === 'purchase order') ? (
+                              <span className="font-bold px-3 py-1 rounded-lg text-xs bg-slate-50 text-slate-400 border border-dashed border-slate-300">
+                                —
+                              </span>
+                            ) : (
+                              <span className={`font-black px-3 py-1 rounded-lg text-sm ${tx.currentStock < 0 ? 'bg-rose-50 text-rose-700' : tx.currentStock === 0 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                                {tx.currentStock}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="text-sky-600 font-semibold text-xs bg-sky-50 px-2 py-1 rounded">
+                              {tx.remarks || '-'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan="6" className="px-6 py-12 text-center text-slate-500">

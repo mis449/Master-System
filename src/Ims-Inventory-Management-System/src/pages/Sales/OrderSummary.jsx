@@ -308,13 +308,22 @@ export default function OrderSummary() {
     return colors[status] || 'bg-slate-100 text-slate-700';
   };
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      return format(new Date(dateStr), 'dd-MMM-yyyy');
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   const tableHeaders = [
     "Delivery Date", "Item Code", "Description", "Ordered Qty", "In Stock", "To Company"
   ];
 
   const renderRow = (item, idx) => (
     <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors text-xs print:border-black">
-      <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-x border-slate-100 print:border-black whitespace-nowrap">{item.deliveryDate}</td>
+      <td className="px-4 py-3.5 text-center font-bold text-slate-600 border-x border-slate-100 print:border-black whitespace-nowrap">{formatDate(item.deliveryDate)}</td>
       <td className="px-4 py-3.5 font-bold text-slate-700 border-r border-slate-100 print:border-black whitespace-nowrap">{item.itemCode}</td>
       <td className="px-4 py-3.5 text-slate-600 border-r border-slate-100 print:border-black max-w-xs truncate">{item.description}</td>
       <td className="px-4 py-3.5 text-center font-bold text-slate-800 border-r border-slate-100 print:border-black">{item.orderedQty.toFixed(2)}</td>
@@ -340,7 +349,7 @@ export default function OrderSummary() {
       <div className="grid grid-cols-2 gap-3 text-sm bg-slate-50 rounded-lg p-3 border border-slate-100/50">
         <div>
           <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Delivery Date</span>
-          <span className="text-slate-800 font-semibold break-words whitespace-normal block leading-tight">{item.deliveryDate}</span>
+          <span className="text-slate-800 font-semibold break-words whitespace-normal block leading-tight">{formatDate(item.deliveryDate)}</span>
         </div>
         <div>
           <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Ordered Qty</span>
@@ -359,7 +368,7 @@ export default function OrderSummary() {
   );
 
   return (
-    <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
+    <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full overflow-y-auto pb-12">
       
       {/* Print Styles */}
       <style>
