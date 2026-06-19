@@ -90,7 +90,7 @@ export default function InvoicePrintPreview({
   const vehicleNo = otherInfo?.vehicleNo || initialData?.details?.otherInfo?.vehicleNo || '-';
   
   const poDateVal = otherInfo?.poDate || initialData?.details?.otherInfo?.poDate || '';
-  const formattedPoDate = poDateVal ? formatDate(poDateVal) : '-';
+  const formattedPoDate = poDateVal ? formatDate(poDateVal) : formattedDate;
 
   const dateOfSupplyVal = otherInfo?.dateOfSupply || initialData?.details?.otherInfo?.dateOfSupply || '';
   const formattedDateOfSupply = dateOfSupplyVal ? formatDate(dateOfSupplyVal) : formattedDate;
@@ -180,11 +180,11 @@ export default function InvoicePrintPreview({
 
   while (i < flattenedRows.length) {
     const capacityWithFooter = isLandscape
-      ? (hasHeader ? 9 : 16)
+      ? (hasHeader ? 7 : 14)
       : (hasHeader ? 9 : 18);
     
     const capacityWithoutFooter = isLandscape
-      ? (hasHeader ? 14 : 24)
+      ? (hasHeader ? 13 : 22)
       : (hasHeader ? 18 : 30);
     
     const remainingRowsCount = flattenedRows.length - i;
@@ -392,8 +392,8 @@ export default function InvoicePrintPreview({
 
         return pages.map((page, pageIdx) => (
           <div key={pageIdx} className={`invoice-page mx-auto shadow-md border border-slate-200 mb-8 print:mb-0 ${isLandscape ? 'invoice-landscape' : ''}`}>
-          <div className="invoice-border flex flex-col justify-between w-full">
-            <div className="w-full">
+          <div className="invoice-border flex flex-col w-full">
+            <div className="w-full flex-1">
               {/* GSTIN & Document Title */}
               <div className="flex justify-between items-center px-2 py-1 border-b border-black">
                 <span className="font-bold text-[10px]">GSTIN NO. : 22AAKFP3460D1ZL</span>
@@ -413,8 +413,12 @@ export default function InvoicePrintPreview({
                       </div>
                     </div>
                     <div className="col-span-3 border-l border-black p-2 space-y-1 text-[10px]">
-                      <div className="flex justify-between"><span>Reverse Charge</span> <span>: No</span></div>
-                      <div className="flex justify-between"><span>{documentTitle === 'SALES RETURN' ? 'Return No.' : 'Invoice No.'}</span> <span className="font-bold">: {quotationNo}</span></div>
+                      {documentTitle !== 'SALES RETURN' && (
+                        <>
+                          <div className="flex justify-between"><span>Reverse Charge</span> <span>: No</span></div>
+                          <div className="flex justify-between"><span>Invoice No.</span> <span className="font-bold">: {quotationNo}</span></div>
+                        </>
+                      )}
                       <div className="flex justify-between"><span>{documentTitle === 'SALES RETURN' ? 'Return Date' : 'Inv.Date'}</span> <span className="font-bold">: {formattedDate}</span></div>
                       <div className="flex justify-between"><span>Due Date</span> <span className="font-bold">: {formattedDueDate}</span></div>
                       <div className="flex justify-between"><span>State</span> <span>: CHHATTISGARH</span></div>
@@ -422,21 +426,72 @@ export default function InvoicePrintPreview({
                     </div>
                   </div>
 
-                  {/* Transportation details */}
-                  <div className="grid grid-cols-10 border-b border-black text-[9px] p-2 gap-y-1">
-                    <div className="col-span-3"><span>Transportation Mode :</span> <span className="font-semibold">{transportationMode}</span></div>
-                    <div className="col-span-3"><span>Party PO/Ref.No. :</span> <span className="font-semibold">{otherInfo?.customerReference || otherInfo?.referenceNumber || '-'}</span></div>
-                    <div className="col-span-4"><span>Dt. :</span> <span className="font-semibold">{formattedPoDate}</span></div>
-                    <div className="col-span-3"><span>Vehicle No. :</span> <span className="font-semibold uppercase">{vehicleNo}</span></div>
-                    <div className="col-span-3"><span>Ref.No. :</span> <span className="font-semibold">{quotationNo}</span></div>
-                    <div className="col-span-4"><span>Dt. :</span> <span className="font-semibold">{formattedDate}</span></div>
-                    <div className="col-span-3"><span>Date of Supply :</span> <span className="font-semibold">{formattedDateOfSupply}</span></div>
-                    <div className="col-span-3"><span>Sales Person :</span> <span className="font-semibold uppercase">{salesPerson}</span></div>
-                    <div className="col-span-4 text-right pr-2"><span>MRP</span></div>
-                    <div className="col-span-3"><span>Place of Supply :</span> <span className="font-semibold uppercase">{placeOfSupply}</span></div>
-                    <div className="col-span-3"><span>Freight Terms :</span> <span>{paymentTerms}</span></div>
-                    <div className="col-span-4"></div>
-                  </div>
+                  {/* Transportation details / Sales Return metadata */}
+                  {documentTitle === 'SALES RETURN' ? (
+                    <div className="grid grid-cols-10 border-b border-black text-[9px] p-0 font-medium">
+                      {/* Left Column */}
+                      <div className="col-span-5 p-2 space-y-1">
+                        <div className="flex justify-between">
+                          <span className="w-56 text-left">Against Invoice / Bill of Supply No.</span>
+                          <span className="w-16 font-bold text-left">: {initialData?.invoiceNo || initialData?.docNo || otherInfo?.againstInvoiceNo || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="w-56 text-left">Date of Invoice / Bill of Supply</span>
+                          <span className="w-16 font-bold text-left">: {initialData?.date || initialData?.docDate || otherInfo?.againstInvoiceDate ? formatDate(initialData?.date || initialData?.docDate || otherInfo?.againstInvoiceDate) : '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="w-56 text-left">Issue Reason</span>
+                          <span className="w-16 font-bold text-left">: {otherInfo?.issueReason || '07-Others'}</span>
+                        </div>
+                      </div>
+
+                      {/* Right Column */}
+                      <div className="col-span-5 border-l border-black p-2 space-y-1">
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-4">Party Ref.No.</span>
+                          <span className="col-span-4">: {otherInfo?.customerReference || otherInfo?.referenceNumber || '-'}</span>
+                          <span className="col-span-4 text-right pr-2">Dt. : {otherInfo?.poDate ? formatDate(otherInfo.poDate) : formattedDate}</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-4">Party Challan No.</span>
+                          <span className="col-span-4">: {otherInfo?.challanNo || '-'}</span>
+                          <span className="col-span-4 text-right pr-2">Dt. : {otherInfo?.challanDate ? formatDate(otherInfo.challanDate) : formattedDate}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-10 border-b border-black text-[9px] p-2 gap-y-1">
+                      {documentTitle !== 'SALES RETURN' ? (
+                        <div className="col-span-3"><span>Transportation Mode :</span> <span className="font-semibold">{transportationMode}</span></div>
+                      ) : (
+                        <div className="col-span-3"></div>
+                      )}
+                      <div className="col-span-3"><span>Party PO/Ref.No. :</span> <span className="font-semibold">{otherInfo?.customerReference || otherInfo?.referenceNumber || '-'}</span></div>
+                      <div className="col-span-4"><span>Dt. :</span> <span className="font-semibold">{formattedPoDate}</span></div>
+                      {documentTitle !== 'SALES RETURN' ? (
+                        <div className="col-span-3"><span>Vehicle No. :</span> <span className="font-semibold uppercase">{vehicleNo}</span></div>
+                      ) : (
+                        <div className="col-span-3"></div>
+                      )}
+                      {documentTitle !== 'SALES RETURN' ? (
+                        <>
+                          <div className="col-span-3"><span>Ref.No. :</span> <span className="font-semibold">{quotationNo}</span></div>
+                          <div className="col-span-4"><span>Dt. :</span> <span className="font-semibold">{formattedDate}</span></div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="col-span-3"></div>
+                          <div className="col-span-4"></div>
+                        </>
+                      )}
+                      <div className="col-span-3"><span>Date of Supply :</span> <span className="font-semibold">{formattedDateOfSupply}</span></div>
+                      <div className="col-span-3"><span>Sales Person :</span> <span className="font-semibold uppercase">{salesPerson}</span></div>
+                      <div className="col-span-4 text-right pr-2"><span>MRP</span></div>
+                      <div className="col-span-3"><span>Place of Supply :</span> <span className="font-semibold uppercase">{placeOfSupply}</span></div>
+                      <div className="col-span-3"><span>Freight Terms :</span> <span>{paymentTerms}</span></div>
+                      <div className="col-span-4"></div>
+                    </div>
+                  )}
 
                   {/* Bill-to Ship-to side-by-side details */}
                   <div className="grid grid-cols-2 border-b border-black">
@@ -532,12 +587,12 @@ export default function InvoicePrintPreview({
                   {/* Fill empty space if fewer rows */}
                   {(() => {
                     const capacity = page.hasFooter 
-                      ? (page.hasHeader ? 9 : (isLandscape ? 16 : 18)) 
-                      : (page.hasHeader ? (isLandscape ? 14 : 18) : (isLandscape ? 24 : 30));
+                      ? (page.hasHeader ? (isLandscape ? 7 : 9) : (isLandscape ? 14 : 18)) 
+                      : (page.hasHeader ? (isLandscape ? 13 : 18) : (isLandscape ? 22 : 30));
                     const emptyRowsCount = Math.max(0, capacity - page.rows.length - (page.hasFooter ? 1 : 0));
                     if (emptyRowsCount <= 0) return null;
                     return [...Array(emptyRowsCount)].map((_, emptyIdx) => (
-                      <tr key={`empty-${emptyIdx}`} className="h-[40px] border-b border-black/5 empty-row">
+                      <tr key={`empty-${emptyIdx}`} className={`${isLandscape ? 'h-[18px]' : 'h-[40px]'} border-b border-black/5 empty-row`}>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -577,12 +632,12 @@ export default function InvoicePrintPreview({
             </div>
 
             {page.hasFooter && (
-              <div className="mt-auto border-t border-black bg-white">
+              <div className="border-t border-black bg-white">
 
                 {/* Main totals, GST in words and bank details */}
                 <div className="grid grid-cols-10 text-[9px]">
                   {/* Left Column (GST Amt, Taxable value, bank, ack, conditions) */}
-                  <div className="col-span-6 p-2 border-r border-black space-y-2">
+                  <div className={`col-span-6 border-r border-black ${isLandscape ? 'p-1 space-y-1' : 'p-2 space-y-2'}`}>
                     <div>
                       <span className="font-bold">GST Amt :</span> <span className="font-bold text-slate-700">{convertAmountToWords(totalCgstAmount + totalSgstAmount)}</span>
                     </div>
@@ -637,7 +692,7 @@ export default function InvoicePrintPreview({
                 </div>
 
                 {/* Terms and Conditions + Signature footer */}
-                <div className="grid grid-cols-10 border-t border-black text-[8px] p-2 gap-2">
+                <div className={`grid grid-cols-10 border-t border-black text-[8px] gap-2 ${isLandscape ? 'p-1' : 'p-2'}`}>
                   <div className="col-span-6 space-y-0.5 leading-tight">
                     <span className="font-bold block underline">Terms &amp; Conditions :</span>
                     <p>1. All disputes are subject to Exclusive Jurisdiction of Courts in Raipur only.</p>
