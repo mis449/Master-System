@@ -288,23 +288,25 @@ export default function PremiumQuotationPrint({
 
             for (let i = 0; i < flattenedRows.length; i++) {
               // The first page has the "PRODUCT DETAILS" header which takes extra space.
-              // So limit first page to 6 products (~7.5 weight), and subsequent pages to 7 products (~8.8 weight).
-              const MAX_WEIGHT = pages.length === 0 ? 7.5 : 8.8;
+              // So limit first page to a safer weight of 7.4, and subsequent pages to 7.8.
+              const MAX_WEIGHT = pages.length === 0 ? 7.4 : 7.8;
 
               const row = flattenedRows[i];
               let weight = 1.0;
-              if (row.type === 'section_header') weight = 0.7;
-              else if (row.type === 'subsection') weight = 0.4;
-              else if (row.type === 'subtotal') weight = 0.5;
+              if (row.type === 'section_header') weight = 0.4;
+              else if (row.type === 'subsection') weight = 0.3;
+              else if (row.type === 'subtotal') weight = 0.4;
               else weight = 1.0; 
 
               const isNewSection = row.type === 'section_header';
+              const currentProductCount = currentPageRows.filter(r => r.type === 'product').length;
+              const shouldSplit = (row.type === 'product' && currentProductCount >= 7) || (currentWeight + weight > MAX_WEIGHT);
 
               if (isNewSection && currentPageRows.length > 0) {
                 pages.push(currentPageRows);
                 currentPageRows = [];
                 currentWeight = 0;
-              } else if (currentWeight + weight > MAX_WEIGHT && currentPageRows.filter(r => r.type === 'product').length > 0) {
+              } else if (shouldSplit && currentPageRows.filter(r => r.type === 'product').length > 0) {
                 // Prevent orphan headers at bottom
                 let poppedHeaders = [];
                 while (
@@ -312,7 +314,7 @@ export default function PremiumQuotationPrint({
                   (currentPageRows[currentPageRows.length - 1].type === 'section_header' || currentPageRows[currentPageRows.length - 1].type === 'subsection')
                 ) {
                   const h = currentPageRows.pop();
-                  currentWeight -= (h.type === 'section_header' ? 0.7 : 0.4);
+                  currentWeight -= (h.type === 'section_header' ? 0.4 : 0.3);
                   poppedHeaders.unshift(h);
                 }
 
@@ -321,7 +323,7 @@ export default function PremiumQuotationPrint({
                 }
                 
                 currentPageRows = [...poppedHeaders];
-                currentWeight = poppedHeaders.reduce((sum, h) => sum + (h.type === 'section_header' ? 0.7 : 0.4), 0);
+                currentWeight = poppedHeaders.reduce((sum, h) => sum + (h.type === 'section_header' ? 0.4 : 0.3), 0);
 
                 if (activeSectionName && row.type !== 'section_header') {
                   if (poppedHeaders.length === 0 || poppedHeaders[0].type !== 'section_header') {
@@ -330,7 +332,7 @@ export default function PremiumQuotationPrint({
                       name: activeSectionName,
                       isContinuation: true
                     });
-                    currentWeight += 0.7;
+                    currentWeight += 0.4;
                   }
                 }
               }
