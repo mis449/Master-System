@@ -184,8 +184,21 @@ export default function ItemTracker() {
     if (!selectedItemCode) return { history: [], summary: {} };
 
     // 1. Get all transactions for this item
-    const itemTx = allTransactions.filter(t => t.itemCode?.toLowerCase() === selectedItemCode.toLowerCase());
+    let itemTx = allTransactions.filter(t => t.itemCode?.toLowerCase() === selectedItemCode.toLowerCase());
     
+    // If invoice or dispatch has occurred for this item, filter out quotation / sales order
+    const hasInvoiceOrDispatch = itemTx.some(t => {
+      const type = (t.type || '').toLowerCase();
+      return type === 'invoice' || type === 'sales invoice' || type.includes('dispatch');
+    });
+
+    if (hasInvoiceOrDispatch) {
+      itemTx = itemTx.filter(t => {
+        const type = (t.type || '').toLowerCase();
+        return type !== 'quotation' && type !== 'sales order';
+      });
+    }
+
     // 2. Sort Oldest to Newest to calculate running balance
     const sortedTx = [...itemTx].sort((a, b) => new Date(a.date) - new Date(b.date));
     
