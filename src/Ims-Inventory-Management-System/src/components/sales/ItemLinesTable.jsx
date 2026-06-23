@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit, X } from 'lucide-react';
+import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit, X, Upload, Clipboard } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 import useDataStore from '../../store/dataStore';
@@ -451,7 +451,27 @@ export default function ItemLinesTable({
 
       {/* Edit Image Modal with live preview */}
       {editingImageItem && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+        <div 
+          onPaste={(e) => {
+            const items = e.clipboardData?.items;
+            if (items) {
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                  const file = items[i].getAsFile();
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setTempImageUrl(event.target.result);
+                    toast.success("Image pasted from clipboard!");
+                  };
+                  reader.readAsDataURL(file);
+                  e.preventDefault();
+                  break;
+                }
+              }
+            }
+          }}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+        >
           <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
@@ -495,11 +515,65 @@ export default function ItemLinesTable({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-slate-400">
-                    <ImageIcon size={48} className="stroke-[1.5]" />
-                    <span className="text-[11px] font-medium mt-1">No Image Link</span>
+                  <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                    <ImageIcon size={48} className="stroke-[1.5] mb-2" />
+                    <span className="text-xs font-bold text-slate-600">No Image</span>
+                    <span className="text-[10px] text-slate-400 mt-1">Upload a file, paste image URL, or copy an image and press Ctrl+V directly to paste</span>
                   </div>
                 )}
+              </div>
+
+              {/* Upload & Paste Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex items-center justify-center gap-1.5 cursor-pointer px-3 py-2 bg-sky-50 hover:bg-sky-100 border border-sky-100 rounded-lg text-xs font-bold text-sky-700 transition shadow-sm">
+                  <Upload size={14} />
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          setTempImageUrl(event.target.result);
+                          toast.success("Image uploaded!");
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const clipboardItems = await navigator.clipboard.read();
+                      for (const clipboardItem of clipboardItems) {
+                        for (const type of clipboardItem.types) {
+                          if (type.startsWith('image/')) {
+                            const blob = await clipboardItem.getType(type);
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              setTempImageUrl(event.target.result);
+                              toast.success("Image pasted from clipboard!");
+                            };
+                            reader.readAsDataURL(blob);
+                            return;
+                          }
+                        }
+                      }
+                      toast.error("No image found in clipboard. Copy an image file/screenshot first.");
+                    } catch (err) {
+                      toast.error("Clipboard permission denied. Please use Ctrl+V to paste the image directly.");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition shadow-sm"
+                >
+                  <Clipboard size={14} />
+                  Paste Clipboard
+                </button>
               </div>
 
               {/* Input */}
