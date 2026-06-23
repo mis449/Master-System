@@ -603,8 +603,6 @@ export default function ItemTracker() {
                     <th className="px-6 py-4 text-center">Date</th>
                     <th className="px-6 py-4 text-center">Type</th>
                     <th className="px-6 py-4 text-center">Party</th>
-                    <th className="px-6 py-4 text-center">Qty Change</th>
-                    <th className="px-6 py-4 text-center">Stock Balance</th>
                     <th className="px-6 py-4 text-center">Remarks/Ref</th>
                   </tr>
                 </thead>
@@ -634,28 +632,6 @@ export default function ItemTracker() {
                             <div className="font-semibold text-slate-800 text-sm">{tx.vendorName || '-'}</div>
                             {tx.itemName && <div className="text-slate-400 text-xs mt-0.5 truncate max-w-[180px] mx-auto">{tx.itemName}</div>}
                           </td>
-                          <td className="px-6 py-3 text-center whitespace-nowrap">
-                            {(typeL === 'sales order' || typeL === 'quotation' || typeL === 'purchase order') ? (
-                              <span className="font-black text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase tracking-wider">
-                                Pending ({tx.qty})
-                              </span>
-                            ) : (
-                              <span className={`font-black text-base ${tx.change > 0 ? 'text-emerald-600' : tx.change < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
-                                {tx.change > 0 ? '+' : ''}{tx.change}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-3 text-center whitespace-nowrap">
-                            {(typeL === 'sales order' || typeL === 'quotation' || typeL === 'purchase order') ? (
-                              <span className="font-bold px-3 py-1 rounded-lg text-xs bg-slate-50 text-slate-400 border border-dashed border-slate-300">
-                                —
-                              </span>
-                            ) : (
-                              <span className={`font-black px-3 py-1 rounded-lg text-sm ${tx.currentStock < 0 ? 'bg-rose-50 text-rose-700' : tx.currentStock === 0 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                                {tx.currentStock}
-                              </span>
-                            )}
-                          </td>
                           <td className="px-4 py-3 text-center">
                             <span className="text-sky-600 font-semibold text-xs bg-sky-50 px-2 py-1 rounded">
                               {tx.remarks || '-'}
@@ -666,7 +642,7 @@ export default function ItemTracker() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                      <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
                         <div className="flex flex-col items-center gap-2">
                           <PackageSearch size={32} className="text-slate-300" />
                           <p className="font-medium">No transactions found for this item with current filters.</p>
