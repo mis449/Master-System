@@ -261,6 +261,12 @@ export default function ItemTracker() {
     // 4. Apply Secondary Filters
     let filtered = enriched;
     
+    // Always hide quotation and sales order from the table view
+    filtered = filtered.filter(t => {
+      const type = (t.type || '').toLowerCase();
+      return type !== 'quotation' && type !== 'sales order';
+    });
+    
     if (dateRange.start) {
       filtered = filtered.filter(t => new Date(t.date) >= new Date(dateRange.start));
     }
@@ -616,6 +622,7 @@ export default function ItemTracker() {
                     <th className="px-6 py-4 text-center">Date</th>
                     <th className="px-6 py-4 text-center">Type</th>
                     <th className="px-6 py-4 text-center">Party</th>
+                    <th className="px-6 py-4 text-center">Qty</th>
                     <th className="px-6 py-4 text-center">Remarks/Ref</th>
                   </tr>
                 </thead>
@@ -646,6 +653,11 @@ export default function ItemTracker() {
                             {tx.itemName && <div className="text-slate-400 text-xs mt-0.5 truncate max-w-[180px] mx-auto">{tx.itemName}</div>}
                           </td>
                           <td className="px-4 py-3 text-center">
+                            <span className="font-bold text-slate-800 text-sm">
+                              {tx.qty !== undefined && tx.qty !== null ? tx.qty : 0}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
                             <span className="text-sky-600 font-semibold text-xs bg-sky-50 px-2 py-1 rounded">
                               {tx.remarks || '-'}
                             </span>
@@ -655,7 +667,7 @@ export default function ItemTracker() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
+                      <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
                         <div className="flex flex-col items-center gap-2">
                           <PackageSearch size={32} className="text-slate-300" />
                           <p className="font-medium">No transactions found for this item with current filters.</p>
