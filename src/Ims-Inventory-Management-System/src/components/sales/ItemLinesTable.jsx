@@ -34,6 +34,7 @@ export default function ItemLinesTable({
   const [editingImageItem, setEditingImageItem] = useState(null);
   const [tempImageUrl, setTempImageUrl] = useState('');
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
   const [draggableItemId, setDraggableItemId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [searchTerms, setSearchTerms] = useState({});
@@ -45,18 +46,25 @@ export default function ItemLinesTable({
     e.dataTransfer.setData('text/plain', index);
   };
 
-  const handleDragEnter = (e, index) => {
-    if (!reorderItemLines || draggedIndex === null || draggedIndex === index) return;
-    reorderItemLines(draggedIndex, index);
-    setDraggedIndex(index);
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
   };
 
-  const handleDragOver = (e) => {
+  const handleDrop = (e, index) => {
     e.preventDefault();
+    if (reorderItemLines && draggedIndex !== null && draggedIndex !== index) {
+      reorderItemLines(draggedIndex, index);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   // Close dropdown on outside click
@@ -145,10 +153,10 @@ export default function ItemLinesTable({
               key={item.id} 
               draggable={reorderItemLines && draggableItemId === item.id}
               onDragStart={(e) => handleDragStart(e, index)}
-              onDragEnter={(e) => handleDragEnter(e, index)}
-              onDragOver={handleDragOver}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
-              className={`flex items-center gap-2 p-2 md:px-2 md:py-3 rounded-xl md:rounded-none md:border-b shadow-sm md:shadow-none bg-white border border-slate-100 ${isSub ? 'ml-4 border-l-2 border-l-slate-300' : 'border-l-4 border-l-sky-500 bg-sky-50/40'} ${draggedIndex === index ? 'opacity-50' : ''}`}
+              className={`flex items-center gap-2 p-2 md:px-2 md:py-3 rounded-xl md:rounded-none md:border-b shadow-sm md:shadow-none bg-white border border-slate-100 ${isSub ? 'ml-4 border-l-2 border-l-slate-300' : 'border-l-4 border-l-sky-500 bg-sky-50/40'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''}`}
             >
               {reorderItemLines && (
                 <div 
@@ -163,6 +171,14 @@ export default function ItemLinesTable({
               <div className="flex-1 pl-2">
                 <input type="text" value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} className={`w-full bg-transparent outline-none font-bold placeholder-slate-400 ${isSub ? 'text-slate-600 text-sm' : 'text-sky-800 text-sm'}`} placeholder={isSub ? "Enter Sub-Section Title..." : "Enter Section Title..."} />
               </div>
+              <button 
+                type="button" 
+                onClick={() => addItemLine(index)} 
+                className="text-[11px] font-bold bg-sky-50 text-sky-600 hover:bg-sky-100 px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                title="Add Item Line below"
+              >
+                <Plus size={12} /> Add Item
+              </button>
               {copySection && (
                 <button type="button" onClick={() => copySection(item.id)} className="p-1.5 text-sky-500 hover:text-sky-700 hover:bg-sky-100 rounded transition-colors" title="Duplicate">
                   <Copy size={14} />
@@ -203,10 +219,10 @@ export default function ItemLinesTable({
             key={item.id} 
             draggable={reorderItemLines && draggableItemId === item.id}
             onDragStart={(e) => handleDragStart(e, index)}
-            onDragEnter={(e) => handleDragEnter(e, index)}
-            onDragOver={handleDragOver}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDrop={(e) => handleDrop(e, index)}
             onDragEnd={handleDragEnd}
-            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : 'md:grid-cols-[repeat(15,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''}`}
+            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : 'md:grid-cols-[repeat(15,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''}`}
           >
             <div className="col-span-2 md:col-span-3 space-y-1">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Item Code</div>

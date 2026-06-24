@@ -143,7 +143,15 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
     }
   };
 
-  const addItemLine = () => setItems(prev => [...prev, getEmptyItem('item')]);
+  const addItemLine = (index) => setItems(prev => {
+    const newItem = getEmptyItem('item');
+    if (typeof index === 'number') {
+      const newItems = [...prev];
+      newItems.splice(index + 1, 0, newItem);
+      return newItems;
+    }
+    return [...prev, newItem];
+  });
   const addSection = () => setItems(prev => [...prev, getEmptyItem('section')]);
   const addSubSection = () => setItems(prev => [...prev, getEmptyItem('subsection')]);
   const copySection = (sectionId) => {
