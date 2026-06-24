@@ -74,11 +74,11 @@ const AdminDashboard = () => {
     { key: "totalWork", label: "Total Work" },
     { key: "weekPending", label: "Week Pending" },
     { key: "allPending", label: "All Pending" },
-    { key: "lastWeekPlannedNotDone", label: "Last Week Planned Work Not Done %" },
-    { key: "lastWeekPlannedNotDoneOnTime", label: "Last Week Planned Work Not Done On Time %" },
+    { key: "lastWeekPlannedNotDone", label: "Last Week Planned Work Done %" },
+    { key: "lastWeekPlannedNotDoneOnTime", label: "Last Week Planned Work Done On Time %" },
     { key: "lastWeekCommitment", label: "Last Week Commitment" },
-    { key: "nextWeekPlannedNotDone", label: "Next Week Planned Work Not Done %" },
-    { key: "nextWeekPlannedNotDoneOnTime", label: "Next Week Planned Work Not Done On Time %" },
+    { key: "nextWeekPlannedNotDone", label: "Next Week Planned Work Done %" },
+    { key: "nextWeekPlannedNotDoneOnTime", label: "Next Week Planned Work Done On Time %" },
     { key: "nextWeekCommitment", label: "Next Week Commitment" },
   ];
 
@@ -421,11 +421,11 @@ const AdminDashboard = () => {
           switch (c.key) {
             case "weeklyDone": return "Wk. Done %";
             case "weeklyOnTime": return "Wk. On Time %";
-            case "lastWeekPlannedNotDone": return "L.W. Not Done %";
-            case "lastWeekPlannedNotDoneOnTime": return "L.W. Delayed %";
+            case "lastWeekPlannedNotDone": return "L.W. Done %";
+            case "lastWeekPlannedNotDoneOnTime": return "L.W. Done On Time %";
             case "lastWeekCommitment": return "L.W. Commit";
-            case "nextWeekPlannedNotDone": return "N.W. Not Done %";
-            case "nextWeekPlannedNotDoneOnTime": return "N.W. Delayed %";
+            case "nextWeekPlannedNotDone": return "N.W. Done %";
+            case "nextWeekPlannedNotDoneOnTime": return "N.W. Done On Time %";
             case "nextWeekCommitment": return "N.W. Commit";
             default: return c.label;
           }
@@ -1360,7 +1360,7 @@ const AdminDashboard = () => {
                       
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Planned Not Done</label>
+                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Planned Done</label>
                           <input 
                             type="text"
                             value={editableData[emp.id]?.nextWeekPlannedNotDone || ""}
@@ -1370,7 +1370,7 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Not Done On Time</label>
+                          <label className="text-[9px] font-black text-gray-400 uppercase ml-1 tracking-wide">Done On Time</label>
                           <input 
                             type="text"
                             value={editableData[emp.id]?.nextWeekPlannedNotDoneOnTime || ""}
