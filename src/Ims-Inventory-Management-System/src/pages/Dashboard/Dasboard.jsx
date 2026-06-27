@@ -341,7 +341,7 @@ export default function Dasboard() {
       styles: {
         fontSize: orientation === 'landscape' ? 9 : 7.5,
         cellPadding: orientation === 'landscape' ? 2.5 : 2,
-        overflow: 'ellipsize', // Force text to single line with ellipsis
+        overflow: 'linebreak', // Allow text to wrap instead of ellipsize
         font: 'helvetica',
         lineColor: [226, 232, 240], // slate-200
         lineWidth: 0.1,
@@ -361,7 +361,7 @@ export default function Dasboard() {
         fillColor: [248, 250, 252] // slate-50
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: orientation === 'landscape' ? 8 : 7 },
+        0: { halign: 'center', cellWidth: orientation === 'landscape' ? 12 : 10 },
         1: { halign: 'center', cellWidth: orientation === 'landscape' ? 22 : 18 }, // Image
         2: { halign: 'center', cellWidth: orientation === 'landscape' ? 35 : 25, fontStyle: 'bold' }, // Item Code
         3: { halign: 'left', cellWidth: 'auto' }, // Item name
