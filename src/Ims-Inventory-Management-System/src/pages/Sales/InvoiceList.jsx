@@ -101,6 +101,9 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
 
   const filteredInvoices = useMemo(() => {
     return Invoices.filter(q => {
+      // Exclude 'Returned' invoices
+      if (q.status === 'Returned') return false;
+
       // Filter by search query
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();

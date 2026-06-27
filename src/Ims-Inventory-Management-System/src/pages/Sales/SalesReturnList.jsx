@@ -6,6 +6,7 @@ import { TabSwitcher } from '../../components/StandardButtons';
 import SalesReturnFormModal from './SalesReturnFormModal';
 import CreateSalesReturnModal from './CreateSalesReturnModal';
 import { getSalesReturns, deleteSalesReturn, createSalesReturn } from '../../services/SalesReturnService';
+import { updateInvoice } from '../../services/InvoiceService';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function SalesReturnList({ conversionContext, clearConversionContext }) {
@@ -351,6 +352,18 @@ export default function SalesReturnList({ conversionContext, clearConversionCont
             try {
               const created = await createSalesReturn(data);
               setSalesReturns(prev => [created, ...prev]);
+              
+              if (conversionContext?.source === 'Invoice' && conversionContext?.data?.id) {
+                try {
+                  await updateInvoice(conversionContext.data.id, {
+                    ...conversionContext.data,
+                    status: 'Returned'
+                  });
+                } catch (e) {
+                  console.error('Failed to update invoice status:', e);
+                }
+              }
+
               setShowCreateModal(false);
               if (clearConversionContext) clearConversionContext();
               toast.success('Sales Return created successfully');

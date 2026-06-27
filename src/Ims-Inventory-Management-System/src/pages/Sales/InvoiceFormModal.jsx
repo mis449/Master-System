@@ -263,6 +263,8 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
           onCreateReturn={() => {
              if (!basicInfo.customer) { toast.error('Please save the invoice first'); return; }
              const currentData = { 
+               id: initialData?.id,
+               invoiceNo: initialData?.invoiceNo,
                customerName: basicInfo.customer,
                mobileNumber: otherInfo.mobile || initialData?.mobileNumber || '-',
                state: otherInfo.state || initialData?.state || '-',
