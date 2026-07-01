@@ -397,8 +397,7 @@ export default function QuotationList({ onConvertToInvoice }) {
               const created = await createQuotation(copiedData);
               setQuotations(prev => [...prev, created]);
               toast.success('Quotation copied successfully');
-              setShowFormModal(false);
-              setSelectedQuotation(null);
+              setSelectedQuotation(created);
             } catch (err) {
               toast.error('Failed to copy quotation');
             }

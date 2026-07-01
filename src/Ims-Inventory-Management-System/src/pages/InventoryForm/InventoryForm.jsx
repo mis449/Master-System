@@ -54,13 +54,13 @@ export default function InventoryForm() {
       const code = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
       const summary = summaryMap[code] || {};
 
-      const openingQty = Number((summary.opening_qty || 0).toFixed(1));
       const purchaseQty = Number((summary.purchase_qty || 0).toFixed(1));
       const salesQty = Number((summary.sales_qty || 0).toFixed(1));
       const purchaseReturnQty = Number((summary.purchase_return_qty || 0).toFixed(1));
       const salesReturnQty = Number((summary.sales_return_qty || 0).toFixed(1));
 
-      const currentQty = Number(((item.StockQty || 0) + (summary.closing_qty || 0)).toFixed(1));
+      const openingQty = Number(item.OpeningQty || 0); // Using OpeningQty if available, else 0
+      const currentQty = Number((item.StockQty || 0).toFixed(1));
       const stockLevel = currentQty >= 50 ? 'Stock Full' : 'Stock Low';
 
       return {

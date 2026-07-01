@@ -33,14 +33,13 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
           const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
           let stock = 0;
           if (invItem) {
-            const itemCodeLower = (invItem.ItemCode || invItem.code || '').toString().trim().toLowerCase();
-            const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
-            stock = Number(((invItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+            stock = Number((invItem.StockQty || 0).toFixed(1));
           }
 
-          // Preserve user-modified dispatchQty if the item already exists in state
+          // Preserve user-modified dispatchQty if the item already exists in state and ordered quantity hasn't changed
           const existingItem = prevItems.find(i => i.id === item.id);
-          const currentDispatchQty = existingItem && existingItem.dispatchQty !== undefined 
+          const didOrderedChange = existingItem ? existingItem.orderedQty !== ordered : true;
+          const currentDispatchQty = (!didOrderedChange && existingItem && existingItem.dispatchQty !== undefined)
                                        ? existingItem.dispatchQty 
                                        : pending;
 

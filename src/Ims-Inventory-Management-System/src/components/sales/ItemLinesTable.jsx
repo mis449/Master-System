@@ -209,9 +209,7 @@ export default function ItemLinesTable({
         // Compute dynamic live stock qty
         let liveStockQty = '-';
         if (matchedInventoryItem) {
-          const codeLower = (matchedInventoryItem.ItemCode || matchedInventoryItem.code || '').toString().trim().toLowerCase();
-          const summary = inventorySummary?.find(s => s.item_code?.toString().trim().toLowerCase() === codeLower);
-          liveStockQty = Number(((matchedInventoryItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+          liveStockQty = Number((matchedInventoryItem.StockQty || 0).toFixed(1));
         }
 
         return (
@@ -291,7 +289,7 @@ export default function ItemLinesTable({
                                 }`}
                               >
                                 <span className="text-[11px] text-slate-700 whitespace-normal pr-6 font-medium">
-                                  {code}:-{name} -({code})
+                                  {code}
                                 </span>
                                 {isSelected && <span className="absolute right-3 text-sky-600 text-sm font-bold">✓</span>}
                               </div>

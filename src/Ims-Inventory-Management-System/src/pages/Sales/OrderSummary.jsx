@@ -98,9 +98,7 @@ export default function OrderSummary() {
         const invItem = inventoryItems.find(i => (i.ItemCode || i.code) === item.itemCode);
         let stockQty = 0;
         if (invItem) {
-          const itemCodeLower = (invItem.ItemCode || invItem.code || '').toString().trim().toLowerCase();
-          const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
-          stockQty = Number(((invItem.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+          stockQty = Number((invItem.StockQty || 0).toFixed(1));
         }
         
         const orderedQty = Number(item.quantity || 0);

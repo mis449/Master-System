@@ -398,6 +398,7 @@ const useDataStore = create((set, get) => ({
         Notes: item.ItmNotes || item.Notes || item.notes || '',
         MRP: Number(item.ItmQtyRate || item.ItmMRP || item.MRP || item.mrp || item.price || 0),
         StockQty: Number(item.stock || item.ItmStdStkQty || item.StockQty || item.stock_qty || 0),
+        CurrentStock: Number(item.current_stock || 0),
         DisplayQty: Number(item.ItmDispQty || item.DisplayQty || item.display_qty || 0),
         ReservedQty: Number(item.ItmRsrvStkQty || item.ReservedQty || item.reserved_qty || 0),
         OpeningQty: Number(item.OpeningQty || item.opening_qty || 0)
@@ -493,6 +494,36 @@ const useDataStore = create((set, get) => ({
 
       const data = Object.values(summaryMap);
       set({ inventorySummary: data });
+
+      // Sync computed summaries to backend inventory_summary table asynchronously
+      try {
+        const currentItems = get().items || [];
+        const payload = data.map(s => {
+          const matched = currentItems.find(i => (i.ItemCode || i.code || '').toLowerCase() === s.item_code.toLowerCase());
+          return {
+            item_code: s.item_code,
+            item_name: matched ? (matched.ItemName || matched.name || s.item_code) : s.item_code,
+            category: matched ? (matched.Category || matched.category || '') : '',
+            brand: matched ? (matched.BrandName || matched.brand || '') : '',
+            purchase_qty: s.purchase_qty,
+            sales_qty: s.sales_qty,
+            purchase_return_qty: s.purchase_return_qty,
+            sales_return_qty: s.sales_return_qty,
+            closing_qty: s.closing_qty
+          };
+        });
+        
+        // Chunk payload if large, or just send it (upsert accepts arrays)
+        if (payload.length > 0) {
+          supabase.from('inventory_summary')
+            .upsert(payload, { onConflict: 'item_code', ignoreDuplicates: false })
+            .then(({ error }) => {
+              if (error) console.error('Error syncing inventory_summary to backend:', error);
+            });
+        }
+      } catch (e) {
+        console.error('Failed to prepare inventory_summary sync payload:', e);
+      }
     } catch (err) {
       console.error('Error computing inventory summary:', err);
     }

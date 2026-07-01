@@ -28,7 +28,7 @@ function App() {
 
   return (
     <div className="bg-white min-h-screen">
-      <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+      <Toaster position="top-center" toastOptions={{ duration: 3000 }} containerStyle={{ zIndex: 999999 }} />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexRedirect />} />

@@ -308,7 +308,7 @@ export default function ItemTracker() {
     ) || {};
 
     const currentStockVal = itemDetails 
-      ? Number(((itemDetails.StockQty || 0) + (dbSummary.closing_qty || 0)).toFixed(1))
+      ? Number((itemDetails.StockQty || 0).toFixed(1))
       : balance;
 
     const totalPurchasedVal = dbSummary.purchase_qty !== undefined

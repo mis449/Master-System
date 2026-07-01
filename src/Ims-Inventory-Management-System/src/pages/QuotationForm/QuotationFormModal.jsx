@@ -472,24 +472,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               <option value="Horizontal">Horizontal</option>
               <option value="Vertical">Vertical</option>
             </select>
-            {basicInfo.customer && (
-              <button 
-                type="button" 
-                onClick={() => {
-                  const matchedCustomer = customers.find(c => c.name === basicInfo.customer);
-                  if (matchedCustomer) {
-                    setCustomerToEdit(matchedCustomer);
-                    setIsCustomerModalOpen(true);
-                  } else {
-                    toast.error("Customer details not found.");
-                  }
-                }}
-                className="text-[11px] font-bold bg-white text-sky-600 border border-sky-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-sky-50 shadow-sm transition"
-                title="Edit Customer Details"
-              >
-                <Edit size={12} /> Edit Customer
-              </button>
-            )}
+
           </div>
           <div className="flex gap-3 items-center flex-wrap">
             {(quotationStatus === 'Active') && (
@@ -548,6 +531,15 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           onOpenCustomerModal={() => {
             setCustomerToEdit(null);
             setIsCustomerModalOpen(true);
+          }}
+          onEditCustomer={() => {
+            const matchedCustomer = customers.find(c => c.name === basicInfo.customer);
+            if (matchedCustomer) {
+              setCustomerToEdit(matchedCustomer);
+              setIsCustomerModalOpen(true);
+            } else {
+              toast.error("Customer details not found.");
+            }
           }}
           onCustomerSelect={(custObj) => {
             if (!custObj) return;

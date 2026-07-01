@@ -158,9 +158,7 @@ export default function ItemDetails() {
   const renderRow = ( item, idx) => {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const priceVal = Number(item.MRP || item.price || 0);
-    const itemCodeLower = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
-    const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
-    const liveStockQty = Number(((item.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+    const liveStockQty = Number((item.StockQty || 0).toFixed(1));
 
     return (
       <tr key={item.ItmID || item.code} className="hover:bg-sky-50/25 transition-colors border-b border-gray-100">
@@ -195,9 +193,7 @@ export default function ItemDetails() {
   const renderCard = (item, idx) => {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const priceVal = Number(item.MRP || item.price || 0);
-    const itemCodeLower = (item.ItemCode || item.code || '').toString().trim().toLowerCase();
-    const summary = inventorySummary.find(s => s.item_code?.toString().trim().toLowerCase() === itemCodeLower);
-    const liveStockQty = Number(((item.StockQty || 0) + (summary?.closing_qty || 0)).toFixed(1));
+    const liveStockQty = Number((item.StockQty || 0).toFixed(1));
 
     return (
       <div key={item.ItmID || item.code} className="bg-white rounded-xl border border-sky-50 shadow-sm p-4 space-y-3 transition-all hover:shadow-md hover:border-sky-100">
