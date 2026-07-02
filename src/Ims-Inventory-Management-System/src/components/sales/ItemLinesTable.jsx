@@ -288,9 +288,16 @@ export default function ItemLinesTable({
                                   isSelected ? 'bg-sky-50' : 'hover:bg-slate-50'
                                 }`}
                               >
-                                <span className="text-[11px] text-slate-700 whitespace-normal pr-6 font-medium">
-                                  {code}
-                                </span>
+                                <div className="flex flex-col pr-6 w-full">
+                                  <span className="text-[11px] text-slate-800 font-bold">
+                                    {code}
+                                  </span>
+                                  {name && (
+                                    <span className="text-[10px] text-slate-500 whitespace-normal mt-0.5 line-clamp-2">
+                                      {name}
+                                    </span>
+                                  )}
+                                </div>
                                 {isSelected && <span className="absolute right-3 text-sky-600 text-sm font-bold">✓</span>}
                               </div>
                             );
