@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, RotateCcw, Box, Tag, Layers, DollarSign, Filter, RefreshCw, Plus, Image as ImageIcon, Edit } from 'lucide-react';
+import { Search, RotateCcw, Box, Tag, Layers, DollarSign, Filter, RefreshCw, Plus, Image as ImageIcon, Edit, X } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import ModalView from '../../components/ModalView';
