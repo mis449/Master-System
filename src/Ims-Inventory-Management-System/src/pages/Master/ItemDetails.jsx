@@ -8,9 +8,11 @@ import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
 
 export default function ItemDetails() {
-  const { items, isLoading, error, fetchItems, addNewItem, updateItem, inventorySummary, fetchInventorySummary } = useDataStore();
+  const { items, isLoading, error, fetchItems, addNewItem, updateItem, inventorySummary, fetchInventorySummary, brands, fetchBrands, addBrand } = useDataStore();
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showBrandInput, setShowBrandInput] = useState(false);
+  const [isAddingBrand, setIsAddingBrand] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,11 +47,11 @@ export default function ItemDetails() {
     setCurrentPage(1);
   }, [filters]);
 
-  // Fetch items on mount
   useEffect(() => {
     fetchItems(true);
     fetchInventorySummary();
-  }, [fetchItems, fetchInventorySummary]);
+    fetchBrands();
+  }, [fetchItems, fetchInventorySummary, fetchBrands]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -69,6 +71,11 @@ export default function ItemDetails() {
     }
     
     setIsSubmitting(true);
+    if (showBrandInput) {
+      setIsAddingBrand(true);
+      await addBrand(newItemData.BrandName);
+      setIsAddingBrand(false);
+    }
     const res = await addNewItem(newItemData);
     setIsSubmitting(false);
     
@@ -102,6 +109,11 @@ export default function ItemDetails() {
     }
     
     setIsSubmitting(true);
+    if (showBrandInput) {
+      setIsAddingBrand(true);
+      await addBrand(editFormData.BrandName);
+      setIsAddingBrand(false);
+    }
     const res = await updateItem(editFormData.id, editFormData);
     setIsSubmitting(false);
     
@@ -116,8 +128,11 @@ export default function ItemDetails() {
   // Unique lists for Filters Dropdowns
 
   const brandsList = useMemo(() => {
-    return Array.from(new Set(items.map(i => i.BrandName || i.brand))).filter(Boolean).sort();
-  }, [items]);
+    return Array.from(new Set([
+      ...(brands || []).map(b => b.name),
+      ...items.map(i => i.BrandName || i.brand)
+    ])).filter(Boolean).sort();
+  }, [items, brands]);
 
   const itemNamesList = useMemo(() => {
     return Array.from(new Set(items.map(i => i.ItemName || i.name))).filter(Boolean).sort();
@@ -421,15 +436,44 @@ export default function ItemDetails() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand *</label>
-                <input
-                  type="text"
-                  required
-                  value={newItemData.BrandName}
-                  onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                  placeholder="e.g. TOTO"
-                />
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBrandInput(!showBrandInput);
+                      if (showBrandInput) setNewItemData(prev => ({ ...prev, BrandName: '' }));
+                    }}
+                    className="text-[10px] flex items-center gap-0.5 text-sky-600 hover:text-sky-800 font-bold bg-sky-50 px-1.5 py-0.5 rounded transition-colors"
+                  >
+                    {showBrandInput ? <X size={10} /> : <Plus size={10} />}
+                    {showBrandInput ? 'Cancel' : 'Add New'}
+                  </button>
+                </div>
+                {showBrandInput ? (
+                  <input
+                    type="text"
+                    required
+                    value={newItemData.BrandName}
+                    onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    placeholder="Enter new brand name..."
+                    autoFocus
+                    disabled={isAddingBrand}
+                  />
+                ) : (
+                  <select
+                    value={newItemData.BrandName}
+                    onChange={(e) => setNewItemData({ ...newItemData, BrandName: e.target.value })}
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  >
+                    <option value="">Select a brand *</option>
+                    {brandsList.map((brand, idx) => (
+                      <option key={idx} value={brand}>{brand}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Unit Price / MRP</label>
@@ -523,15 +567,44 @@ export default function ItemDetails() {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Brand *</label>
-                <input
-                  type="text"
-                  required
-                  value={editFormData.BrandName}
-                  onChange={(e) => setEditFormData({ ...editFormData, BrandName: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                  placeholder="e.g. TOTO"
-                />
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBrandInput(!showBrandInput);
+                      if (showBrandInput) setEditFormData(prev => ({ ...prev, BrandName: '' }));
+                    }}
+                    className="text-[10px] flex items-center gap-0.5 text-sky-600 hover:text-sky-800 font-bold bg-sky-50 px-1.5 py-0.5 rounded transition-colors"
+                  >
+                    {showBrandInput ? <X size={10} /> : <Plus size={10} />}
+                    {showBrandInput ? 'Cancel' : 'Add New'}
+                  </button>
+                </div>
+                {showBrandInput ? (
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.BrandName}
+                    onChange={(e) => setEditFormData({ ...editFormData, BrandName: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                    placeholder="Enter new brand name..."
+                    autoFocus
+                    disabled={isAddingBrand}
+                  />
+                ) : (
+                  <select
+                    value={editFormData.BrandName}
+                    onChange={(e) => setEditFormData({ ...editFormData, BrandName: e.target.value })}
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  >
+                    <option value="">Select a brand *</option>
+                    {brandsList.map((brand, idx) => (
+                      <option key={idx} value={brand}>{brand}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Unit Price</label>

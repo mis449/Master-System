@@ -9,7 +9,38 @@ const useDataStore = create((set, get) => ({
   inventorySummary: [],
   customers: [],
   vendors: [],
+  brands: [],
   salesPersons: [],
+
+  // Fetch brands from Supabase
+  fetchBrands: async () => {
+    try {
+      const { data, error } = await supabase.from('brand').select('*');
+      if (error) throw error;
+      
+      if (data) {
+        set({ brands: data });
+      } else {
+        set({ brands: [] });
+      }
+    } catch (e) {
+      console.error('Error fetching brands:', e);
+    }
+  },
+
+  // Add a new brand to Supabase
+  addBrand: async (brandData) => {
+    try {
+      const newBrand = { name: brandData.name || brandData };
+      const { data, error } = await supabase.from('brand').insert([newBrand]).select();
+      if (error) throw error;
+      get().fetchBrands();
+      return { success: true, data: data[0] };
+    } catch (e) {
+      console.error('Error saving brand:', e);
+      return { success: false, error: e.message || 'Failed to add brand' };
+    }
+  },
 
   // Fetch sales persons from Supabase
   fetchSalesPersons: async () => {

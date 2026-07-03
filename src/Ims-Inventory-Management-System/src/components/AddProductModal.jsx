@@ -5,11 +5,16 @@ import ModalForm from './ModalForm';
 import useDataStore from '../store/dataStore';
 
 export default function AddProductModal({ isOpen, onClose, initialData }) {
-  const { addNewItem, updateItem, items } = useDataStore();
+  const { addNewItem, updateItem, items, brands, fetchBrands, addBrand } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showBrandInput, setShowBrandInput] = useState(false);
+  const [isAddingBrand, setIsAddingBrand] = useState(false);
   
-  const uniqueBrands = Array.from(new Set(items.map(i => i.BrandName || i.brand || i.ITMBrandName).filter(Boolean))).sort();
+  // Combine unique brands from store and items fallback
+  const uniqueBrands = Array.from(new Set([
+    ...(brands || []).map(b => b.name),
+    ...items.map(i => i.BrandName || i.brand || i.ITMBrandName).filter(Boolean)
+  ])).sort();
   const [newItemData, setNewItemData] = useState({
     ItemCode: '',
     ItemName: '',
@@ -18,6 +23,10 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
     StockQty: '',
     ImageURL: ''
   });
+
+  useEffect(() => {
+    fetchBrands();
+  }, [fetchBrands]);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,6 +61,14 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
     }
     
     setIsSubmitting(true);
+    
+    // If it's a new brand, save it to the brand table first
+    if (showBrandInput) {
+      setIsAddingBrand(true);
+      await addBrand(newItemData.BrandName);
+      setIsAddingBrand(false);
+    }
+
     let res;
     if (initialData) {
       res = await updateItem(initialData.ItmID || initialData.id, newItemData);
@@ -130,6 +147,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
                 placeholder="Enter new brand name..."
                 autoFocus
+                disabled={isAddingBrand}
               />
             ) : (
               <select

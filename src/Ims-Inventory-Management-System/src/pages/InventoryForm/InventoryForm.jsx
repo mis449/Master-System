@@ -73,7 +73,7 @@ export default function InventoryForm() {
         currentQty,
         stockLevel
       };
-    });
+    }).filter(item => item.currentQty !== 0);
   }, [items, inventorySummary]);
 
   // Apply filters
