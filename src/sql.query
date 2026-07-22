@@ -201,12 +201,12 @@ CREATE TABLE public.inventory_summary (
   item_name character varying NOT NULL,
   category character varying,
   brand character varying,
-  opening_qty integer NOT NULL DEFAULT 0 CHECK (opening_qty >= 0),
-  purchase_qty integer NOT NULL DEFAULT 0 CHECK (purchase_qty >= 0),
-  sales_qty integer NOT NULL DEFAULT 0 CHECK (sales_qty >= 0),
-  purchase_return_qty integer NOT NULL DEFAULT 0 CHECK (purchase_return_qty >= 0),
-  sales_return_qty integer NOT NULL DEFAULT 0 CHECK (sales_return_qty >= 0),
-  closing_qty integer NOT NULL DEFAULT 0,
+  opening_qty numeric NOT NULL DEFAULT 0,
+  purchase_qty numeric NOT NULL DEFAULT 0,
+  sales_qty numeric NOT NULL DEFAULT 0,
+  purchase_return_qty numeric NOT NULL DEFAULT 0,
+  sales_return_qty numeric NOT NULL DEFAULT 0,
+  closing_qty numeric NOT NULL DEFAULT 0,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT inventory_summary_pkey PRIMARY KEY (item_code)
@@ -509,3 +509,15 @@ CREATE TABLE public.sales_person_master (
   mobile_number character varying,
   CONSTRAINT sales_person_master_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.stock_updater (
+  ItemCode text NOT NULL,
+  CONSTRAINT stock_updater_pkey PRIMARY KEY (ItemCode)
+);
+
+-- ALTER QUERIES FOR ADD DISCOUNT COLUMN
+-- ALTER TABLE public.quotation ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.invoice ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.scales_return ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_return ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_order_items ADD COLUMN add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_items ADD COLUMN add_discount numeric DEFAULT 0;

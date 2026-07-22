@@ -101,7 +101,7 @@ export default function ItemLinesTable({
       </div>
 
       {/* Header */}
-      <div className={`hidden md:grid gap-2 px-2 text-sm md:text-sm font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(17,minmax(0,1fr))]' : 'grid-cols-[repeat(15,minmax(0,1fr))]'}`}>
+      <div className={`hidden md:grid gap-2 px-2 text-sm md:text-sm font-bold text-slate-500 uppercase tracking-wider text-center bg-slate-50 py-2 rounded-lg ${showStatus ? 'grid-cols-[repeat(18,minmax(0,1fr))]' : showUploadAndRemark ? 'grid-cols-[repeat(18,minmax(0,1fr))]' : 'grid-cols-[repeat(16,minmax(0,1fr))]'}`}>
         <div className="col-span-3 text-left">Item Code</div>
         <div className="col-span-1 text-center">Image</div>
         {showStatus ? (
@@ -113,6 +113,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Rem Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
+            <div className="col-span-1">Add Disc</div>
             <div className="col-span-1 text-right">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-2 text-center">Status</div>
@@ -125,6 +126,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
+            <div className="col-span-1">Add Disc</div>
             <div className="col-span-1">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-2 text-center">Remark</div>
@@ -138,6 +140,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Qty</div>
             <div className="col-span-2">Unit Price</div>
             <div className="col-span-1">Disc %</div>
+            <div className="col-span-1">Add Disc</div>
             <div className="col-span-1">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-1">Action</div>
@@ -193,7 +196,8 @@ export default function ItemLinesTable({
 
         const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
         const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-        const afterDiscount = rowGross - rowDiscount;
+        const rowAddDiscount = Number(item.addDiscount) || 0;
+        const afterDiscount = rowGross - rowDiscount - rowAddDiscount;
         const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
         const net = afterDiscount + rowTax;
 
@@ -220,7 +224,7 @@ export default function ItemLinesTable({
             onDragOver={(e) => handleDragOver(e, index)}
             onDrop={(e) => handleDrop(e, index)}
             onDragEnd={handleDragEnd}
-            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(17,minmax(0,1fr))]' : 'md:grid-cols-[repeat(15,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''}`}
+            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : 'md:grid-cols-[repeat(16,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''}`}
           >
             <div className="col-span-2 md:col-span-3 space-y-1">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Item Code</div>
@@ -386,6 +390,10 @@ export default function ItemLinesTable({
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Disc %</div>
               <input type="number" step="any" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+            </div>
+            <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Add Disc</div>
+              <input type="number" step="any" value={item.addDiscount ?? ''} onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Tax %</div>
