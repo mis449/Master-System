@@ -113,7 +113,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Rem Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
-            <div className="col-span-1">Add Disc</div>
+            <div className="col-span-1">Add Disc %</div>
             <div className="col-span-1 text-right">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-2 text-center">Status</div>
@@ -126,7 +126,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Qty</div>
             <div className="col-span-1">Unit Price</div>
             <div className="col-span-1">Disc %</div>
-            <div className="col-span-1">Add Disc</div>
+            <div className="col-span-1">Add Disc %</div>
             <div className="col-span-1">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-2 text-center">Remark</div>
@@ -140,7 +140,7 @@ export default function ItemLinesTable({
             <div className="col-span-1">Qty</div>
             <div className="col-span-2">Unit Price</div>
             <div className="col-span-1">Disc %</div>
-            <div className="col-span-1">Add Disc</div>
+            <div className="col-span-1">Add Disc %</div>
             <div className="col-span-1">Tax %</div>
             <div className="col-span-1 text-right">Net Amt</div>
             <div className="col-span-1">Action</div>
@@ -196,7 +196,7 @@ export default function ItemLinesTable({
 
         const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
         const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-        const rowAddDiscount = Number(item.addDiscount) || 0;
+        const rowAddDiscount = rowGross * ((Number(item.addDiscount) || 0) / 100);
         const afterDiscount = rowGross - rowDiscount - rowAddDiscount;
         const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
         const net = afterDiscount + rowTax;
@@ -392,7 +392,7 @@ export default function ItemLinesTable({
               <input type="number" step="any" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Add Disc</div>
+              <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Add Disc %</div>
               <input type="number" step="any" value={item.addDiscount ?? ''} onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">

@@ -90,7 +90,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, onSave, initia
       if (item.type && item.type !== 'item') return { ...item, netAmount: 0 };
       const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
       const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-      const rowAddDiscount = Number(item.addDiscount) || 0;
+      const rowAddDiscount = rowGross * ((Number(item.addDiscount) || 0) / 100);
       const afterDiscount = rowGross - rowDiscount - rowAddDiscount;
       const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
       const net = afterDiscount + rowTax;

@@ -261,12 +261,13 @@ export default function PremiumQuotationPrint({
               } else {
                 const unitPrice = Number(item.unitPrice || 0);
                 const discountPercent = Number(item.discountPercent || 0);
-                const addDiscount = Number(item.addDiscount || 0);
+                const addDiscountPercent = Number(item.addDiscount || 0);
                 const qty = Number(item.quantity || 0);
                 
                 const rowGross = qty * unitPrice;
                 const rowDiscount = rowGross * (discountPercent / 100);
-                const afterDiscount = rowGross - rowDiscount - addDiscount;
+                const addDiscountAmt = rowGross * (addDiscountPercent / 100);
+                const afterDiscount = rowGross - rowDiscount - addDiscountAmt;
                 
                 const netRate = qty > 0 ? afterDiscount / qty : 0;
                 const amount = afterDiscount;
@@ -281,7 +282,7 @@ export default function PremiumQuotationPrint({
                 flattenedRows.push({ 
                   ...item, 
                   type: 'product',
-                  amount, netRate, unitPrice, discountPercent, addDiscount, imageUrl
+                  amount, netRate, unitPrice, discountPercent, addDiscount: addDiscountPercent, imageUrl
                 });
               }
             });
@@ -384,8 +385,8 @@ export default function PremiumQuotationPrint({
                           <th className="py-1 px-2 text-left w-[28%]">Product Details</th>
                           <th className="py-1 px-1 text-center w-[7%]">Qty</th>
                           <th className="py-1 px-1 text-right w-[13%]">MRP</th>
-                          <th className="py-1 px-1 text-right w-[9%]">Dis %</th>
-                          <th className="py-1 px-1 text-right w-[9%]">Add Dis</th>
+                          <th className="py-1 px-1 text-right w-[9%] whitespace-nowrap">Dis %</th>
+                          <th className="py-1 px-1 text-right w-[9%] whitespace-nowrap">Add Dis %</th>
                           <th className="py-1 px-1 text-right w-[10%]">Net Rate</th>
                           <th className="py-1 px-2 text-right w-[12%]">Amount</th>
                         </tr>
@@ -467,7 +468,7 @@ export default function PremiumQuotationPrint({
                               </td>
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)}%` : '-'}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.addDiscount ? `₹ ${Number(item.addDiscount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}</td>
+                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.addDiscount > 0 ? `${Number(item.addDiscount).toFixed(3)}%` : '-'}</td>
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                               <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[11px] whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                             </tr>
@@ -498,10 +499,10 @@ export default function PremiumQuotationPrint({
             } else if (item.type !== 'subsection') {
               const unitPrice = Number(item.unitPrice || 0);
               const discountPercent = Number(item.discountPercent || 0);
-              const addDiscount = Number(item.addDiscount || 0);
+              const addDiscountPercent = Number(item.addDiscount || 0);
               const qty = Number(item.quantity || 0);
               const mrp = unitPrice * qty;
-              const disc = (mrp * (discountPercent / 100)) + addDiscount;
+              const disc = (mrp * (discountPercent / 100)) + (mrp * (addDiscountPercent / 100));
               curSection.items.push({ mrp, disc, amount: mrp - disc });
             }
           });

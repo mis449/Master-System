@@ -112,7 +112,7 @@ export default function QuotationList({ onConvertToInvoice }) {
 
     return enrichedQuotations.filter(q => {
       // Filter by active tab
-      if (activeTab !== 'All') {
+      if (activeTab !== 'All' && activeTab !== 'History') {
         if (activeTab === 'Completed' && (q.status === 'Final' || q.status === 'Completed')) {
           // Allow it
         } else if (q.status !== activeTab) {
@@ -328,7 +328,8 @@ export default function QuotationList({ onConvertToInvoice }) {
             { id: 'Accepted', label: 'Accepted', count: quotations.filter(q => q.status === 'Accepted').length },
             { id: 'Rejected', label: 'Rejected', count: quotations.filter(q => q.status === 'Rejected').length },
             { id: 'In Progress', label: 'In Progress', count: quotations.filter(q => q.status === 'In Progress').length },
-            { id: 'Completed', label: 'Completed', count: quotations.filter(q => q.status === 'Completed' || q.status === 'Final').length }
+            { id: 'Completed', label: 'Completed', count: quotations.filter(q => q.status === 'Completed' || q.status === 'Final').length },
+            { id: 'History', label: 'History', count: quotations.length }
           ]}
         />
       </div>
