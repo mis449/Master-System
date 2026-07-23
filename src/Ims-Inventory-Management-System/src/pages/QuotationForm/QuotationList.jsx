@@ -9,9 +9,8 @@ import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 import useDataStore from '../../store/dataStore';
 
 export default function QuotationList({ onConvertToInvoice }) {
-  const [quotations, setQuotations] = useState([]);
+  const { quotations, setQuotations, customers, fetchCustomers } = useDataStore();
   const [isLoading, setIsLoading] = useState(false);
-  const { customers, fetchCustomers } = useDataStore();
   
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -26,7 +25,8 @@ export default function QuotationList({ onConvertToInvoice }) {
   const [itemsPerPage, setItemsPerPage] = useState(50);
 
   // Fetch quotations
-  const fetchQuotationsData = async () => {
+  const fetchQuotationsData = async (force = false) => {
+    if (!force && quotations.length > 0) return;
     setIsLoading(true);
     try {
       const data = await getQuotations();
@@ -50,7 +50,7 @@ export default function QuotationList({ onConvertToInvoice }) {
   };
 
   const handleRefresh = () => {
-    fetchQuotationsData();
+    fetchQuotationsData(true);
     toast.success('Data refreshed');
   };
 
@@ -97,8 +97,8 @@ export default function QuotationList({ onConvertToInvoice }) {
   };
 
   // Filter Logic
-  const filteredQuotations = useMemo(() => {
-    const enrichedQuotations = quotations.map(q => {
+  const { enrichedQuotations, historicalActiveIds } = useMemo(() => {
+    const enriched = quotations.map(q => {
       const cust = customers.find(c => 
         (c.name === q.customerName) || 
         (c.company === q.customerName) || 
@@ -110,12 +110,72 @@ export default function QuotationList({ onConvertToInvoice }) {
       };
     });
 
+    const activeSeenForCustomer = new Set();
+    const historical = new Set();
+    
+    // Sort by id descending to find the newest Active quotation per customer
+    const sortedForHistory = [...enriched].sort((a, b) => Number(b.id) - Number(a.id));
+    
+    sortedForHistory.forEach(q => {
+       if (q.status === 'Active') {
+          const custName = (q.customerName || '').toLowerCase().trim();
+          if (custName) {
+            if (activeSeenForCustomer.has(custName)) {
+               historical.add(q.id);
+            } else {
+               activeSeenForCustomer.add(custName);
+            }
+          }
+       }
+    });
+
+    return { enrichedQuotations: enriched, historicalActiveIds: historical };
+  }, [quotations, customers]);
+
+  const tabCounts = useMemo(() => {
+     let active = 0, accepted = 0, rejected = 0, inProgress = 0, completed = 0, history = 0;
+     enrichedQuotations.forEach(q => {
+        let effectiveTab = q.status;
+        if (q.status === 'Final' || q.status === 'Completed') effectiveTab = 'Completed';
+        
+        if (q.status === 'Active') {
+           if (historicalActiveIds.has(q.id)) {
+              effectiveTab = 'History';
+           } else {
+              effectiveTab = 'Active';
+           }
+        }
+        
+        switch (effectiveTab) {
+           case 'Active': active++; break;
+           case 'Accepted': accepted++; break;
+           case 'Rejected': rejected++; break;
+           case 'In Progress': inProgress++; break;
+           case 'Completed': completed++; break;
+           case 'History': history++; break;
+           default: break;
+        }
+     });
+     return { Active: active, Accepted: accepted, Rejected: rejected, 'In Progress': inProgress, Completed: completed, History: history };
+  }, [enrichedQuotations, historicalActiveIds]);
+
+  const filteredQuotations = useMemo(() => {
     return enrichedQuotations.filter(q => {
+      // Determine effective tab
+      let effectiveTab = q.status;
+      if (q.status === 'Final' || q.status === 'Completed') effectiveTab = 'Completed';
+      
+      if (q.status === 'Active') {
+         if (historicalActiveIds.has(q.id)) {
+            effectiveTab = 'History';
+         } else {
+            effectiveTab = 'Active';
+         }
+      }
+
       // Filter by active tab
-      if (activeTab !== 'All' && activeTab !== 'History') {
-        if (activeTab === 'Completed' && (q.status === 'Final' || q.status === 'Completed')) {
-          // Allow it
-        } else if (q.status !== activeTab) {
+      if (activeTab !== 'All') {
+        if (effectiveTab !== activeTab) {
           return false;
         }
       }
@@ -132,7 +192,7 @@ export default function QuotationList({ onConvertToInvoice }) {
       }
       return true;
     }).reverse();
-  }, [quotations, filters, activeTab, customers]);
+  }, [enrichedQuotations, historicalActiveIds, filters, activeTab]);
 
   const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage) || 1;
   const paginatedQuotations = filteredQuotations.slice(
@@ -164,17 +224,17 @@ export default function QuotationList({ onConvertToInvoice }) {
       onClick={() => handleView(item)}
       className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
     >
-      <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap">
+      <td className="px-4 py-3 text-center text-[15px] text-sky-700 font-black whitespace-nowrap">
         {item.quotationNo || '-'}
       </td>
-      <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.customerName || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.state || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.mobileNumber || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.displaySalesPerson || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
-      <td className="px-4 py-3 text-center whitespace-nowrap text-xs">
-        <span className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-bold ${getStatusColor(item.status)}`}>
+      <td className="px-4 py-3 text-center text-[14px] text-slate-700 font-bold whitespace-nowrap">{item.date || '-'}</td>
+      <td className="px-6 py-4 text-center text-[15px] font-black text-slate-900 whitespace-nowrap min-w-[250px]">{item.customerName || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.state || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.mobileNumber || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.displaySalesPerson || '-'}</td>
+      <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
+      <td className="px-4 py-3 text-center whitespace-nowrap text-sm">
+        <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${getStatusColor(item.status)}`}>
           {item.status === 'Final' ? 'Completed' : (item.status || 'Draft')}
         </span>
       </td>
@@ -324,12 +384,12 @@ export default function QuotationList({ onConvertToInvoice }) {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           tabs={[
-            { id: 'Active', label: 'Active', count: quotations.filter(q => q.status === 'Active').length },
-            { id: 'Accepted', label: 'Accepted', count: quotations.filter(q => q.status === 'Accepted').length },
-            { id: 'Rejected', label: 'Rejected', count: quotations.filter(q => q.status === 'Rejected').length },
-            { id: 'In Progress', label: 'In Progress', count: quotations.filter(q => q.status === 'In Progress').length },
-            { id: 'Completed', label: 'Completed', count: quotations.filter(q => q.status === 'Completed' || q.status === 'Final').length },
-            { id: 'History', label: 'History', count: quotations.length }
+            { id: 'Active', label: 'Active', count: tabCounts.Active },
+            { id: 'Accepted', label: 'Accepted', count: tabCounts.Accepted },
+            { id: 'Rejected', label: 'Rejected', count: tabCounts.Rejected },
+            { id: 'In Progress', label: 'In Progress', count: tabCounts['In Progress'] },
+            { id: 'Completed', label: 'Completed', count: tabCounts.Completed },
+            { id: 'History', label: 'History', count: tabCounts.History }
           ]}
         />
       </div>

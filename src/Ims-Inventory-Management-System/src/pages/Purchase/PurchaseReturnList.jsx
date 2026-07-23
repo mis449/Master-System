@@ -135,14 +135,14 @@ export default function PurchaseReturnList({ conversionContext, clearConversionC
       onClick={() => handleView(item)}
       className="hover:bg-rose-50/50 transition-colors border-b border-slate-100 cursor-pointer"
     >
-      <td className="px-4 py-3 text-center text-xs text-rose-600 font-bold whitespace-nowrap">{item.returnNo || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.vendor || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.mobile || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.state || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{Number(item.amount || 0).toLocaleString('en-IN')}</td>
-      <td className="px-4 py-3 text-center whitespace-nowrap text-xs">
-        <span className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-bold ${getStatusColor(item.status)}`}>
+      <td className="px-4 py-3 text-center text-[15px] text-rose-700 font-black whitespace-nowrap">{item.returnNo || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] text-slate-700 font-bold whitespace-nowrap">{item.date || '-'}</td>
+      <td className="px-6 py-4 text-center text-[15px] font-black text-slate-900 whitespace-nowrap min-w-[250px]">{item.vendor || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.mobile || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.state || '-'}</td>
+      <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{Number(item.amount || 0).toLocaleString('en-IN')}</td>
+      <td className="px-4 py-3 text-center whitespace-nowrap text-sm">
+        <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${getStatusColor(item.status)}`}>
           {item.status || 'Draft'}
         </span>
       </td>

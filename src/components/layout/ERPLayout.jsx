@@ -74,7 +74,7 @@ const ERPLayout = ({ children }) => {
       section: 'IMS Inventory Management System',
       subItems: [
         { label: 'Dashboard', path: '/ims/dashboard', icon: TrendingUp, roles: ['admin'] },
-        { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
+        // { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
         { label: 'Item Details', path: '/ims/master', icon: LayoutGrid, roles: ['admin', 'manager', 'hod'] },
         { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
         { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },

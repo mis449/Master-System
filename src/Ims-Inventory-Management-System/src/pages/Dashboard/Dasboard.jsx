@@ -38,7 +38,7 @@ export default function Dasboard() {
 
   // Fetch items on mount
   useEffect(() => {
-    fetchItems(true);
+    fetchItems();
     fetchTransactions();
     fetchInventorySummary();
   }, [fetchItems, fetchTransactions, fetchInventorySummary]);
@@ -432,13 +432,14 @@ export default function Dasboard() {
       className="rounded border-slate-350 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
     />,
     "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", 
-    "Opening Qty", "Purchase Qty", "Sales Qty", "Purchase Return Qty", "Sales Return Qty", "Current Qty", "Stock Level"
+    "Opening Qty", "Purchase Qty", "Sales Qty", "Purchase Return Qty", "Sales Return Qty", "Current Qty", "Total Amount", "Stock Level"
   ];
 
   const renderRow = (item, idx) => {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const isFull = item.stockLevel === 'Stock Full';
     const priceVal = Number(item.MRP || 0);
+    const totalAmount = priceVal * item.currentQty;
 
     return (
       <tr key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer">
@@ -454,31 +455,32 @@ export default function Dasboard() {
                 setSelectedItemCodes(prev => prev.filter(c => c !== code));
               }
             }}
-            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer w-4 h-4"
+            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer w-5 h-5"
           />
         </td>
-        <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap w-[80px]">{globalIdx}</td>
+        <td className="px-4 py-3 text-center text-sm font-bold text-slate-700 whitespace-nowrap w-[80px]">{globalIdx}</td>
         <td className="px-4 py-3 text-center w-[60px]">
           {item.Thumbnail ? (
-            <img src={item.Thumbnail} alt={item.ItemName} className="w-9 h-9 rounded-lg object-cover border border-slate-200 mx-auto bg-slate-50" />
+            <img src={item.Thumbnail} alt={item.ItemName} className="w-11 h-11 rounded-lg object-cover border border-slate-300 mx-auto bg-slate-50 shadow-sm" />
           ) : (
-            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mx-auto">
-              <Box size={14} />
+            <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 mx-auto shadow-sm">
+              <Box size={16} />
             </div>
           )}
         </td>
-        <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap w-[150px]">{item.ItemCode}</td>
-        <td className="px-4 py-3 text-left text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
-        <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.BrandName}</td>
-        <td className="px-4 py-3 text-center text-xs text-slate-700 font-medium whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
-        <td className="px-4 py-3 text-center text-[15px] text-slate-500 font-bold whitespace-nowrap">{item.openingQty}</td>
-        <td className="px-4 py-3 text-center text-[15px] text-emerald-600 font-bold whitespace-nowrap">+{item.purchaseQty}</td>
-        <td className="px-4 py-3 text-center text-[15px] text-rose-600 font-bold whitespace-nowrap">-{item.salesQty}</td>
-        <td className="px-4 py-3 text-center text-[15px] text-amber-600 font-bold whitespace-nowrap">-{item.purchaseReturnQty}</td>
-        <td className="px-4 py-3 text-center text-[15px] text-emerald-500 font-bold whitespace-nowrap">+{item.salesReturnQty}</td>
-        <td className="px-4 py-3 text-center text-[16px] text-sky-600 font-black whitespace-nowrap bg-sky-50/25">{item.currentQty}</td>
-        <td className="px-4 py-3 text-center whitespace-nowrap text-xs">
-          <span className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider ${
+        <td className="px-4 py-3 text-center text-[15px] text-slate-900 font-black whitespace-nowrap w-[150px]">{item.ItemCode}</td>
+        <td className="px-4 py-3 text-left text-[14px] font-bold text-slate-900 whitespace-normal uppercase min-w-[350px] max-w-[450px]">{item.ItemName}</td>
+        <td className="px-4 py-3 text-center text-[13px] font-bold text-slate-700 whitespace-nowrap">{item.BrandName}</td>
+        <td className="px-4 py-3 text-center text-[14px] text-slate-900 font-bold whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
+        <td className="px-4 py-3 text-center text-[17px] text-slate-700 font-black whitespace-nowrap">{item.openingQty}</td>
+        <td className="px-4 py-3 text-center text-[17px] text-emerald-700 font-black whitespace-nowrap">+{item.purchaseQty}</td>
+        <td className="px-4 py-3 text-center text-[17px] text-rose-700 font-black whitespace-nowrap">-{item.salesQty}</td>
+        <td className="px-4 py-3 text-center text-[17px] text-amber-700 font-black whitespace-nowrap">-{item.purchaseReturnQty}</td>
+        <td className="px-4 py-3 text-center text-[17px] text-emerald-600 font-black whitespace-nowrap">+{item.salesReturnQty}</td>
+        <td className="px-4 py-3 text-center text-[19px] text-sky-700 font-black whitespace-nowrap bg-sky-50/40">{item.currentQty}</td>
+        <td className="px-4 py-3 text-center text-[19px] text-indigo-700 font-black whitespace-nowrap bg-indigo-50/30">₹{totalAmount.toLocaleString('en-IN')}</td>
+        <td className="px-4 py-3 text-center whitespace-nowrap text-sm">
+          <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
           }`}>
             {item.stockLevel}
@@ -492,6 +494,7 @@ export default function Dasboard() {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const isFull = item.stockLevel === 'Stock Full';
     const priceVal = Number(item.MRP || 0);
+    const totalAmount = priceVal * item.currentQty;
 
     const code = item.ItemCode || item.code;
     return (
@@ -556,7 +559,11 @@ export default function Dasboard() {
           </div>
         </div>
 
-        <div className="flex justify-end items-center border-t border-slate-100 pt-2 text-xs">
+        <div className="flex justify-between items-center border-t border-slate-100 pt-2 text-xs">
+          <div className="flex flex-col">
+            <span className="text-slate-500 uppercase text-[10px] font-bold tracking-tight mb-0.5">Total Amount</span>
+            <span className="text-indigo-700 font-black text-lg">₹{totalAmount.toLocaleString('en-IN')}</span>
+          </div>
           <span className={`px-2 py-1 rounded text-[9px] uppercase font-black ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
           }`}>
@@ -597,24 +604,24 @@ export default function Dasboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 px-2 sm:px-0">
         
         {/* Total Registered Products */}
-        <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="space-y-0.5">
-            <span className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider block">Total Products</span>
-            <span className="text-lg md:text-2xl font-black text-slate-800 tracking-tight">{stats.totalItems}</span>
+        <div className="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-sky-200/50 hover:shadow-xl hover:shadow-sky-300/40 hover:-translate-y-1 transition-all duration-300">
+          <div className="space-y-1">
+            <span className="text-white/80 text-xs font-bold uppercase tracking-wider block">Total Products</span>
+            <span className="text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-sm">{stats.totalItems}</span>
           </div>
-          <div className="w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
-            <Box size={18} className="md:w-5 md:h-5" />
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+            <Box size={24} className="md:w-7 md:h-7 drop-shadow-md" />
           </div>
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-white rounded-xl border border-slate-100 p-3 md:p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="space-y-0.5">
-            <span className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider block">Low Stock Alerts</span>
-            <span className="text-lg md:text-2xl font-black text-slate-800 tracking-tight">{stats.lowStockAlerts}</span>
+        <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-rose-200/50 hover:shadow-xl hover:shadow-rose-300/40 hover:-translate-y-1 transition-all duration-300">
+          <div className="space-y-1">
+            <span className="text-white/80 text-xs font-bold uppercase tracking-wider block">Low Stock Alerts</span>
+            <span className="text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-sm">{stats.lowStockAlerts}</span>
           </div>
-          <div className="w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-            <Package size={18} className={`md:w-5 md:h-5 ${stats.lowStockAlerts > 0 ? 'animate-pulse' : ''}`} />
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+            <Package size={24} className={`md:w-7 md:h-7 drop-shadow-md ${stats.lowStockAlerts > 0 ? 'animate-pulse' : ''}`} />
           </div>
         </div>
 

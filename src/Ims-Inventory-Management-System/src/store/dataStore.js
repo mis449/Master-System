@@ -11,6 +11,10 @@ const useDataStore = create((set, get) => ({
   vendors: [],
   brands: [],
   salesPersons: [],
+  quotations: [],
+  setQuotations: (updater) => set((state) => ({
+    quotations: typeof updater === 'function' ? updater(state.quotations) : updater
+  })),
 
   // Fetch brands from Supabase
   fetchBrands: async () => {
@@ -447,7 +451,7 @@ const useDataStore = create((set, get) => ({
 
   // Fetch inventory summary dynamically from all modules
   fetchInventorySummary: async () => {
-    try {
+      try {
       // Import services dynamically to avoid circular dependencies
       const [invoiceService, purchaseService, salesReturnService, purchaseReturnService] = await Promise.all([
         import('../services/InvoiceService'),

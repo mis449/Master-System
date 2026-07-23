@@ -147,13 +147,13 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
       onClick={() => handleView(item)}
       className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
     >
-      <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap">{item.invoiceNo || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{item.date || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs font-semibold text-slate-900 whitespace-nowrap truncate max-w-[150px]">{item.customerName || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.state || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.mobileNumber || '-'}</td>
-      <td className="px-4 py-3 text-center text-[11px] text-slate-600 whitespace-nowrap">{item.salesPerson || '-'}</td>
-      <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
+      <td className="px-4 py-3 text-center text-[15px] text-sky-700 font-black whitespace-nowrap">{item.invoiceNo || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] text-slate-700 font-bold whitespace-nowrap">{item.date || '-'}</td>
+      <td className="px-6 py-4 text-center text-[15px] font-black text-slate-900 whitespace-nowrap min-w-[250px]">{item.customerName || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.state || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.mobileNumber || '-'}</td>
+      <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.salesPerson || '-'}</td>
+      <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
         <button 
           onClick={(e) => {

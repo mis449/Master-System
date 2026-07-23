@@ -48,7 +48,7 @@ export default function ItemDetails() {
   }, [filters]);
 
   useEffect(() => {
-    fetchItems(true);
+    fetchItems();
     fetchInventorySummary();
     fetchBrands();
   }, [fetchItems, fetchInventorySummary, fetchBrands]);
@@ -177,21 +177,21 @@ export default function ItemDetails() {
 
     return (
       <tr key={item.ItmID || item.code} className="hover:bg-sky-50/25 transition-colors border-b border-gray-100">
-        <td className="px-4 py-3 text-center text-xs text-slate-500 whitespace-nowrap">{globalIdx}</td>
+        <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-700 whitespace-nowrap">{globalIdx}</td>
         <td className="px-4 py-3 text-center">
           {item.Thumbnail ? (
-            <img src={item.Thumbnail} alt={item.ItemName} className="w-9 h-9 rounded-lg object-cover border border-slate-200 mx-auto bg-slate-50" />
+            <img src={item.Thumbnail} alt={item.ItemName} className="w-11 h-11 rounded-lg object-cover border border-slate-300 mx-auto bg-slate-50 shadow-sm" />
           ) : (
-            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mx-auto">
-              <ImageIcon size={14} />
+            <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 mx-auto shadow-sm">
+              <ImageIcon size={16} />
             </div>
           )}
         </td>
-        <td className="px-4 py-3 text-center text-xs text-slate-900 font-bold whitespace-nowrap">{item.ItemCode}</td>
-        <td className="px-4 py-3 text-justify text-xs font-semibold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
-        <td className="px-4 py-3 text-center text-[11px] text-slate-700 whitespace-nowrap">{item.BrandName}</td>
-        <td className="px-4 py-3 text-center text-xs text-emerald-600 font-bold whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
-        <td className="px-4 py-3 text-center text-xs text-sky-600 font-black whitespace-nowrap">{liveStockQty}</td>
+        <td className="px-4 py-3 text-center text-[15px] text-slate-900 font-black whitespace-nowrap">{item.ItemCode}</td>
+        <td className="px-4 py-3 text-justify text-[14px] font-bold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
+        <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.BrandName}</td>
+        <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
+        <td className="px-4 py-3 text-center text-[18px] text-sky-700 font-black whitespace-nowrap">{liveStockQty}</td>
         <td className="px-4 py-3 text-center whitespace-nowrap">
           <button 
             onClick={() => handleEditClick(item)}
