@@ -215,7 +215,7 @@ export default function QuotationList({ onConvertToInvoice }) {
 
   const tableHeaders = [
     "Quot #", "Quot Date", "Customer", "State", 
-    "Mobile", "Sales Person", "Amount", "Quot Status", "Action"
+    "Mobile", "Sales Person", "Amount", "Quot Status", "Total Quotations", "Action"
   ];
 
   const renderRow = (item, idx) => (
@@ -237,6 +237,9 @@ export default function QuotationList({ onConvertToInvoice }) {
         <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${getStatusColor(item.status)}`}>
           {item.status === 'Final' ? 'Completed' : (item.status || 'Draft')}
         </span>
+      </td>
+      <td className="px-4 py-3 text-center text-[15px] font-black text-slate-700 whitespace-nowrap">
+        {quotations.filter(q => (q.customerName || '').toLowerCase().trim() === (item.customerName || '').toLowerCase().trim()).length}
       </td>
 
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
