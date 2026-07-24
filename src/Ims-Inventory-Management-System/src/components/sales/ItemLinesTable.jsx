@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+ import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, FileText, Image as ImageIcon, Copy, Box, Move, Tag, Edit, X, Upload, Clipboard } from 'lucide-react';
 
 import toast from 'react-hot-toast';
@@ -80,6 +80,10 @@ export default function ItemLinesTable({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeDropdownId]);
+
+  const preventScroll = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <div className="space-y-4">
@@ -360,7 +364,17 @@ export default function ItemLinesTable({
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Qty</div>
-              <input id={`qty-${item.id}`} type="number" onWheel={(e) => e.target.blur()} min="0" step="any" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input 
+                id={`qty-${item.id}`} 
+                type="number" 
+                min="0" 
+                step="any" 
+                value={item.quantity} 
+                onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
+                onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} 
+                className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" 
+              />
             </div>
 
             {/* Act Disp and Rem Qty Columns */}
@@ -381,25 +395,52 @@ export default function ItemLinesTable({
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Unit Price</div>
               <input 
                 type="number" 
-                onWheel={(e) => e.target.blur()}
                 step="any"
                 value={item.unitPrice} 
+                onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                onBlur={(e) => { 
+                  e.target.removeEventListener('wheel', preventScroll);
+                  if (item.itemCode && e.target.value) updateItemPrice(item.itemCode, e.target.value); 
+                }}
                 onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} 
-                onBlur={(e) => { if (item.itemCode && e.target.value) updateItemPrice(item.itemCode, e.target.value); }}
                 className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
               />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Disc %</div>
-              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input 
+                type="number" 
+                step="any" 
+                value={item.discountPercent} 
+                onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
+                onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} 
+                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+              />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Add Disc %</div>
-              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.addDiscount ?? ''} onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input 
+                type="number" 
+                step="any" 
+                value={item.addDiscount ?? ''} 
+                onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
+                onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} 
+                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+              />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Tax %</div>
-              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input 
+                type="number" 
+                step="any" 
+                value={item.taxPercent} 
+                onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
+                onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} 
+                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+              />
             </div>
             <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-700 text-sm md:pr-1 pt-1 md:pt-0">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Net Amount</div>

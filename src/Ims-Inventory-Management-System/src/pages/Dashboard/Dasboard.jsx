@@ -3,8 +3,8 @@ import toast from 'react-hot-toast';
 import { Search, RotateCcw, Box, Eye, Filter, RefreshCw, Layers, CheckCircle, Package, Printer, Download, FileText, X, ChevronDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import DataTable from '../../components/DataTable';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import ModalView from '../../components/ModalView';
@@ -136,6 +136,37 @@ export default function Dasboard() {
       completedIndents
     };
   }, [items, computedStocks, transactions]);
+
+  const topSellingProducts = useMemo(() => {
+    return [...computedStocks]
+      .filter(item => item.salesQty > 0)
+      .sort((a, b) => b.salesQty - a.salesQty)
+      .slice(0, 20)
+      .map(item => ({
+        name: item.ItemName || item.name || item.ItemCode,
+        sales: item.salesQty,
+        code: item.ItemCode || item.code
+      }));
+  }, [computedStocks]);
+
+  const slowMovingProducts = useMemo(() => {
+    return [...computedStocks]
+      .filter(item => item.currentQty > 0)
+      .map(item => {
+        const totalStock = item.currentQty + item.salesQty;
+        const salesPercentage = totalStock > 0 ? (item.salesQty / totalStock) * 100 : 0;
+        return {
+          name: item.ItemName || item.name || item.ItemCode,
+          code: item.ItemCode || item.code,
+          stock: item.currentQty,
+          sales: item.salesQty,
+          salesPercentage: Number(salesPercentage.toFixed(2))
+        };
+      })
+      .filter(item => item.salesPercentage <= 15) // Less than 15% sold
+      .sort((a, b) => b.stock - a.stock) // Sort by highest remaining stock
+      .slice(0, 20);
+  }, [computedStocks]);
 
   const modalSearchResults = useMemo(() => {
     if (!modalSearchQuery.trim()) return [];
@@ -598,10 +629,10 @@ export default function Dasboard() {
   };
 
   return (
-    <div className="p-0 sm:p-2 md:p-3 space-y-3 md:space-y-4 flex flex-col h-full min-h-0">
+    <div className="p-0 sm:p-2 md:p-3 space-y-3 md:space-y-4 flex flex-col h-full overflow-y-auto overflow-x-hidden">
       
       {/* Summary KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 px-1 sm:px-0">
+      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 px-1 sm:px-0">
         
         {/* Total Registered Products */}
         <div className="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-sky-200/50 hover:shadow-xl hover:shadow-sky-300/40 hover:-translate-y-1 transition-all duration-300">
@@ -625,14 +656,140 @@ export default function Dasboard() {
           </div>
         </div>
 
+      </div>
 
+      {/* Charts Section */}
+      <div className="shrink-0 grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3 mx-1 sm:mx-0">
+        
+        {/* Top 20 Sold Products */}
+        {topSellingProducts.length > 0 && (
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden flex flex-col">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-sky-50 rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none"></div>
+            
+            <div className="flex items-center gap-2 mb-6 relative z-10 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shadow-inner">
+                <Layers size={16} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Top 20 Most Sold Products</h2>
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">Based on total sales quantity</p>
+              </div>
+            </div>
+            
+            <div className="h-[280px] w-full relative z-10">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topSellingProducts} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} maxBarSize={30}>
+                  <defs>
+                    <linearGradient id="colorTopSales" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1}/>
+                      <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="code" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 9, fill: '#64748b', fontWeight: 600 }} 
+                    dy={10}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+                    dx={-10}
+                  />
+                  <RechartsTooltip 
+                    cursor={{ fill: '#f1f5f9', opacity: 0.5 }} 
+                    contentStyle={{ 
+                      borderRadius: '12px', border: '1px solid #e2e8f0', 
+                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(8px)', padding: '12px',
+                    }}
+                    itemStyle={{ color: '#0f172a', fontSize: '13px', fontWeight: 800 }}
+                    labelStyle={{ color: '#64748b', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold' }}
+                    formatter={(value) => [value, 'Total Units Sold']}
+                    labelFormatter={(label) => `Item Code: ${label}`}
+                  />
+                  <Bar dataKey="sales" radius={[4, 4, 0, 0]} fill="url(#colorTopSales)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Slow Moving Products */}
+        {slowMovingProducts.length > 0 && (
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden flex flex-col">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none"></div>
+            
+            <div className="flex items-center gap-2 mb-6 relative z-10 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shadow-inner">
+                <Box size={16} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Slow Moving Products (Top 20)</h2>
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">High stock, low sales (&le; 15% sold)</p>
+              </div>
+            </div>
+            
+            <div className="h-[280px] w-full relative z-10">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={slowMovingProducts} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} maxBarSize={30}>
+                  <defs>
+                    <linearGradient id="colorSlowMoving" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={1}/>
+                      <stop offset="95%" stopColor="#fb7185" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="code" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 9, fill: '#64748b', fontWeight: 600 }} 
+                    dy={10}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+                    dx={-10}
+                  />
+                  <RechartsTooltip 
+                    cursor={{ fill: '#f1f5f9', opacity: 0.5 }} 
+                    contentStyle={{ 
+                      borderRadius: '12px', border: '1px solid #e2e8f0', 
+                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(8px)', padding: '12px',
+                    }}
+                    itemStyle={{ color: '#0f172a', fontSize: '13px', fontWeight: 800 }}
+                    labelStyle={{ color: '#64748b', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold' }}
+                    formatter={(value, name) => [value, name === 'stock' ? 'Current Stock' : 'Sales %']}
+                    labelFormatter={(label) => `Item Code: ${label}`}
+                  />
+                  <Bar dataKey="stock" name="stock" radius={[4, 4, 0, 0]} fill="url(#colorSlowMoving)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+        
       </div>
 
       {/* Divider */}
-      <div className="border-b border-slate-100 mx-2 sm:mx-0"></div>
+      <div className="shrink-0 border-b border-slate-100 mx-2 sm:mx-0"></div>
 
       {/* Filters & Actions Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4 w-full px-2 sm:px-0">
+      <div className="shrink-0 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4 w-full px-2 sm:px-0">
         
         {/* Action Buttons (Export/Print) */}
         <div className="flex gap-2 w-full lg:w-auto order-2 lg:order-1 justify-end lg:justify-start">
@@ -775,7 +932,7 @@ export default function Dasboard() {
       </div>
 
       {/* Main Stock Table */}
-      <div className="flex-1 min-h-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-[500px] bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col mb-4">
         {isLoading ? (
           renderSkeletons()
         ) : error ? (
