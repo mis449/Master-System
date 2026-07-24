@@ -196,8 +196,9 @@ export default function ItemLinesTable({
 
         const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
         const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-        const rowAddDiscount = rowGross * ((Number(item.addDiscount) || 0) / 100);
-        const afterDiscount = rowGross - rowDiscount - rowAddDiscount;
+        const afterFirstDiscount = rowGross - rowDiscount;
+        const rowAddDiscount = afterFirstDiscount * ((Number(item.addDiscount) || 0) / 100);
+        const afterDiscount = afterFirstDiscount - rowAddDiscount;
         const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
         const net = afterDiscount + rowTax;
 
@@ -359,7 +360,7 @@ export default function ItemLinesTable({
             
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Qty</div>
-              <input id={`qty-${item.id}`} type="number" min="0" step="any" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input id={`qty-${item.id}`} type="number" onWheel={(e) => e.target.blur()} min="0" step="any" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
 
             {/* Act Disp and Rem Qty Columns */}
@@ -380,6 +381,7 @@ export default function ItemLinesTable({
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Unit Price</div>
               <input 
                 type="number" 
+                onWheel={(e) => e.target.blur()}
                 step="any"
                 value={item.unitPrice} 
                 onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} 
@@ -389,15 +391,15 @@ export default function ItemLinesTable({
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Disc %</div>
-              <input type="number" step="any" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.discountPercent} onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Add Disc %</div>
-              <input type="number" step="any" value={item.addDiscount ?? ''} onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.addDiscount ?? ''} onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Tax %</div>
-              <input type="number" step="any" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
+              <input type="number" onWheel={(e) => e.target.blur()} step="any" value={item.taxPercent} onChange={(e) => handleItemChange(item.id, 'taxPercent', e.target.value)} className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" />
             </div>
             <div className="col-span-1 md:col-span-1 text-left md:text-right font-bold text-emerald-700 text-sm md:pr-1 pt-1 md:pt-0">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Net Amount</div>

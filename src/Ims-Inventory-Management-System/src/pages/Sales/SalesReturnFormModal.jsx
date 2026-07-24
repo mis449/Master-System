@@ -87,8 +87,9 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
       if (item.type && item.type !== 'item') return { ...item, netAmount: 0 };
       const rowGross = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
       const rowDiscount = rowGross * ((Number(item.discountPercent) || 0) / 100);
-      const rowAddDiscount = rowGross * ((Number(item.addDiscount) || 0) / 100);
-      const afterDiscount = rowGross - rowDiscount - rowAddDiscount;
+      const afterFirstDiscount = rowGross - rowDiscount;
+      const rowAddDiscount = afterFirstDiscount * ((Number(item.addDiscount) || 0) / 100);
+      const afterDiscount = afterFirstDiscount - rowAddDiscount;
       const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
       const net = afterDiscount + rowTax;
       

@@ -266,8 +266,9 @@ export default function PremiumQuotationPrint({
                 
                 const rowGross = qty * unitPrice;
                 const rowDiscount = rowGross * (discountPercent / 100);
-                const addDiscountAmt = rowGross * (addDiscountPercent / 100);
-                const afterDiscount = rowGross - rowDiscount - addDiscountAmt;
+                const afterFirstDiscount = rowGross - rowDiscount;
+                const addDiscountAmt = afterFirstDiscount * (addDiscountPercent / 100);
+                const afterDiscount = afterFirstDiscount - addDiscountAmt;
                 
                 const netRate = qty > 0 ? afterDiscount / qty : 0;
                 const amount = afterDiscount;
@@ -502,7 +503,10 @@ export default function PremiumQuotationPrint({
               const addDiscountPercent = Number(item.addDiscount || 0);
               const qty = Number(item.quantity || 0);
               const mrp = unitPrice * qty;
-              const disc = (mrp * (discountPercent / 100)) + (mrp * (addDiscountPercent / 100));
+              const firstDisc = mrp * (discountPercent / 100);
+              const afterFirst = mrp - firstDisc;
+              const secondDisc = afterFirst * (addDiscountPercent / 100);
+              const disc = firstDisc + secondDisc;
               curSection.items.push({ mrp, disc, amount: mrp - disc });
             }
           });
