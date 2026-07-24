@@ -179,7 +179,7 @@ export default function QuotationList({ onConvertToInvoice }) {
 
   const tableHeaders = [
     "Quot #", "Quot Date", "Customer", "State", 
-    "Mobile", "Sales Person", "Amount", "Quot Status", "History", "Total Quotations", "Action"
+    "Mobile", "Sales Person", "Amount", "Quot Status", "History", "Action"
   ];
 
   const renderRow = (item, idx) => (
@@ -214,9 +214,7 @@ export default function QuotationList({ onConvertToInvoice }) {
           <RotateCcw size={12} /> History
         </button>
       </td>
-      <td className="px-4 py-3 text-center text-[15px] font-black text-slate-700 whitespace-nowrap">
-        {quotations.filter(q => (q.customerName || '').toLowerCase().trim() === (item.customerName || '').toLowerCase().trim()).length}
-      </td>
+
 
       <td className="px-4 py-3 text-center text-xs whitespace-nowrap flex items-center justify-center gap-2">
         <button 
