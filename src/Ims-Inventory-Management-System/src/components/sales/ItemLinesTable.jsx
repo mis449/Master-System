@@ -7,6 +7,7 @@ import AddProductModal from '../AddProductModal';
 
 export default function ItemLinesTable({
   items,
+  initialItems = [],
   inventoryItems,
   handleItemChange,
   handleItemCodeSelect,
@@ -221,6 +222,16 @@ export default function ItemLinesTable({
           liveStockQty = Number((matchedInventoryItem.StockQty || 0).toFixed(1));
         }
 
+        // Find original item by id, or by itemCode if id is missing
+        const originalItem = initialItems.find(i => (i.id && item.id && i.id === item.id) || (i.itemCode && item.itemCode && i.itemCode === item.itemCode));
+        const isRevisionMode = initialItems.length > 0;
+        const isNewItem = isRevisionMode && !originalItem;
+        const qtyChanged = isRevisionMode && originalItem && Number(originalItem.quantity || 0) !== Number(item.quantity || 0);
+        const priceChanged = isRevisionMode && originalItem && Number(originalItem.unitPrice || 0) !== Number(item.unitPrice || 0);
+        const discChanged = isRevisionMode && originalItem && Number(originalItem.discountPercent || 0) !== Number(item.discountPercent || 0);
+        const addDiscChanged = isRevisionMode && originalItem && Number(originalItem.addDiscount || 0) !== Number(item.addDiscount || 0);
+        const isEdited = qtyChanged || priceChanged || discChanged || addDiscChanged;
+
         return (
           <div 
             key={item.id} 
@@ -229,8 +240,10 @@ export default function ItemLinesTable({
             onDragOver={(e) => handleDragOver(e, index)}
             onDrop={(e) => handleDrop(e, index)}
             onDragEnd={handleDragEnd}
-            className={`grid gap-3 md:gap-2 items-center bg-white border border-slate-100 md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : 'md:grid-cols-[repeat(16,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''}`}
+            className={`relative grid gap-3 md:gap-2 items-center bg-white border md:border-b p-4 md:p-2 rounded-xl md:rounded-none shadow-sm md:shadow-none grid-cols-2 ${showStatus ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : showUploadAndRemark ? 'md:grid-cols-[repeat(18,minmax(0,1fr))]' : 'md:grid-cols-[repeat(16,minmax(0,1fr))]'} ${draggedIndex === index ? 'opacity-50' : ''} ${dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-sky-400/50 bg-sky-50/30 transition-all' : ''} ${isNewItem ? 'bg-emerald-50/40 border-l-4 border-l-emerald-400' : isEdited ? 'border-l-4 border-l-amber-400 bg-amber-50/10' : 'border-slate-100'}`}
           >
+            {isNewItem && <div className="absolute -left-2 -top-2 bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm z-10">NEW</div>}
+            {isEdited && !isNewItem && <div className="absolute -left-2 -top-2 bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm z-10">MODIFIED</div>}
             <div className="col-span-2 md:col-span-3 space-y-1">
               <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Item Code</div>
               <div className="flex gap-1 items-center">
@@ -373,7 +386,7 @@ export default function ItemLinesTable({
                 onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
                 onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
                 onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} 
-                className="w-full border border-sky-200 text-sky-700 font-bold text-sm px-2 py-1.5 rounded outline-none text-center" 
+                className={`w-full border ${qtyChanged ? 'border-amber-400 bg-amber-100/50 text-amber-800' : 'border-sky-200 text-sky-700'} font-bold text-sm px-2 py-1.5 rounded outline-none text-center transition-colors`} 
               />
             </div>
 
@@ -403,7 +416,7 @@ export default function ItemLinesTable({
                   if (item.itemCode && e.target.value) updateItemPrice(item.itemCode, e.target.value); 
                 }}
                 onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)} 
-                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+                className={`w-full border ${priceChanged ? 'border-amber-400 bg-amber-100/50 text-amber-800' : 'border-slate-200 text-slate-700'} font-bold text-sm px-2 py-1.5 rounded outline-none text-center transition-colors`} 
               />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
@@ -415,7 +428,7 @@ export default function ItemLinesTable({
                 onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
                 onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
                 onChange={(e) => handleItemChange(item.id, 'discountPercent', e.target.value)} 
-                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+                className={`w-full border ${discChanged ? 'border-amber-400 bg-amber-100/50 text-amber-800' : 'border-slate-200 text-slate-700'} font-bold text-sm px-2 py-1.5 rounded outline-none text-center transition-colors`} 
               />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
@@ -427,7 +440,7 @@ export default function ItemLinesTable({
                 onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
                 onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
                 onChange={(e) => handleItemChange(item.id, 'addDiscount', e.target.value)} 
-                className="w-full border border-slate-200 text-sm px-2 py-1.5 rounded outline-none text-center" 
+                className={`w-full border ${addDiscChanged ? 'border-amber-400 bg-amber-100/50 text-amber-800' : 'border-slate-200 text-slate-700'} font-bold text-sm px-2 py-1.5 rounded outline-none text-center transition-colors`} 
               />
             </div>
             <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">

@@ -239,15 +239,42 @@ export const updateQuotation = async (id, updates) => {
     Object.entries(updateData).filter(([, v]) => v !== undefined)
   );
 
+  // FETCH EXISTING RECORD
+  const { data: existing, error: fetchErr } = await supabase
+    .from('quotation')
+    .select('*')
+    .eq('id', String(id))
+    .single();
+
+  if (fetchErr) {
+    console.error('Error fetching existing quotation for update:', fetchErr);
+    throw fetchErr;
+  }
+
+  // CALCULATE NEW REVISION NUMBER
+  const baseNoMatch = existing.quotation_no.match(/^(QUOT-\d+)(?:-R(\d+))?$/);
+  let newNo = existing.quotation_no + '-R1';
+  if (baseNoMatch) {
+    const base = baseNoMatch[1];
+    const rev = baseNoMatch[2] ? parseInt(baseNoMatch[2], 10) : 0;
+    newNo = `${base}-R${rev + 1}`;
+  }
+
+  // PREPARE NEW INSERT DATA
+  const insertData = { ...existing, ...cleanUpdateData };
+  insertData.id = String(Date.now());
+  insertData.quotation_no = newNo;
+  delete insertData.created_at;
+  delete insertData.updated_at;
+
   const { data: result, error } = await supabase
     .from('quotation')
-    .update(cleanUpdateData)
-    .eq('id', String(id))
+    .insert([insertData])
     .select()
     .single();
 
   if (error) {
-    console.error('⚡ Supabase UPDATE error details →', JSON.stringify(error, null, 2));
+    console.error('⚡ Supabase INSERT (Revision) error details →', JSON.stringify(error, null, 2));
     throw error;
   }
   return mapQuotationRow(result);

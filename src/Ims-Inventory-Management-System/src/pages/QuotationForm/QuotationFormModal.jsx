@@ -17,7 +17,7 @@ import { ShoppingCart } from 'lucide-react';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
 import emailjs from '@emailjs/browser';
 import BrandDiscountModal from './BrandDiscountModal';
-export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy }) {
+export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy, defaultToPrintPreview }) {
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -27,8 +27,8 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [quotationStatus, setQuotationStatus] = useState('Active');
   const [supplyStatus, setSupplyStatus] = useState('-');
   
-  const [printOrientation, setPrintOrientation] = useState('Horizontal');
-  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [printOrientation, setPrintOrientation] = useState('Portrait');
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(defaultToPrintPreview || false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
@@ -51,7 +51,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           mobile: '',
           ...(initialData.details.basicInfo || {})
         });
-        setItems(initialData.details.items || [getEmptyItem()]);
+        setItems(initialData.details.items ? JSON.parse(JSON.stringify(initialData.details.items)) : [getEmptyItem()]);
         setOtherInfo(initialData.details.otherInfo || {
           salesPerson: '',
           salesNumber: '',
@@ -574,6 +574,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
             <>
               <ItemLinesTable 
                 items={items}
+                initialItems={initialData?.details?.items || []}
                 inventoryItems={inventoryItems}
                 handleItemChange={handleItemChange}
                 handleItemCodeSelect={handleItemCodeSelect}
@@ -710,7 +711,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
 
     {/* Print Preview Modal */}
     {isPrintPreviewOpen && createPortal(
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex flex-col p-4 md:p-6 overflow-hidden pointer-events-auto" style={{ zIndex: 10000 }}>
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex flex-col p-4 md:p-8 overflow-hidden pointer-events-auto justify-center items-center" style={{ zIndex: 10000 }}>
         <style>
           {`
             @media print {
@@ -784,7 +785,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         </style>
         
         {/* Unified Print Preview Container */}
-        <div className={`w-full mx-auto flex flex-col flex-1 min-h-0 mt-10 shadow-2xl rounded-2xl ${
+        <div className={`w-full mx-auto flex flex-col min-h-0 my-auto max-h-[90vh] shadow-2xl rounded-2xl ${
           printOrientation === 'Horizontal' ? 'max-w-[315mm]' : 'max-w-3xl'
         }`}>
           

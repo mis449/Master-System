@@ -11,7 +11,8 @@ import {
   TrendingDown,
   Clock,
   User,
-  Hash
+  Hash,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -38,6 +39,18 @@ export default function ItemTracker() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [partyFilter, setPartyFilter] = useState('');
   
+  // Analytics view state ('none', 'top', 'slow')
+  const [activeAnalyticsView, setActiveAnalyticsView] = useState('none');
+  
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedItemCode('');
+    setDateRange({ start: '', end: '' });
+    setTypeFilter('All');
+    setPartyFilter('');
+    setActiveAnalyticsView('none');
+  };
+
   useEffect(() => {
     fetchItems();
     fetchTransactions();
@@ -337,6 +350,40 @@ export default function ItemTracker() {
     return code === (selectedItemCode || '').toString().trim().toLowerCase();
   });
 
+  // Analytics Data for default view (when no item is selected)
+  const { topSellingProducts, slowMovingProducts } = useMemo(() => {
+    if (!inventorySummary || inventorySummary.length === 0) return { topSellingProducts: [], slowMovingProducts: [] };
+    
+    // Enrich with names and brand
+    const enriched = inventorySummary.map(s => {
+      const match = items.find(i => (i.itemCode || i.code || i.ItemCode || '').toString().trim().toLowerCase() === (s.item_code || '').toString().trim().toLowerCase());
+      return {
+        ...s,
+        item_name: match ? (match.description || match.ItemName || match.name) : s.item_name,
+        brand: match ? (match.brand || match.BrandName || match.Brand || match.brandName) : ''
+      };
+    });
+
+    const topSelling = [...enriched]
+      .filter(i => (i.sales_qty || 0) > 0)
+      .sort((a, b) => (b.sales_qty || 0) - (a.sales_qty || 0))
+      .slice(0, 15);
+
+    const slowMoving = [...enriched]
+      .filter(i => {
+        const stock = i.closing_qty || 0;
+        const sales = i.sales_qty || 0;
+        if (stock <= 0) return false;
+        const totalHandled = stock + sales;
+        const salesPercent = totalHandled > 0 ? (sales / totalHandled) * 100 : 0;
+        return stock > 5 && salesPercent <= 15;
+      })
+      .sort((a, b) => (b.closing_qty || 0) - (a.closing_qty || 0))
+      .slice(0, 15);
+
+    return { topSellingProducts: topSelling, slowMovingProducts: slowMoving };
+  }, [inventorySummary, items]);
+
   // --- PDF Export Logic ---
   const generatePdfDoc = () => {
     const doc = new jsPDF('landscape', 'mm', 'a4');
@@ -534,14 +581,45 @@ export default function ItemTracker() {
             </select>
           </div>
 
-          {/* Load Button */}
-          <div className="flex-1 min-w-[140px]">
+          {/* Analytics Toggle Buttons */}
+          <div className="flex flex-[2] min-w-[280px] gap-2">
+            <div className="flex-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
+              <button 
+                onClick={() => { setActiveAnalyticsView(prev => prev === 'top' ? 'none' : 'top'); setSelectedItemCode(''); setSearchTerm(''); }}
+                className={`w-full flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm ${
+                  activeAnalyticsView === 'top' 
+                  ? 'bg-sky-600 text-white shadow-sky-200 border border-sky-600' 
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <TrendingUp size={16} /> Most Sold
+              </button>
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
+              <button 
+                onClick={() => { setActiveAnalyticsView(prev => prev === 'slow' ? 'none' : 'slow'); setSelectedItemCode(''); setSearchTerm(''); }}
+                className={`w-full flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm ${
+                  activeAnalyticsView === 'slow' 
+                  ? 'bg-rose-600 text-white shadow-rose-200 border border-rose-600' 
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <TrendingDown size={16} /> Most Unsold
+              </button>
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="flex items-end">
             <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
             <button 
-              onClick={() => handleItemSelect(selectedItemCode)}
-              className="w-full py-2.5 px-4 bg-sky-600 text-white rounded-lg hover:bg-sky-700 font-bold transition-colors shadow-sm shadow-sky-200 whitespace-nowrap"
+              onClick={handleClearFilters}
+              title="Clear all filters"
+              className="flex justify-center items-center p-2.5 h-[42px] bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-slate-200 hover:border-rose-200 shadow-sm"
             >
-              Track Item
+              <RefreshCw size={18} />
             </button>
           </div>
           
@@ -682,16 +760,119 @@ export default function ItemTracker() {
         </>
       )}
 
-      {/* Empty State before selection */}
+      {/* Empty State / Analytics Dashboard */}
+      {/* Empty State / Analytics Dashboard */}
       {!selectedItemCode && (
-        <div className="mt-12 flex flex-col items-center justify-center text-slate-400">
-          <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <PackageSearch size={40} className="text-slate-300" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-600 mb-2">Track Item History</h2>
-          <p className="text-sm font-medium text-center max-w-md">
-            Search and select an item code above to view its complete chronological transaction history, stock movements, and export detailed audit reports.
-          </p>
+        <div className="mt-4 flex flex-col items-center w-full">
+
+          {/* Original Empty State */}
+          {activeAnalyticsView === 'none' && (
+            <div className="flex flex-col items-center justify-center text-slate-400 mt-4">
+              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <PackageSearch size={40} className="text-slate-300" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-600 mb-2">Track Item History</h2>
+              <p className="text-sm font-medium text-center max-w-md">
+                Search and select an item code above to view its complete chronological transaction history, stock movements, and export detailed audit reports.
+              </p>
+            </div>
+          )}
+
+          {/* Top Selling Products Table */}
+          {activeAnalyticsView === 'top' && (
+            <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-sky-50/50">
+                <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                  <TrendingUp size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Top Selling Products</h3>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Based on total sales quantity</p>
+                </div>
+              </div>
+              <div className="p-0 overflow-y-auto max-h-[60vh] relative">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th className="px-4 py-3 border-b border-slate-100">Item Name</th>
+                      <th className="px-4 py-3 border-b border-slate-100">Brand</th>
+                      <th className="px-4 py-3 border-b border-slate-100 text-center">Sales Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {topSellingProducts.length > 0 ? topSellingProducts.map((p, i) => (
+                      <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-slate-700 whitespace-normal line-clamp-1">{p.item_name || p.item_code}</div>
+                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-slate-400 font-medium">{p.item_code}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {p.brand ? <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{p.brand}</span> : <span className="text-slate-300">-</span>}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-block bg-sky-100 text-sky-700 font-black px-2 py-1 rounded text-xs">{p.sales_qty || 0}</span>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan="2" className="px-4 py-8 text-center text-slate-400">No data available</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Slow Moving Products Table */}
+          {activeAnalyticsView === 'slow' && (
+            <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-rose-50/50">
+                <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                  <TrendingDown size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Slow Moving Products</h3>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">High Stock, Low Sales (&le; 15%)</p>
+                </div>
+              </div>
+              <div className="p-0 overflow-y-auto max-h-[60vh] relative">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th className="px-4 py-3 border-b border-slate-100">Item Name</th>
+                      <th className="px-4 py-3 border-b border-slate-100">Brand</th>
+                      <th className="px-4 py-3 border-b border-slate-100 text-center">Current Stock</th>
+                      <th className="px-4 py-3 border-b border-slate-100 text-center">Sales Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {slowMovingProducts.length > 0 ? slowMovingProducts.map((p, i) => (
+                      <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-slate-700 whitespace-normal line-clamp-1">{p.item_name || p.item_code}</div>
+                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-slate-400 font-medium">{p.item_code}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {p.brand ? <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{p.brand}</span> : <span className="text-slate-300">-</span>}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-block bg-rose-100 text-rose-700 font-black px-2 py-1 rounded text-xs">{p.closing_qty || 0}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center font-bold text-slate-500">
+                          {p.sales_qty || 0}
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan="3" className="px-4 py-8 text-center text-slate-400">No data available</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
