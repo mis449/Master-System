@@ -86,16 +86,21 @@ export const getQuotations = async () => {
 };
 
 export const createQuotation = async (data) => {
-  const { data: lastRecord } = await supabase
+  const { data: allRecords } = await supabase
     .from('quotation')
-    .select('quotation_no')
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .select('quotation_no');
 
   let nextNum = 1;
-  if (lastRecord && lastRecord.length > 0 && lastRecord[0].quotation_no) {
-    const match = lastRecord[0].quotation_no.match(/\d+$/);
-    if (match) nextNum = parseInt(match[0], 10) + 1;
+  if (allRecords && allRecords.length > 0) {
+    let maxBase = 0;
+    allRecords.forEach(r => {
+      const match = r.quotation_no?.match(/QUOT-(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxBase) maxBase = num;
+      }
+    });
+    nextNum = maxBase + 1;
   }
   const docNo = `QUOT-${String(nextNum).padStart(4, '0')}`;
 
