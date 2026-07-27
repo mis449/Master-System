@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/ims/sales',               icon: FileText,       label: 'Sales' },
     { path: '/ims/order-summary',       icon: ClipboardList,  label: 'Order Summary' },
     { path: '/ims/item-tracker',        icon: PackageSearch,  label: 'Item Tracker' },
-    { path: '/ims/item-summary',        icon: Activity,       label: 'Item Summary' },
+    { path: '/ims/item-summary',        icon: Activity,       label: 'Stock Reports' },
     { path: '/ims/settings',            icon: Settings,       label: 'Settings' },
   ];
 

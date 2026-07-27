@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Edit, Eye, Trash2, FileText } from 'lucide-react';
+import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Edit, Eye, Trash2, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import { TabSwitcher } from '../../components/StandardButtons';
 import InvoiceFormModal from './InvoiceFormModal';
@@ -269,6 +269,38 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
             >
               <RefreshCw size={14} /> <span className="inline">Refresh</span>
             </button>
+            
+            {/* Custom Pagination */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1.5 rounded-lg shadow-sm h-[38px] hidden md:flex">
+              <select
+                value={itemsPerPage}
+                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="px-2 py-1 bg-white border border-slate-200 rounded text-xs font-medium outline-none focus:ring-1 focus:ring-sky-500"
+              >
+                {[20, 50, 100].map(val => (
+                  <option key={val} value={val}>{val}</option>
+                ))}
+              </select>
+              <span className="text-[10px] text-slate-500 font-medium px-1 whitespace-nowrap hidden lg:inline">
+                {filteredInvoices.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredInvoices.length)} of {filteredInvoices.length}
+              </span>
+              <button
+                onClick={() => setCurrentPage(c => c - 1)}
+                disabled={currentPage === 1}
+                className="p-1 bg-white border border-slate-200 rounded disabled:opacity-50 hover:bg-slate-100 text-sky-600"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-[10px] font-bold text-slate-600 px-1 whitespace-nowrap">{currentPage} / {totalPages || 1}</span>
+              <button
+                onClick={() => setCurrentPage(c => c + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="p-1 bg-white border border-slate-200 rounded disabled:opacity-50 hover:bg-slate-100 text-sky-600"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+
             <button
               onClick={handleExportPdf}
               className="flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 h-[38px] transition-colors shadow-sm text-xs font-semibold"
@@ -324,6 +356,7 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
             onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
             totalResults={filteredInvoices.length}
             itemsPerPageOptions={[20, 50, 100]}
+            hidePagination={true}
           />
         )}
       </div>

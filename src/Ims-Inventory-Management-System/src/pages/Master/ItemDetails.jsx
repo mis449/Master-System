@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, RotateCcw, Box, Tag, Layers, DollarSign, Filter, RefreshCw, Plus, Image as ImageIcon, Edit, X } from 'lucide-react';
+import { Search, RotateCcw, Box, Tag, Layers, DollarSign, Filter, RefreshCw, Plus, Image as ImageIcon, Edit, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import ModalView from '../../components/ModalView';
@@ -348,6 +348,37 @@ export default function ItemDetails() {
               />
             </div>
 
+            {/* Custom Pagination */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1.5 rounded-lg shadow-sm h-[38px]">
+              <select
+                value={itemsPerPage}
+                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="px-2 py-1 bg-white border border-slate-200 rounded text-xs font-medium outline-none focus:ring-1 focus:ring-sky-500"
+              >
+                {[50, 100, 200, 500, 1000].map(val => (
+                  <option key={val} value={val}>{val}</option>
+                ))}
+              </select>
+              <span className="text-[10px] text-slate-500 font-medium px-1 whitespace-nowrap hidden md:inline">
+                {filteredItems.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredItems.length)} of {filteredItems.length}
+              </span>
+              <button
+                onClick={() => setCurrentPage(c => c - 1)}
+                disabled={currentPage === 1}
+                className="p-1 bg-white border border-slate-200 rounded disabled:opacity-50 hover:bg-slate-100 text-sky-600"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-[10px] font-bold text-slate-600 px-1 whitespace-nowrap">{currentPage} / {totalPages || 1}</span>
+              <button
+                onClick={() => setCurrentPage(c => c + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="p-1 bg-white border border-slate-200 rounded disabled:opacity-50 hover:bg-slate-100 text-sky-600"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+
             <button
               onClick={handleClearFilters}
               className="hidden lg:flex items-center justify-center bg-slate-50 text-slate-500 border border-slate-200 rounded-xl w-[38px] h-[38px] hover:bg-slate-150 transition-colors shadow-sm"
@@ -395,6 +426,7 @@ export default function ItemDetails() {
             onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
             totalResults={filteredItems.length}
             itemsPerPageOptions={[50, 100, 200, 500, 1000]}
+            hidePagination={true}
           />
         )}
       </div>

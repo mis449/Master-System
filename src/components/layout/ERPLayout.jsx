@@ -81,7 +81,7 @@ const ERPLayout = ({ children }) => {
         { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
         { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
         { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Item Summary', path: '/ims/item-summary', icon: Activity, roles: ['admin', 'manager', 'hod'] }
+        { label: 'Stock Reports', path: '/ims/item-summary', icon: Activity, roles: ['admin', 'manager', 'hod'] }
       ]
     },
     {
