@@ -20,8 +20,14 @@ export default function ItemLinesTable({
   reorderItemLines,
   showStatus = false,
   showUploadAndRemark = false,
-  openBrandDiscount
+  openBrandDiscount,
+  showAddDiscount: externalShowAddDiscount,
+  setShowAddDiscount: externalSetShowAddDiscount
 }) {
+  const [localShowAddDiscount, setLocalShowAddDiscount] = useState(true);
+  const showAddDiscount = externalShowAddDiscount !== undefined ? externalShowAddDiscount : localShowAddDiscount;
+  const setShowAddDiscount = externalSetShowAddDiscount || setLocalShowAddDiscount;
+
   const updateItemPrice = useDataStore(state => state.updateItemPrice);
   const updateItemImage = useDataStore(state => state.updateItemImage);
   const inventorySummary = useDataStore(state => state.inventorySummary);
@@ -103,6 +109,15 @@ export default function ItemLinesTable({
          {openBrandDiscount && (
            <button type="button" onClick={openBrandDiscount} className="text-sm font-bold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple-100 border border-purple-100 shadow-sm ml-auto"><Tag size={14}/> Brand Discount</button>
          )}
+         <label className={`flex items-center gap-1.5 text-sm font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 ${!openBrandDiscount ? 'ml-auto' : ''}`}>
+           <input 
+             type="checkbox" 
+             checked={showAddDiscount}
+             onChange={(e) => setShowAddDiscount(e.target.checked)}
+             className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+           />
+           Print "Add Disc %"
+         </label>
       </div>
 
       {/* Header */}

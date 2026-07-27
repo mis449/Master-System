@@ -8,7 +8,8 @@ export default function CustomerDetailsSection({
   setBasicInfo, 
   onOpenCustomerModal,
   onCustomerSelect,
-  onEditCustomer
+  onEditCustomer,
+  onAddNewQuotation
 }) {
   const { customers, fetchCustomers } = useDataStore();
 
@@ -20,9 +21,11 @@ export default function CustomerDetailsSection({
       <div className="flex justify-between items-center mb-4 border-b border-sky-100 pb-2">
         <h3 className="text-sm font-bold text-sky-800 uppercase tracking-wider">Basic Information</h3>
         <div className="flex gap-2">
-          <button type="button" onClick={onOpenCustomerModal} className="text-xs font-bold bg-white text-sky-600 border border-sky-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-sky-50 transition">
-            <Users size={14} /> New Customer
-          </button>
+          {onAddNewQuotation && (
+            <button type="button" onClick={onAddNewQuotation} className="text-xs font-bold bg-white text-sky-600 border border-sky-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-sky-50 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add Quotation
+            </button>
+          )}
         </div>
       </div>
 
@@ -58,6 +61,10 @@ export default function CustomerDetailsSection({
             className="w-full"
             height="h-[38px]"
           />
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-[11px] text-slate-700 font-medium uppercase tracking-wider">Name of Quotation</label>
+          <input type="text" value={basicInfo.typeOfQuotation || ''} onChange={(e) => setBasicInfo({...basicInfo, typeOfQuotation: e.target.value})} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-xs md:text-sm h-[38px] bg-white outline-none" placeholder="Standard, Proforma, Estimate..." />
         </div>
         <div className="space-y-1.5">
           <label className="block text-[11px] text-slate-700 font-medium uppercase tracking-wider">Address</label>

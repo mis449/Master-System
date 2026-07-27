@@ -34,7 +34,9 @@ import {
   Warehouse,
   Coins,
   Receipt,
-  Blocks
+  Blocks,
+  LogOut,
+  Activity
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import parekhLogo from '../Assets/images.png';
@@ -57,6 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/ims/sales',               icon: FileText,       label: 'Sales' },
     { path: '/ims/order-summary',       icon: ClipboardList,  label: 'Order Summary' },
     { path: '/ims/item-tracker',        icon: PackageSearch,  label: 'Item Tracker' },
+    { path: '/ims/item-summary',        icon: Activity,       label: 'Item Summary' },
     { path: '/ims/settings',            icon: Settings,       label: 'Settings' },
   ];
 

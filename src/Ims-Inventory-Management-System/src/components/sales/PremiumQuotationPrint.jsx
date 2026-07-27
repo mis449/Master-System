@@ -17,7 +17,8 @@ export default function PremiumQuotationPrint({
   summary, 
   notes, 
   inventoryItems,
-  documentTitle = "Quotation"
+  documentTitle = "Quotation",
+  showAddDiscount
 }) {
   const coverImage = firstImg;
   const verticalImage = secondImg;
@@ -376,18 +377,18 @@ export default function PremiumQuotationPrint({
                       <thead className="table-header-group">
                         {firstSectionRow && (
                           <tr>
-                            <th colSpan="8" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
+                            <th colSpan={showAddDiscount !== false ? 8 : 7} className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
                               {firstSectionRow.name} {firstSectionRow.isContinuation ? '(Contd.)' : ''}
                             </th>
                           </tr>
                         )}
                         <tr className="bg-white text-slate-800 font-medium border-y border-black text-[11px] tracking-wider uppercase">
                           <th className="py-1 px-2 text-center w-[12%]">Image</th>
-                          <th className="py-1 px-2 text-left w-[28%]">Product Details</th>
+                          <th className={`py-1 px-2 text-left ${showAddDiscount !== false ? 'w-[28%]' : 'w-[37%]'}`}>Product Details</th>
                           <th className="py-1 px-1 text-center w-[7%]">Qty</th>
                           <th className="py-1 px-1 text-right w-[13%]">MRP</th>
                           <th className="py-1 px-1 text-right w-[9%] whitespace-nowrap">Dis %</th>
-                          <th className="py-1 px-1 text-right w-[9%] whitespace-nowrap">Add Dis %</th>
+                          {showAddDiscount !== false && <th className="py-1 px-1 text-right w-[9%] whitespace-nowrap">Add Dis %</th>}
                           <th className="py-1 px-1 text-right w-[10%]">Net Rate</th>
                           <th className="py-1 px-2 text-right w-[12%]">Amount</th>
                         </tr>
@@ -397,7 +398,7 @@ export default function PremiumQuotationPrint({
                           if (item.type === 'section_header') {
                             return (
                               <tr key={`sec-${idx}`} className="break-inside-avoid">
-                                <td colSpan="8" className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
+                                <td colSpan={showAddDiscount !== false ? 8 : 7} className="pt-4 pb-1.5 px-2 bg-white text-left font-normal text-black text-[20px] uppercase tracking-widest border-b border-black">
                                   {item.name} {item.isContinuation ? '(Contd.)' : ''}
                                 </td>
                               </tr>
@@ -409,7 +410,7 @@ export default function PremiumQuotationPrint({
                               <tr key={`subtotal-${idx}`} className="border-y-2 border-black break-inside-avoid">
                                 <td colSpan="2" className="py-2 px-2 text-center font-bold text-slate-800 text-xs uppercase tracking-widest">Total</td>
                                 <td className="py-2 px-2 text-center font-bold text-slate-800 text-xs">{item.qty}</td>
-                                <td colSpan="4"></td>
+                                <td colSpan={showAddDiscount !== false ? 4 : 3}></td>
                                 <td className="py-2 px-2 text-right font-bold text-slate-900 text-xs">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                               </tr>
                             );
@@ -418,7 +419,7 @@ export default function PremiumQuotationPrint({
                           if (item.type === 'subsection') {
                             return (
                               <tr key={`sub-${idx}`} className="break-inside-avoid">
-                                <td colSpan="8" className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
+                                <td colSpan={showAddDiscount !== false ? 8 : 7} className="py-1 px-2 text-center bg-gray-100 font-bold text-black text-[11px] uppercase tracking-wider border-y border-gray-300">
                                   {item.description}
                                 </td>
                               </tr>
@@ -469,7 +470,7 @@ export default function PremiumQuotationPrint({
                               </td>
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">₹ {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.discountPercent > 0 ? `${Number(item.discountPercent).toFixed(3)}%` : '-'}</td>
-                              <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.addDiscount > 0 ? `${Number(item.addDiscount).toFixed(3)}%` : '-'}</td>
+                              {showAddDiscount !== false && <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.addDiscount > 0 ? `${Number(item.addDiscount).toFixed(3)}%` : '-'}</td>}
                               <td className="py-1.5 px-1 text-right align-top text-slate-800 text-[11px] whitespace-nowrap">{item.netRate.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                               <td className="py-1.5 px-2 text-right align-top text-slate-900 text-[11px] whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                             </tr>

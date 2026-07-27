@@ -100,9 +100,11 @@ export default function QuotationList({ onConvertToInvoice }) {
 
   // Filter Logic
   const { enrichedQuotations, quotationGroups } = useMemo(() => {
-    // 1. Group quotations by base quotation no
+    // 1. Group quotations by customer name
     const groups = {};
     quotations.forEach(q => {
+       const customerKey = (q.customerName || 'Unknown Customer').trim().toUpperCase();
+       
        const match = (q.quotationNo || '').match(/^(QUOT-\d+)(?:-R(\d+))?$/);
        let baseNo = q.quotationNo;
        let revNo = 0;
@@ -110,17 +112,23 @@ export default function QuotationList({ onConvertToInvoice }) {
          baseNo = match[1];
          revNo = match[2] ? parseInt(match[2], 10) : 0;
        }
-       if (!groups[baseNo]) {
-         groups[baseNo] = [];
+       
+       if (!groups[customerKey]) {
+         groups[customerKey] = [];
        }
        q._revNo = revNo; 
        q._baseNo = baseNo;
-       groups[baseNo].push(q);
+       q._customerKey = customerKey;
+       groups[customerKey].push(q);
     });
 
-    // 2. Select the latest revision for each base quotation
+    // 2. Select the latest quotation for each customer
     const latestQuotations = Object.values(groups).map(group => {
-       return group.sort((a, b) => b._revNo - a._revNo)[0];
+       return group.sort((a, b) => {
+         const dateDiff = new Date(b.date) - new Date(a.date);
+         if (dateDiff !== 0) return dateDiff;
+         return String(b.id).localeCompare(String(a.id));
+       })[0];
     });
 
     const enriched = latestQuotations.map(q => {
@@ -203,7 +211,7 @@ export default function QuotationList({ onConvertToInvoice }) {
 
 
   const tableHeaders = [
-    "Quot #", "Quot Date", "Customer", "State", 
+    "S.No.", "Quot Date", "Customer", "State", 
     "Mobile", "Sales Person", "Amount", "Quot Status", "Actions"
   ];
 
@@ -213,8 +221,8 @@ export default function QuotationList({ onConvertToInvoice }) {
       onClick={() => handleView(item)}
       className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
     >
-      <td className="px-4 py-3 text-center text-[15px] text-sky-700 font-black whitespace-nowrap">
-        {item.quotationNo || '-'}
+      <td className="px-4 py-3 text-center text-[15px] text-slate-700 font-bold whitespace-nowrap">
+        {((currentPage - 1) * itemsPerPage) + idx + 1}
       </td>
       <td className="px-4 py-3 text-center text-[14px] text-slate-700 font-bold whitespace-nowrap">{item.date || '-'}</td>
       <td className="px-6 py-4 text-center text-[15px] font-black text-slate-900 whitespace-nowrap min-w-[250px]">{item.customerName || '-'}</td>
@@ -235,7 +243,7 @@ export default function QuotationList({ onConvertToInvoice }) {
           Preview
         </button>
         <button 
-          onClick={(e) => { e.stopPropagation(); setSelectedHistoryBaseNo(item._baseNo); }}
+          onClick={(e) => { e.stopPropagation(); setSelectedHistoryBaseNo(item._customerKey); }}
           className="px-3 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded text-[11px] font-bold transition shadow-sm"
         >
           Versions
@@ -440,6 +448,10 @@ export default function QuotationList({ onConvertToInvoice }) {
           isOpen={showFormModal}
           initialData={selectedQuotation}
           defaultToPrintPreview={isPreviewMode}
+          onAddNewQuotation={() => {
+            setSelectedQuotation(null);
+            setIsPreviewMode(false);
+          }}
           onClose={() => {
             setShowFormModal(false);
             setSelectedQuotation(null);
@@ -489,7 +501,7 @@ export default function QuotationList({ onConvertToInvoice }) {
             <div className="flex items-center justify-between p-5 md:px-6 border-b border-slate-200 bg-slate-50/50">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <RotateCcw className="text-sky-600" size={20} />
-                Previous Versions — {selectedHistoryBaseNo}
+                Quotations — {quotationGroups[selectedHistoryBaseNo]?.[0]?.customerName || selectedHistoryBaseNo}
               </h3>
               <button 
                 onClick={() => setSelectedHistoryBaseNo(null)}
@@ -499,13 +511,17 @@ export default function QuotationList({ onConvertToInvoice }) {
               </button>
             </div>
             <div className="p-6 bg-slate-50/30 overflow-y-auto space-y-4">
-              {(quotationGroups[selectedHistoryBaseNo] || []).sort((a,b) => b._revNo - a._revNo).map((rev, index) => (
+              {(quotationGroups[selectedHistoryBaseNo] || []).sort((a,b) => {
+                 const dateDiff = new Date(b.date) - new Date(a.date);
+                 if (dateDiff !== 0) return dateDiff;
+                 return String(b.id).localeCompare(String(a.id));
+              }).map((rev, index) => (
                 <div key={rev.id} className="border border-slate-200 bg-white rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-sm">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-[16px] font-black text-sky-800">{rev.quotationNo}</span>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold tracking-wider ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {index === 0 ? 'LATEST' : 'REVISED'}
+                        {index === 0 ? 'LATEST' : 'PREVIOUS'}
                       </span>
                     </div>
                     <div className="text-xs text-slate-500 flex flex-col gap-1 mt-2">
@@ -516,22 +532,37 @@ export default function QuotationList({ onConvertToInvoice }) {
                         <span className="text-slate-300">|</span>
                         <span>Customer: <span className="font-semibold text-slate-600">{rev.customerName}</span></span>
                       </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] items-center">
                         <span>Quot. Person: <span className="font-semibold text-slate-600">{rev.details?.otherInfo?.quortPerson || rev.displaySalesPerson || '-'}</span></span>
+                        <span className="text-slate-300">|</span>
+                        <span className="text-[13px] text-slate-800 font-bold">Type: <span className="font-black text-sky-800">{rev.details?.basicInfo?.typeOfQuotation || rev.type_of_quotation || 'Standard'}</span></span>
                       </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => {
-                      setSelectedHistoryBaseNo(null);
-                      setSelectedQuotation(rev);
-                      setIsPreviewMode(true);
-                      setShowFormModal(true);
-                    }}
-                    className="px-4 py-1.5 bg-white border border-slate-200 hover:border-sky-200 hover:bg-sky-50 text-slate-700 hover:text-sky-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
-                  >
-                    <Eye size={16} /> Preview
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedHistoryBaseNo(null);
+                        setSelectedQuotation(rev);
+                        setIsPreviewMode(false);
+                        setShowFormModal(true);
+                      }}
+                      className="px-4 py-1.5 bg-white border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <FileText size={16} /> Open
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setSelectedHistoryBaseNo(null);
+                        setSelectedQuotation(rev);
+                        setIsPreviewMode(true);
+                        setShowFormModal(true);
+                      }}
+                      className="px-4 py-1.5 bg-white border border-slate-200 hover:border-sky-200 hover:bg-sky-50 text-slate-700 hover:text-sky-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Eye size={16} /> Preview
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

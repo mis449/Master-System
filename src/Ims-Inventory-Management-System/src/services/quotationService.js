@@ -49,6 +49,7 @@ const mapQuotationRow = (item) => {
     validity_date: item.validity_date || basic.validityDate || '',
     price_list: item.price_list || basic.priceList || '',
     payment_terms: item.payment_terms || basic.paymentTerms || '',
+    type_of_quotation: item.type_of_quotation || basic.typeOfQuotation || '',
     gross_amount: item.gross_amount || sum.grossAmount || 0,
     discount_amount: item.discount_amount || sum.discountAmount || 0,
     tax_amount: item.tax_amount || sum.taxAmount || 0,
@@ -130,6 +131,7 @@ export const createQuotation = async (data) => {
     validity_date: data.validity_date || basicInfo.validityDate || '',
     price_list: data.price_list || basicInfo.priceList || '',
     payment_terms: data.payment_terms || basicInfo.paymentTerms || '',
+    type_of_quotation: data.type_of_quotation || basicInfo.typeOfQuotation || '',
 
     gross_amount: Number(data.gross_amount ?? summary.grossAmount ?? 0),
     discount_amount: Number(data.discount_amount ?? summary.discountAmount ?? 0),
@@ -211,6 +213,9 @@ export const updateQuotation = async (id, updates) => {
 
   const paymentTerms = updates.payment_terms || updates.paymentTerms || basicInfo.paymentTerms;
   if (paymentTerms !== undefined) updateData.payment_terms = paymentTerms;
+
+  const typeOfQuotation = updates.type_of_quotation || updates.typeOfQuotation || basicInfo.typeOfQuotation;
+  if (typeOfQuotation !== undefined) updateData.type_of_quotation = typeOfQuotation;
 
   const grossAmount = updates.gross_amount ?? updates.grossAmount ?? summary.grossAmount;
   if (grossAmount !== undefined) updateData.gross_amount = Number(grossAmount);

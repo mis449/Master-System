@@ -515,9 +515,19 @@ CREATE TABLE public.stock_updater (
 );
 
 -- ALTER QUERIES FOR ADD DISCOUNT COLUMN
+-- ALTER TABLE public.quotation DROP COLUMN IF EXISTS item_add_discount;
 -- ALTER TABLE public.quotation ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.invoice DROP COLUMN IF EXISTS item_add_discount;
 -- ALTER TABLE public.invoice ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.scales_return DROP COLUMN IF EXISTS item_add_discount;
 -- ALTER TABLE public.scales_return ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_return DROP COLUMN IF EXISTS item_add_discount;
 -- ALTER TABLE public.purchase_return ADD COLUMN item_add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_order_items DROP COLUMN IF EXISTS add_discount;
 -- ALTER TABLE public.purchase_order_items ADD COLUMN add_discount numeric DEFAULT 0;
+-- ALTER TABLE public.purchase_items DROP COLUMN IF EXISTS add_discount;
 -- ALTER TABLE public.purchase_items ADD COLUMN add_discount numeric DEFAULT 0;
+
+-- ALTER QUERIES FOR TYPE OF QUOTATION
+ALTER TABLE public.quotation DROP COLUMN IF EXISTS type_of_quotation;
+ALTER TABLE public.quotation ADD COLUMN type_of_quotation text;

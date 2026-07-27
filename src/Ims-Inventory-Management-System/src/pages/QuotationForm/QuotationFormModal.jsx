@@ -17,7 +17,7 @@ import { ShoppingCart } from 'lucide-react';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
 import emailjs from '@emailjs/browser';
 import BrandDiscountModal from './BrandDiscountModal';
-export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy, defaultToPrintPreview }) {
+export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy, defaultToPrintPreview, onAddNewQuotation }) {
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -31,6 +31,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(defaultToPrintPreview || false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
+  const [showAddDiscount, setShowAddDiscount] = useState(true);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
   const { items: inventoryItems, fetchItems, addCustomer, customers } = useDataStore();
@@ -45,10 +46,10 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           validityDate: '',
           priceList: 'Standard',
           paymentTerms: 'Net 30',
-          areaPinCode: '',
           cityState: '',
           email: '',
           mobile: '',
+          typeOfQuotation: '',
           ...(initialData.details.basicInfo || {})
         });
         setItems(initialData.details.items ? JSON.parse(JSON.stringify(initialData.details.items)) : [getEmptyItem()]);
@@ -72,6 +73,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           roundOffAmount: 0,
           totalAmount: 0
         });
+        setShowAddDiscount(initialData.details.showAddDiscount !== undefined ? initialData.details.showAddDiscount : true);
         setQuotationStatus(initialData.status === 'Draft' ? 'Active' : initialData.status || 'Active');
         setSupplyStatus(initialData.supplyStatus || '-');
       } else {
@@ -81,10 +83,10 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           validityDate: '',
           priceList: 'Standard',
           paymentTerms: 'Net 30',
-          areaPinCode: '',
           cityState: '',
           email: '',
-          mobile: ''
+          mobile: '',
+          typeOfQuotation: ''
         });
         setItems([getEmptyItem()]);
         setOtherInfo({
@@ -107,6 +109,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           roundOffAmount: 0,
           totalAmount: 0
         });
+        setShowAddDiscount(true);
         setQuotationStatus('Active');
         setSupplyStatus('-');
       }
@@ -120,10 +123,10 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
     validityDate: '',
     priceList: 'Standard',
     paymentTerms: 'Net 30',
-    areaPinCode: '',
     cityState: '',
     email: '',
-    mobile: ''
+    mobile: '',
+    typeOfQuotation: ''
   });
 
   // Item Lines State
@@ -341,7 +344,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         totalAmount: summary.totalAmount,
         status: quotationStatus,
         supplyStatus: supplyStatus,
-        details: { basicInfo, items, otherInfo, notes, summary }
+        details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
       };
 
       let saved;
@@ -377,7 +380,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         totalAmount: summary.totalAmount,
         status: newStatus,
         supplyStatus: supplyStatus,
-        details: { basicInfo, items, otherInfo, notes, summary }
+        details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
       };
 
       let saved;
@@ -416,7 +419,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       totalAmount: summary.totalAmount,
       status: 'Draft',
       supplyStatus: '-',
-      details: { basicInfo, items, otherInfo, notes, summary }
+      details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
     };
     if (onCopy) onCopy(copyData);
   };
@@ -530,6 +533,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         <CustomerDetailsSection 
           basicInfo={basicInfo} 
           setBasicInfo={setBasicInfo} 
+          onAddNewQuotation={onAddNewQuotation}
           onOpenCustomerModal={() => {
             setCustomerToEdit(null);
             setIsCustomerModalOpen(true);
@@ -595,7 +599,9 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
                 }}
                 showStatus={initialData && initialData.status === 'In Progress'}
                 openBrandDiscount={() => setIsBrandDiscountOpen(true)}
-              />
+                showAddDiscount={showAddDiscount}
+                setShowAddDiscount={setShowAddDiscount}
+                />
               <SummaryCard 
                 summary={summary} 
                 onFinalAmountChange={(val) => setSummary(prev => ({ ...prev, finalAmount: val }))} 
@@ -812,7 +818,13 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               </button>
               <button
                 type="button"
-                onClick={() => setIsPrintPreviewOpen(false)}
+                onClick={() => {
+                  if (defaultToPrintPreview) {
+                    onClose();
+                  } else {
+                    setIsPrintPreviewOpen(false);
+                  }
+                }}
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-1.5 px-4 rounded-xl text-xs transition"
               >
                 Close
@@ -830,6 +842,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               summary={summary}
               notes={notes}
               inventoryItems={inventoryItems}
+              showAddDiscount={showAddDiscount}
             />
           </div>
         </div>

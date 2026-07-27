@@ -11,6 +11,7 @@ import SalesModule from './pages/Sales/SalesModule';
 import PurchaseModule from './pages/Purchase/PurchaseModule';
 import OrderSummary from './pages/Sales/OrderSummary';
 import ItemTracker from './pages/ItemTracker/ItemTracker';
+import ItemSummary from './pages/ItemSummary/ItemSummary';
 
 import { useAuthStore } from './store/authStore';
 import { initializeStorage } from './utils/storageManager';
@@ -41,6 +42,7 @@ function App() {
             <Route path="purchase" element={<PurchaseModule />} />
             <Route path="order-summary" element={<OrderSummary />} />
             <Route path="item-tracker" element={<ItemTracker />} />
+            <Route path="item-summary" element={<ItemSummary />} />
           </Route>
 
         </Routes>

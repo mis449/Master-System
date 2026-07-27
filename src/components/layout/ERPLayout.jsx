@@ -38,7 +38,8 @@ import {
   LayoutGrid,
   FileText,
   ClipboardList,
-  PackageSearch
+  PackageSearch,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import aceLogo from '../../assets/Ace_Logoo.jpg';
@@ -79,7 +80,8 @@ const ERPLayout = ({ children }) => {
         { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
         { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
         { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] }
+        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] },
+        { label: 'Item Summary', path: '/ims/item-summary', icon: Activity, roles: ['admin', 'manager', 'hod'] }
       ]
     },
     {
