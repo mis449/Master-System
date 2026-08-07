@@ -272,6 +272,10 @@ const useDataStore = create((set, get) => ({
       const { data, error } = await supabase.from('item').insert([payload]).select();
       if (error) throw error;
       
+
+
+
+      
       // Update local state directly to save time (avoid fetching 20,000 items again)
       const newItem = data[0];
       const formattedItem = {
