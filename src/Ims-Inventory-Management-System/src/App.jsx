@@ -12,6 +12,7 @@ import PurchaseModule from './pages/Purchase/PurchaseModule';
 import OrderSummary from './pages/Sales/OrderSummary';
 import ItemTracker from './pages/ItemTracker/ItemTracker';
 import ItemSummary from './pages/ItemSummary/ItemSummary';
+import Order from './pages/Order/Order';
 
 import { useAuthStore } from './store/authStore';
 import { initializeStorage } from './utils/storageManager';
@@ -39,6 +40,7 @@ function App() {
             <Route path="create-indent" element={<InventoryForm />} />
             <Route path="indent-history" element={<InventoryHistory />} />
             <Route path="sales" element={<SalesModule />} />
+            <Route path="order" element={<Order />} />
             <Route path="purchase" element={<PurchaseModule />} />
             <Route path="order-summary" element={<OrderSummary />} />
             <Route path="item-tracker" element={<ItemTracker />} />

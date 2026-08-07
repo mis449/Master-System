@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Search, Printer, Filter, RefreshCw, Box, User, Calendar, ChevronDown, FileText, Download } from 'lucide-react';
 import useDataStore from '../../store/dataStore';
-import { getQuotations } from '../../services/quotationService';
+import { getAllQuotations } from '../../services/quotationService';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
@@ -36,7 +36,7 @@ export default function OrderSummary() {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const data = await getQuotations();
+      const data = await getAllQuotations();
       // Exclude purely Rejected quotations
       setQuotations(data.filter(q => q.status !== 'Rejected') || []);
     } catch (error) {

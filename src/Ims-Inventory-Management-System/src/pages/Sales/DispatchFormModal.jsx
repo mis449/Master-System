@@ -4,6 +4,7 @@ import { Calendar, Search, ChevronDown, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
+import { getInvoicesByChallanId } from '../../services/InvoiceService';
 
 export default function DispatchFormModal({ isOpen, onClose, initialData, onSave, onConvertToInvoice }) {
   const [items, setItems] = useState([]);
@@ -21,12 +22,41 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
   }, [isOpen, fetchItems, fetchInventorySummary]);
 
   useEffect(() => {
-    if (initialData && initialData.details && initialData.details.items) {
+    if (!initialData || !initialData.details || !initialData.details.items) return;
+
+    const loadRealDispatchQty = async () => {
+      let invoicedItemsMap = {};
+      
+      // Only fetch invoices if this is a Challan with an ID
+      if (initialData.id && initialData.challan_no) {
+        try {
+          const invoices = await getInvoicesByChallanId(initialData.id);
+          // invoices are returned, now loop through their items and sum the quantities
+          invoices.forEach(inv => {
+            if (inv.status !== 'Returned') { // ignore cancelled/returned invoices if needed
+              (inv.items || []).forEach(invItem => {
+                if (invItem.type === 'item' && invItem.itemCode) {
+                  invoicedItemsMap[invItem.itemCode] = (invoicedItemsMap[invItem.itemCode] || 0) + Number(invItem.quantity || 0);
+                }
+              });
+            }
+          });
+        } catch (error) {
+          console.error("Failed to load invoices for dispatch calculation", error);
+        }
+      }
+
       setItems(prevItems => {
         return initialData.details.items.map(item => {
           if (item.type !== 'item') return item;
-          const ordered = Number(item.quantity || 0);
-          const dispatched = Number(item.dispatchedQty || 0);
+          const ordered = Number(item.orderedQty !== undefined ? item.orderedQty : item.quantity || 0);
+          
+          // Use dynamically calculated dispatched qty if available, otherwise fallback to stored one
+          let dispatched = Number(item.dispatchedQty || 0);
+          if (initialData.challan_no && invoicedItemsMap[item.itemCode] !== undefined) {
+             dispatched = invoicedItemsMap[item.itemCode];
+          }
+
           const pending = Math.max(0, ordered - dispatched);
 
           // Find corresponding inventory item to get live stock
@@ -52,7 +82,9 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
           };
         });
       });
-    }
+    };
+
+    loadRealDispatchQty();
   }, [initialData, inventoryItems]);
 
   useEffect(() => {
@@ -104,22 +136,85 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, dispatchQty: newQty } : i));
   };
 
+  const handleSaveDispatch = async () => {
+    if (!initialData || !initialData.id) {
+      toast.error('No record to save dispatch for');
+      return;
+    }
+
+    const updatedQuotationItems = items.map(item => {
+      if (item.type === 'item') {
+        const currentDispatch = Number(item.dispatchQty || 0);
+        const prevDispatched = Number(item.dispatchedQty || 0);
+        const newDispatchedQty = prevDispatched + currentDispatch;
+        return {
+          ...item,
+          quantity: item.orderedQty !== undefined ? Number(item.orderedQty) : Number(item.quantity || 0),
+          orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : Number(item.quantity || 0),
+          dispatchQty: currentDispatch,
+          dispatchedQty: newDispatchedQty,
+          stock: item.stock !== undefined ? item.stock : 0
+        };
+      }
+      return item;
+    });
+
+    // Dispatching records dispatchedQty but must NOT advance the order status:
+    // Confirmed / In Progress / Completed are driven by invoiced qty only, so a
+    // dispatch or challan with no invoice leaves the order where it is.
+    const updatedData = {
+      ...initialData,
+      status: initialData.status,
+      details: {
+        ...initialData.details,
+        items: updatedQuotationItems
+      }
+    };
+
+    try {
+      const { updateQuotation } = await import('../../services/quotationService');
+      const saved = await updateQuotation(initialData.id, updatedData);
+      toast.success('Dispatch quantities updated successfully!');
+      if (onSave) onSave(saved);
+      onClose();
+    } catch (err) {
+      console.error('Error saving dispatch:', err);
+      toast.error('Failed to save dispatch');
+    }
+  };
+
   const handleConvertToInvoice = () => {
     const dispatchedData = {
       ...initialData,
       details: {
         ...initialData.details,
-        items: items.filter(item => item.type === 'section' || item.type === 'subsection' || item.dispatchQty > 0).map(item => ({
-          ...item,
-          quantity: item.dispatchQty
-        }))
+        items: items.filter(item => item.type === 'section' || item.type === 'subsection' || item.dispatchQty > 0).map(item => {
+          if (item.type !== 'item') return item;
+          const currentDispatch = Number(item.dispatchQty || 0);
+          const prevDispatched = Number(item.dispatchedQty || 0);
+          const newDispatchedQty = prevDispatched + currentDispatch;
+          return {
+            ...item,
+            quantity: currentDispatch,
+            orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : Number(item.quantity || 0),
+            dispatchQty: currentDispatch,
+            dispatchedQty: newDispatchedQty,
+            stock: item.stock !== undefined ? item.stock : 0
+          };
+        })
       },
       originalQuotationItems: items.map(item => {
         if (item.type === 'item') {
+          const currentDispatch = Number(item.dispatchQty || 0);
+          const prevDispatched = Number(item.dispatchedQty || 0);
+          const newDispatchedQty = prevDispatched + currentDispatch;
           return {
             ...item,
-            quantity: item.orderedQty,
-            dispatchedQty: Number(item.dispatchedQty || 0) + Number(item.dispatchQty || 0)
+            quantity: item.orderedQty !== undefined ? Number(item.orderedQty) : Number(item.quantity || 0),
+            orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : Number(item.quantity || 0),
+            dispatchQty: currentDispatch,
+            dispatchedQty: newDispatchedQty,
+            stock: item.stock !== undefined ? item.stock : 0
           };
         }
         return item;
@@ -242,9 +337,11 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                 <th className="p-3 border-b border-slate-200">Item Code</th>
                 <th className="p-3 border-b border-slate-200 w-64">Item Name</th>
                 {showStatusColumn && <th className="p-3 border-b border-slate-200 text-center">Status</th>}
-                <th className="p-3 border-b border-slate-200 text-center">Qty</th>
+                <th className="p-3 border-b border-slate-200 text-center">Ord Qty</th>
+                <th className="p-3 border-b border-slate-200 text-center">Disp Qty</th>
+                <th className="p-3 border-b border-slate-200 text-center">Rem Qty</th>
                 <th className="p-3 border-b border-slate-200 text-center">Stock</th>
-                <th className="p-3 border-b border-slate-200 text-center w-36">Dispatch Qty</th>
+                <th className="p-3 border-b border-slate-200 text-center w-36">Actual Dispatch</th>
                 <th className="p-3 border-b border-slate-200 text-right">Rate</th>
                 <th className="p-3 border-b border-slate-200 text-right">Amount</th>
                 <th className="p-3 border-b border-slate-200 text-center">Disc %</th>
@@ -260,7 +357,7 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                 if (item.type === 'section' || item.type === 'subsection') {
                   return (
                     <tr key={item.id || idx} className={`${item.type === 'section' ? 'bg-sky-50/50' : 'bg-slate-50'} border-b border-slate-200`}>
-                      <td colSpan={showStatusColumn ? "15" : "14"} className={`p-2 px-4 font-bold uppercase tracking-wider text-[11px] ${item.type === 'section' ? 'text-sky-700' : 'text-slate-600 pl-8'}`}>
+                      <td colSpan={showStatusColumn ? "17" : "16"} className={`p-2 px-4 font-bold uppercase tracking-wider text-[11px] ${item.type === 'section' ? 'text-sky-700' : 'text-slate-600 pl-8'}`}>
                         {item.type === 'section' ? `SECTION: ${item.description}` : `SUB-SECTION: ${item.description}`}
                       </td>
                     </tr>
@@ -294,6 +391,8 @@ export default function DispatchFormModal({ isOpen, onClose, initialData, onSave
                       </td>
                     )}
                     <td className="p-3 text-center">{item.orderedQty || item.quantity || 0}</td>
+                    <td className="p-3 text-center text-emerald-600 font-bold">{item.dispatchedQty || 0}</td>
+                    <td className="p-3 text-center text-amber-600 font-bold">{Math.max(0, (item.orderedQty || item.quantity || 0) - (item.dispatchedQty || 0))}</td>
                     <td className="px-4 py-3 text-center text-xs text-sky-600 font-bold whitespace-nowrap bg-sky-50/30">
                       {item.stock}
                     </td>

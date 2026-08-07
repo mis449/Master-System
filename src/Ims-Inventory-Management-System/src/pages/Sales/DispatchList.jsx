@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Search, RotateCcw, Filter, RefreshCw, Eye, CheckCircle, XCircle } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import { TabSwitcher } from '../../components/StandardButtons';
-import { getQuotations, updateQuotation } from '../../services/quotationService';
+import { getAllQuotations, updateQuotation } from '../../services/quotationService';
 import DispatchFormModal from './DispatchFormModal';
 
 export default function DispatchList({ onConvertToInvoice }) {
@@ -27,7 +27,7 @@ export default function DispatchList({ onConvertToInvoice }) {
   const fetchQuotationsData = async () => {
     setIsLoading(true);
     try {
-      const data = await getQuotations();
+      const data = await getAllQuotations();
       // Only include ones that are part of the dispatch workflow
       const validStatuses = ['Active', 'Accepted', 'Rejected', 'Invoiced', 'In Progress', 'Completed'];
       const dispatchItems = (data || []).filter(q => validStatuses.includes(q.status));

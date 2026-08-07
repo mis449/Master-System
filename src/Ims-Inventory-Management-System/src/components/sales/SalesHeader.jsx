@@ -12,7 +12,10 @@ export default function SalesHeader({
   printOrientation = 'Horizontal',
   setPrintOrientation,
   onPrintPreview,
-  onSendEmail
+  onSendEmail,
+  onSaveForm,
+  isSubmitting = false,
+  saveText = 'Save'
 }) {
   return (
     <div className="bg-white border-b border-slate-200 p-2 sm:p-4 mb-4">
@@ -48,6 +51,16 @@ export default function SalesHeader({
         </div>
 
         <div className="flex items-center gap-2">
+          {onSaveForm && (
+            <button 
+              type="button" 
+              onClick={onSaveForm}
+              disabled={isSubmitting}
+              className="text-xs font-bold bg-sky-600 text-white border border-sky-700 px-4 py-1.5 rounded flex items-center gap-1 hover:bg-sky-700 transition shadow-sm mr-2"
+            >
+              {saveText}
+            </button>
+          )}
           {showCreateReturn && (
             <button 
               type="button" 

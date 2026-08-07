@@ -34,7 +34,7 @@ export default function Dasboard() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(200);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   // Fetch items on mount
   useEffect(() => {
@@ -79,7 +79,8 @@ export default function Dasboard() {
       const salesReturnQty = Number((summary.sales_return_qty || 0).toFixed(1));
 
       const openingQty = Number(item.OpeningQty || 0); // Using OpeningQty if available, else 0
-      const currentQty = Number((item.StockQty || 0).toFixed(1));
+      // Current Stock Formula: Opening + Purchase + SalesReturn - Sales - PurchaseReturn
+      const currentQty = Number((openingQty + purchaseQty + salesReturnQty - salesQty - purchaseReturnQty).toFixed(1));
       const stockLevel = currentQty >= 50 ? 'Stock Full' : 'Stock Low';
 
       return {
@@ -129,13 +130,25 @@ export default function Dasboard() {
     const pendingIndents = transactions.filter(t => t.status === 'Pending').length;
     const completedIndents = transactions.filter(t => t.status === 'Completed').length;
 
+    let brandTotalMrp = null;
+    let selectedBrandName = null;
+    if (filters.brand && filters.brand !== 'All Brands') {
+      brandTotalMrp = filteredStocks.reduce((sum, item) => sum + Number(item.MRP || 0), 0);
+      selectedBrandName = filters.brand;
+    }
+
+    const globalTotalMrp = items.reduce((sum, item) => sum + Number(item.MRP || item.price || 0), 0);
+
     return {
       totalItems,
       lowStockAlerts,
       pendingIndents,
-      completedIndents
+      completedIndents,
+      brandTotalMrp,
+      selectedBrandName,
+      globalTotalMrp
     };
-  }, [items, computedStocks, transactions]);
+  }, [items, computedStocks, transactions, filters.brand, filteredStocks]);
 
   const topSellingProducts = useMemo(() => {
     return [...computedStocks]
@@ -250,7 +263,8 @@ export default function Dasboard() {
       'Opening Quantity': item.openingQty || 0,
       'Purchase Quantity': item.purchaseQty || 0,
       'Sales Quantity': item.salesQty || 0,
-      'Current Stock': item.currentQty || 0
+      'Current Stock': item.currentQty || 0,
+      'Total Amount': (item.currentQty || 0) * Number(item.MRP || 0)
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -353,7 +367,7 @@ export default function Dasboard() {
     doc.line(14, 43, pageWidth - 14, 43);
 
     // Table Data
-    const tableColumn = ["SN", "Image", "Item Code", "Item Name", "Brand", "MRP", "Stock"];
+    const tableColumn = ["SN", "Image", "Item Code", "Item Name", "Brand", "MRP", "Stock", "Total Amt"];
     const tableRows = itemsWithImages.map((item, idx) => [
       idx + 1,
       '', // Placeholder for image
@@ -361,7 +375,8 @@ export default function Dasboard() {
       item.ItemName || item.name || '',
       item.BrandName || item.brand || '',
       `Rs ${Number(item.MRP || 0).toLocaleString('en-IN')}`,
-      item.currentQty || 0
+      item.currentQty || 0,
+      `Rs ${((item.currentQty || 0) * Number(item.MRP || 0)).toLocaleString('en-IN')}`
     ]);
 
     autoTable(doc, {
@@ -398,7 +413,8 @@ export default function Dasboard() {
         3: { halign: 'left', cellWidth: 'auto' }, // Item name
         4: { halign: 'center', cellWidth: orientation === 'landscape' ? 22 : 18 }, // Brand
         5: { halign: 'right', cellWidth: orientation === 'landscape' ? 22 : 18 }, // MRP
-        6: { halign: 'center', cellWidth: orientation === 'landscape' ? 16 : 12, fontStyle: 'bold', textColor: [2, 132, 199] }, // Stock
+        6: { halign: 'center', cellWidth: orientation === 'landscape' ? 14 : 10, fontStyle: 'bold', textColor: [2, 132, 199] }, // Stock
+        7: { halign: 'right', cellWidth: orientation === 'landscape' ? 22 : 18, fontStyle: 'bold' }, // Total Amt
       },
       didDrawCell: function (cellData) {
         // Draw the image if it is the image column (index 1) in the body section
@@ -470,7 +486,6 @@ export default function Dasboard() {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const isFull = item.stockLevel === 'Stock Full';
     const priceVal = Number(item.MRP || 0);
-    const totalAmount = priceVal * item.currentQty;
 
     return (
       <tr key={item.ItmID || item.ItemCode} onClick={() => handleRowClick(item)} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer">
@@ -509,7 +524,7 @@ export default function Dasboard() {
         <td className="px-2 py-3 text-center text-[17px] text-amber-700 font-black whitespace-nowrap">-{item.purchaseReturnQty}</td>
         <td className="px-2 py-3 text-center text-[17px] text-emerald-600 font-black whitespace-nowrap">+{item.salesReturnQty}</td>
         <td className="px-2 py-3 text-center text-[19px] text-sky-700 font-black whitespace-nowrap bg-sky-50/40">{item.currentQty}</td>
-        <td className="px-2 py-3 text-center text-[19px] text-indigo-700 font-black whitespace-nowrap bg-indigo-50/30">₹{totalAmount.toLocaleString('en-IN')}</td>
+        <td className="px-2 py-3 text-center text-[19px] text-indigo-700 font-black whitespace-nowrap bg-indigo-50/40">₹{(item.currentQty * priceVal).toLocaleString('en-IN')}</td>
         <td className="px-2 py-3 text-center whitespace-nowrap text-sm">
           <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
@@ -525,7 +540,6 @@ export default function Dasboard() {
     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
     const isFull = item.stockLevel === 'Stock Full';
     const priceVal = Number(item.MRP || 0);
-    const totalAmount = priceVal * item.currentQty;
 
     const code = item.ItemCode || item.code;
     return (
@@ -580,6 +594,10 @@ export default function Dasboard() {
             <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Current Qty</span>
             <span className="text-sky-600 font-bold text-sm">{item.currentQty}</span>
           </div>
+          <div className="col-span-2">
+            <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Total Amount</span>
+            <span className="text-indigo-600 font-bold text-sm">₹{(item.currentQty * priceVal).toLocaleString('en-IN')}</span>
+          </div>
           <div>
             <span className="text-slate-400 block uppercase text-[9px] tracking-tight mb-0.5">Purchase / Sales</span>
             <span className="text-slate-800 font-semibold"><span className="text-emerald-600 font-bold">+{item.purchaseQty}</span> / <span className="text-rose-600 font-bold">-{item.salesQty}</span></span>
@@ -590,11 +608,7 @@ export default function Dasboard() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center border-t border-slate-100 pt-2 text-xs">
-          <div className="flex flex-col">
-            <span className="text-slate-500 uppercase text-[10px] font-bold tracking-tight mb-0.5">Total Amount</span>
-            <span className="text-indigo-700 font-black text-lg">₹{totalAmount.toLocaleString('en-IN')}</span>
-          </div>
+        <div className="flex justify-end items-center border-t border-slate-100 pt-2 text-xs">
           <span className={`px-2 py-1 rounded text-[9px] uppercase font-black ${
             isFull ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
           }`}>
@@ -632,7 +646,7 @@ export default function Dasboard() {
     <div className="p-0 sm:p-2 md:p-3 space-y-3 md:space-y-4 flex flex-col h-full overflow-y-auto overflow-x-hidden">
       
       {/* Summary KPI Cards Grid */}
-      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 px-1 sm:px-0">
+      <div className={`shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${stats.brandTotalMrp !== null ? 'xl:grid-cols-4' : ''} gap-2 md:gap-3 px-1 sm:px-0`}>
         
         {/* Total Registered Products */}
         <div className="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-sky-200/50 hover:shadow-xl hover:shadow-sky-300/40 hover:-translate-y-1 transition-all duration-300">
@@ -655,6 +669,30 @@ export default function Dasboard() {
             <Package size={24} className={`md:w-7 md:h-7 drop-shadow-md ${stats.lowStockAlerts > 0 ? 'animate-pulse' : ''}`} />
           </div>
         </div>
+
+        {/* Global Total MRP */}
+        <div className="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-indigo-200/50 hover:shadow-xl hover:shadow-indigo-300/40 hover:-translate-y-1 transition-all duration-300">
+          <div className="space-y-1">
+            <span className="text-white/80 text-[10px] md:text-xs font-bold uppercase tracking-wider block">All Items Total Value</span>
+            <span className="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-sm">₹{stats.globalTotalMrp.toLocaleString('en-IN')}</span>
+          </div>
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+            <Layers size={24} className="md:w-7 md:h-7 drop-shadow-md" />
+          </div>
+        </div>
+
+        {/* Brand MRP Total */}
+        {stats.brandTotalMrp !== null && (
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl border-none p-5 flex items-center justify-between shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-1 transition-all duration-300">
+            <div className="space-y-1">
+              <span className="text-white/80 text-[10px] md:text-xs font-bold uppercase tracking-wider block">{stats.selectedBrandName} Total MRP</span>
+              <span className="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-sm">₹{stats.brandTotalMrp.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+              <Layers size={24} className="md:w-7 md:h-7 drop-shadow-md" />
+            </div>
+          </div>
+        )}
 
       </div>
 
@@ -767,7 +805,7 @@ export default function Dasboard() {
                 onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 text-xs md:text-sm h-[38px] transition-all outline-none font-medium text-slate-600"
               >
-                {[200, 400, 600, 800, 1000].map(val => (
+                {[50, 100, 200, 400, 600, 800, 1000].map(val => (
                   <option key={val} value={val}>{val} / page</option>
                 ))}
               </select>
@@ -833,7 +871,7 @@ export default function Dasboard() {
             onPageChange={setCurrentPage}
             onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
             totalResults={filteredStocks.length}
-            itemsPerPageOptions={[200, 400, 600, 800, 1000]}
+            itemsPerPageOptions={[50, 100, 200, 400, 600, 800, 1000]}
             hidePagination={true}
           />
         )}
@@ -860,46 +898,39 @@ export default function Dasboard() {
             </div>
 
             {/* Grid specifications */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 text-xs">
               <div className="bg-slate-50 p-2.5 rounded border border-slate-100 space-y-1">
                 <span className="text-gray-400 block text-[9px] uppercase tracking-wider font-semibold">Brand / Category</span>
                 <span className="text-gray-800 font-bold">{selectedItem.BrandName || '-'} / {selectedItem.Category || '-'}</span>
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100 space-y-1">
-                <span className="text-gray-400 block text-[9px] uppercase tracking-wider font-semibold">UOM / Unit Size</span>
-                <span className="text-gray-800 font-bold">{selectedItem.UOM || 'PCS'} / {selectedItem.Size || 'Standard'}</span>
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100 space-y-1">
-                <span className="text-gray-400 block text-[9px] uppercase tracking-wider font-semibold">Color / Weight</span>
-                <span className="text-gray-800 font-bold">{selectedItem.Color || 'N/A'} / {selectedItem.Weight ? `${selectedItem.Weight} kg` : '-'}</span>
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100 space-y-1">
-                <span className="text-gray-400 block text-[9px] uppercase tracking-wider font-semibold">HSN Code / Packing</span>
-                <span className="text-gray-800 font-bold">{selectedItem.HSNCode || '-'} / {selectedItem.Packing || '-'}</span>
               </div>
             </div>
 
             {/* Inventory Levels */}
             <div className="border-t border-gray-100 pt-3">
               <h4 className="text-[10px] font-black uppercase text-gray-500 tracking-wider mb-2">Live Inventory Balance</h4>
-              <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="bg-emerald-50/50 border border-emerald-100 p-2 rounded">
-                  <span className="text-[8px] uppercase text-emerald-600 font-bold block">Available Stock</span>
-                  <span className="text-sm font-black text-emerald-700">{(selectedItem.currentQty || 0) - (selectedItem.ReservedQty || 0) - (selectedItem.DisplayQty || 0)}</span>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-center">
+                <div className="bg-slate-50/50 border border-slate-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-slate-500 font-bold block">Opening Qty</span>
+                  <span className="text-sm font-black text-slate-700">{selectedItem.openingQty || 0}</span>
                 </div>
-                <div className="bg-blue-50/50 border border-blue-100 p-2 rounded">
-                  <span className="text-[8px] uppercase text-blue-600 font-bold block">Reserved Qty</span>
-                  <span className="text-sm font-black text-blue-700">{selectedItem.ReservedQty || 0}</span>
+                <div className="bg-emerald-50/50 border border-emerald-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-emerald-600 font-bold block">Purchase Qty</span>
+                  <span className="text-sm font-black text-emerald-700">{selectedItem.purchaseQty || 0}</span>
                 </div>
-                <div className="bg-amber-50/50 border border-amber-100 p-2 rounded">
-                  <span className="text-[8px] uppercase text-amber-600 font-bold block">Display Qty</span>
-                  <span className="text-sm font-black text-amber-700">{selectedItem.DisplayQty || 0}</span>
+                <div className="bg-rose-50/50 border border-rose-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-rose-600 font-bold block">Sales Qty</span>
+                  <span className="text-sm font-black text-rose-700">{selectedItem.salesQty || 0}</span>
                 </div>
-                <div className="bg-sky-50/50 border border-sky-100 p-2 rounded">
-                  <span className="text-[8px] uppercase text-sky-600 font-bold block">Current Stock</span>
+                <div className="bg-amber-50/50 border border-amber-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-amber-600 font-bold block">Pur Return Qty</span>
+                  <span className="text-sm font-black text-amber-700">{selectedItem.purchaseReturnQty || 0}</span>
+                </div>
+                <div className="bg-teal-50/50 border border-teal-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-teal-600 font-bold block">Sal Return Qty</span>
+                  <span className="text-sm font-black text-teal-700">{selectedItem.salesReturnQty || 0}</span>
+                </div>
+                <div className="bg-sky-50/50 border border-sky-200 p-2 rounded">
+                  <span className="text-[8px] uppercase text-sky-600 font-bold block">Current Qty</span>
                   <span className="text-sm font-black text-sky-700">{selectedItem.currentQty || 0}</span>
                 </div>
               </div>

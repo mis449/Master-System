@@ -5,8 +5,45 @@ import DataTable from '../../components/DataTable';
 import { TabSwitcher } from '../../components/StandardButtons';
 import InvoiceFormModal from './InvoiceFormModal';
 import { getInvoices, deleteInvoice, createInvoice, updateInvoice } from '../../services/InvoiceService';
-import { updateQuotation } from '../../services/quotationService';
+import { updateQuotation, getQuotationById, getQuotationByNo } from '../../services/quotationService';
+import { updateChallan, getChallanById } from '../../services/ChallanService';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
+import { creditInvoiceToOrder } from '../../utils/orderProgress';
+
+/**
+ * Find the order (quotation) an invoice should be credited against.
+ * The Order flow is quotation -> challan -> invoice, so the link is often one hop
+ * away: the invoice carries challan_id, and challan.order_no is the quotation no.
+ * Always re-reads the order so the credit is applied to current stored data
+ * rather than a stale snapshot carried in conversionContext.
+ */
+const resolveSourceOrder = async (conversionContext, invoice) => {
+  const source = conversionContext?.source;
+
+  if ((source === 'Quotation' || source === 'Order') && conversionContext?.data?.id) {
+    const byId = await getQuotationById(conversionContext.data.id).catch(() => null);
+    if (byId) return byId;
+  }
+
+  const challanId = invoice?.challan_id
+    || (source === 'Challan' ? conversionContext?.data?.id : null);
+  if (challanId) {
+    const challan = await getChallanById(challanId);
+    if (challan?.order_no) {
+      const byNo = await getQuotationByNo(challan.order_no);
+      if (byNo) return byNo;
+    }
+  }
+
+  // Invoices raised straight off a quotation stamp the quotation no here.
+  const ref = String(invoice?.details?.otherInfo?.referenceNumber || '').trim();
+  if (/^QUOT-/i.test(ref)) {
+    const byRef = await getQuotationByNo(ref);
+    if (byRef) return byRef;
+  }
+
+  return null;
+};
 
 export default function InvoiceList({ conversionContext, clearConversionContext, onCreateSalesReturn }) {
   const [Invoices, setInvoices] = useState([]);
@@ -42,7 +79,7 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
   }, []);
 
   useEffect(() => {
-    if (conversionContext && conversionContext.source === 'Quotation') {
+    if (conversionContext && (conversionContext.source === 'Quotation' || conversionContext.source === 'Challan')) {
       setShowFormModal(true);
     }
   }, [conversionContext]);
@@ -381,27 +418,53 @@ export default function InvoiceList({ conversionContext, clearConversionContext,
                 setInvoices(prev => [...prev, saved]);
               }
               
-              // Mark quotation as invoiced if converted from quotation
-              if (!isEdit && conversionContext?.source === 'Quotation' && conversionContext?.data?.id) {
+              // Credit the invoiced quantities back to the source order, then
+              // re-derive its status: Confirmed -> In Progress -> Completed.
+              // Pending is quoted qty minus INVOICED qty; challan qty is ignored.
+              if (!isEdit) {
                 try {
-                  const originalItems = conversionContext.data.originalQuotationItems || [];
-                  const isFullyDispatched = originalItems.every(item => {
-                    if (item.type !== 'item') return true;
-                    return Number(item.dispatchedQty || 0) >= Number(item.quantity || 0);
-                  });
+                  const order = await resolveSourceOrder(conversionContext, saved || newInvoice);
+                  if (order) {
+                    const invoiceLines = (saved || newInvoice)?.details?.items || [];
+                    const { items, status } = creditInvoiceToOrder(order.details?.items || order.items || [], invoiceLines);
 
-                  const newStatus = isFullyDispatched ? 'Completed' : 'In Progress';
-
-                  await updateQuotation(conversionContext.data.id, {
-                    ...conversionContext.data,
-                    details: {
-                      ...conversionContext.data.details,
-                      items: originalItems
-                    },
-                    status: newStatus
-                  });
+                    await updateQuotation(order.id, {
+                      details: { ...(order.details || {}), items },
+                      status
+                    });
+                  }
                 } catch (err) {
-                  console.error("Failed to update quotation status", err);
+                  console.error("Failed to credit invoiced qty to the source order", err);
+                }
+              }
+
+              // Mark challan as completed if all items in this invoice are fully dispatched
+              const challanIdToUpdate = newInvoice.challan_id || conversionContext?.data?.id;
+              if (challanIdToUpdate) {
+                try {
+                  const invoiceItems = newInvoice.details?.items || [];
+                  let isFullyDispatched = true;
+                  let hasItems = false;
+                  
+                  for (const item of invoiceItems) {
+                    if (item.type === 'item') {
+                      hasItems = true;
+                      const ord = Number(item.orderedQty !== undefined ? item.orderedQty : item.quantity || 0);
+                      const disp = Number(item.dispatchedQty || 0);
+                      if (disp < ord) {
+                        isFullyDispatched = false;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (hasItems) {
+                    await updateChallan(challanIdToUpdate, {
+                      status: isFullyDispatched ? 'Completed' : 'In Progress'
+                    });
+                  }
+                } catch (err) {
+                  console.error("Failed to update challan status based on invoice", err);
                 }
               }
 

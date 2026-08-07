@@ -56,18 +56,19 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/ims/create-indent',       icon: Package,       label: 'Inventory' },
     { path: '/ims/master',              icon: LayoutGrid,     label: 'Item Details' },
     { path: '/ims/purchase',            icon: ShoppingCart,   label: 'Purchase' },
-    { path: '/ims/sales',               icon: FileText,       label: 'Sales' },
+    { path: '/ims/sales',               icon: FileText,       label: 'Quotation' },
+    { path: '/ims/order',               icon: ShoppingCart,   label: 'Order' },
     { path: '/ims/order-summary',       icon: ClipboardList,  label: 'Order Summary' },
     { path: '/ims/item-tracker',        icon: PackageSearch,  label: 'Item Tracker' },
-    { path: '/ims/item-summary',        icon: Activity,       label: 'Stock Reports' },
+    { path: '/ims/item-summary',        icon: Activity,       label: 'Dead Stock' },
     { path: '/ims/settings',            icon: Settings,       label: 'Settings' },
   ];
 
   const employeeMenuItems = [
     { path: '/ims/create-indent', icon: Package,     label: 'Inventory' },
-    { path: '/ims/master',        icon: LayoutGrid,   label: 'Item Details' },
     { path: '/ims/purchase',      icon: ShoppingCart, label: 'Purchase' },
-    { path: '/ims/sales',         icon: FileText,     label: 'Sales' },
+    { path: '/ims/sales',         icon: FileText,     label: 'Quotation' },
+    { path: '/ims/order',         icon: ShoppingCart, label: 'Order' },
     { path: '/ims/order-summary', icon: ClipboardList,label: 'Order Summary' },
     { path: '/ims/item-tracker',  icon: PackageSearch,label: 'Item Tracker' },
   ];

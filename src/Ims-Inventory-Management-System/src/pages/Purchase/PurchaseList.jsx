@@ -315,8 +315,18 @@ export default function PurchaseList({ conversionContext, clearConversionContext
 
       <div className="flex-1 min-h-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-slate-500">Loading purchases...</span>
+          <div className="flex-1 w-full p-6">
+            <div className="space-y-4 w-full">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-2/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <DataTable

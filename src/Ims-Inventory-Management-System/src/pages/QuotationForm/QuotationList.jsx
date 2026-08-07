@@ -1,38 +1,72 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Edit, Eye, Trash2, FileText, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, RotateCcw, Filter, RefreshCw, Download, Edit, Eye, Trash2, FileText, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import { TabSwitcher } from '../../components/StandardButtons';
 import QuotationFormModal from './QuotationFormModal';
-import { getQuotations, deleteQuotation, createQuotation, updateQuotation } from '../../services/quotationService';
+import { getQuotations, getQuotationById, deleteQuotation, createQuotation, updateQuotation, getQuotationHistory, getQuotationCounts } from '../../services/quotationService';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 import useDataStore from '../../store/dataStore';
 
-export default function QuotationList({ onConvertToInvoice }) {
+export default function QuotationList({ onConvertToInvoice, onConvertToChallan, mode = 'sales' }) {
   const { quotations, setQuotations, customers, fetchCustomers } = useDataStore();
   const [isLoading, setIsLoading] = useState(false);
   
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
-  const [activeTab, setActiveTab] = useState('Active');
+  const [activeTab, setActiveTab] = useState(mode === 'orders' ? 'Confirmed' : 'Active');
   const [selectedHistoryBaseNo, setSelectedHistoryBaseNo] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   const [filters, setFilters] = useState({
     searchQuery: ''
   });
+  // Only the search box is debounced. Tab / page / page-size changes are
+  // deliberate single actions and must fetch immediately.
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
 
-  // Fetch quotations
-  const fetchQuotationsData = async (force = false) => {
-    if (!force && quotations.length > 0) return;
+  const [historyData, setHistoryData] = useState([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [openingId, setOpeningId] = useState(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [tabCounts, setTabCounts] = useState({ Active: 0, Accepted: 0, Rejected: 0, Confirmed: 0, 'In Progress': 0, Completed: 0 });
+
+  // Order tabs track invoiced progress: nothing invoiced -> Confirmed,
+  // partly invoiced -> In Progress, fully invoiced -> Completed.
+  const tabDefinitions = useMemo(() => (
+    mode === 'orders'
+      ? [
+          { id: 'Confirmed', label: 'Confirmed' },
+          { id: 'In Progress', label: 'In Progress' },
+          { id: 'Completed', label: 'Completed' }
+        ]
+      : [
+          { id: 'Active', label: 'Active' },
+          { id: 'Accepted', label: 'Accepted' },
+          { id: 'Rejected', label: 'Rejected' }
+        ]
+  ), [mode]);
+
+  // Fetch quotations (Server-side paginated)
+  const fetchQuotationsData = async () => {
     setIsLoading(true);
     try {
-      const data = await getQuotations();
+      const [{ data, count }, counts] = await Promise.all([
+        getQuotations({
+          page: currentPage,
+          limit: itemsPerPage,
+          searchQuery: debouncedSearch,
+          activeTab
+        }),
+        getQuotationCounts(debouncedSearch, tabDefinitions.map(t => t.id))
+      ]);
       setQuotations(data || []);
+      setTotalResults(count || 0);
+      setTabCounts(counts || { Active: 0, Accepted: 0, Rejected: 0, Confirmed: 0, 'In Progress': 0, Completed: 0 });
     } catch (error) {
       toast.error('Failed to fetch quotations');
     } finally {
@@ -41,18 +75,31 @@ export default function QuotationList({ onConvertToInvoice }) {
   };
 
   useEffect(() => {
-    fetchQuotationsData();
     fetchCustomers();
   }, []);
 
+  useEffect(() => {
+    if (filters.searchQuery === debouncedSearch) return;
+    const timer = setTimeout(() => {
+      setDebouncedSearch(filters.searchQuery);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [filters.searchQuery, debouncedSearch]);
+
+  useEffect(() => {
+    fetchQuotationsData();
+  }, [currentPage, itemsPerPage, debouncedSearch, activeTab]);
+
   const handleClearFilters = () => {
     setFilters({ searchQuery: '' });
+    setDebouncedSearch(''); // clear is an explicit action — don't wait out the debounce
     setCurrentPage(1);
     toast.success('Filters cleared');
   };
 
   const handleRefresh = () => {
-    fetchQuotationsData(true);
+    fetchQuotationsData();
     toast.success('Data refreshed');
   };
 
@@ -69,7 +116,7 @@ export default function QuotationList({ onConvertToInvoice }) {
   };
 
   const getExportData = () => {
-    return filteredQuotations.map(item => [
+    return enrichedQuotations.map(item => [
       item.quotationNo || '-',
       item.date || '-',
       item.customerName || '-',
@@ -77,11 +124,18 @@ export default function QuotationList({ onConvertToInvoice }) {
       item.mobileNumber || '-',
       item.displaySalesPerson || '-',
       `Rs. ${Number(item.totalAmount || 0).toLocaleString('en-IN')}`,
+      ...(mode === 'orders'
+        ? [item.hasProgress ? `${item.pendingQty} (${item.invoicedQty}/${item.orderedQty} invoiced)` : '-']
+        : []),
       item.status === 'Final' ? 'Completed' : (item.status || 'Draft')
     ]);
   };
 
-  const exportHeaders = ["Quot #", "Quot Date", "Customer", "State", "Mobile", "Sales Person", "Amount", "Quot Status"];
+  const exportHeaders = [
+    "Quot #", "Quot Date", "Customer", "State", "Mobile", "Sales Person", "Amount",
+    ...(mode === 'orders' ? ["Pending Qty"] : []),
+    "Quot Status"
+  ];
 
   const handleExportPdf = () => {
     exportToPDF(getExportData(), exportHeaders, 'Quotations', 'quotations');
@@ -93,109 +147,62 @@ export default function QuotationList({ onConvertToInvoice }) {
     toast.success('Exported to Excel successfully!');
   };
 
-  const handleView = (item) => {
-    setSelectedQuotation(item);
-    setShowFormModal(true);
+  /**
+   * List rows are light (no details / item lines) so a page of 50 stays small.
+   * Hydrate the single record being opened before handing it to the form modal.
+   */
+  const openQuotation = async (item, { preview = false, revision = false } = {}) => {
+    if (!item) return;
+    setOpeningId(item.id);
+    try {
+      const full = item.isListRow ? await getQuotationById(item.id) : item;
+      if (!full) {
+        toast.error('Failed to load quotation');
+        return;
+      }
+      setSelectedQuotation(revision ? { ...full, isRevisionMode: true } : full);
+      setIsPreviewMode(preview);
+      setShowFormModal(true);
+    } catch (err) {
+      toast.error('Failed to load quotation');
+    } finally {
+      setOpeningId(null);
+    }
   };
 
+  const handleView = (item) => openQuotation(item);
+
   // Filter Logic
-  const { enrichedQuotations, quotationGroups } = useMemo(() => {
-    // 1. Group quotations by customer name
-    const groups = {};
-    quotations.forEach(q => {
-       const customerKey = (q.customerName || 'Unknown Customer').trim().toUpperCase();
-       
-       const match = (q.quotationNo || '').match(/^(QUOT-\d+)(?:-R(\d+))?$/);
-       let baseNo = q.quotationNo;
-       let revNo = 0;
-       if (match) {
-         baseNo = match[1];
-         revNo = match[2] ? parseInt(match[2], 10) : 0;
-       }
-       
-       if (!groups[customerKey]) {
-         groups[customerKey] = [];
-       }
-       q._revNo = revNo; 
-       q._baseNo = baseNo;
-       q._customerKey = customerKey;
-       groups[customerKey].push(q);
-    });
-
-    // 2. Select the latest quotation for each customer
-    const latestQuotations = Object.values(groups).map(group => {
-       return group.sort((a, b) => {
-         const dateDiff = new Date(b.date) - new Date(a.date);
-         if (dateDiff !== 0) return dateDiff;
-         return String(b.id).localeCompare(String(a.id));
-       })[0];
-    });
-
-    const enriched = latestQuotations.map(q => {
+  // Display logic
+  const enrichedQuotations = useMemo(() => {
+    return (Array.isArray(quotations) ? quotations : []).map(q => {
       const cust = customers.find(c => 
         (c.name === q.customerName) || 
         (c.company === q.customerName) || 
         (c.firstName && q.customerName.includes(c.firstName))
       );
+      
+      const customerKey = (q.customerName || 'Unknown Customer').trim().toUpperCase();
+      const match = (q.quotationNo || '').match(/^(QUOT-\d+)(?:-R(\d+))?$/);
+      let baseNo = q.quotationNo;
+      let revNo = 0;
+      if (match) {
+        baseNo = match[1];
+        revNo = match[2] ? parseInt(match[2], 10) : 0;
+      }
+
       return {
         ...q,
+        _revNo: revNo,
+        _baseNo: baseNo,
+        _customerKey: customerKey,
         displaySalesPerson: cust?.salesPerson || q.salesPerson
       };
     });
-
-    return { enrichedQuotations: enriched, quotationGroups: groups };
   }, [quotations, customers]);
 
-  const tabCounts = useMemo(() => {
-     let active = 0, accepted = 0, rejected = 0, inProgress = 0, completed = 0;
-     enrichedQuotations.forEach(q => {
-        let effectiveTab = q.status;
-        if (q.status === 'Final' || q.status === 'Completed') effectiveTab = 'Completed';
-        
-        switch (effectiveTab) {
-           case 'Active': active++; break;
-           case 'Accepted': accepted++; break;
-           case 'Rejected': rejected++; break;
-           case 'In Progress': inProgress++; break;
-           case 'Completed': completed++; break;
-           default: break;
-        }
-     });
-     return { All: enrichedQuotations.length, Active: active, Accepted: accepted, Rejected: rejected, 'In Progress': inProgress, Completed: completed };
-  }, [enrichedQuotations]);
-
-  const filteredQuotations = useMemo(() => {
-    return enrichedQuotations.filter(q => {
-      // Determine effective tab
-      let effectiveTab = q.status;
-      if (q.status === 'Final' || q.status === 'Completed') effectiveTab = 'Completed';
-      
-      // Filter by active tab
-      if (activeTab !== 'All') {
-        if (effectiveTab !== activeTab) {
-          return false;
-        }
-      }
-
-      // Filter by search query
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        return (
-          (q.quotationNo || '').toLowerCase().includes(query) ||
-          (q.customerName || '').toLowerCase().includes(query) ||
-          (q.mobileNumber || '').toLowerCase().includes(query) ||
-          (q.displaySalesPerson || '').toLowerCase().includes(query)
-        );
-      }
-      return true;
-    }).reverse();
-  }, [enrichedQuotations, filters, activeTab]);
-
-  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage) || 1;
-  const paginatedQuotations = filteredQuotations.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(totalResults / itemsPerPage) || 1;
+  const paginatedQuotations = enrichedQuotations; // Server already paginated it
 
   const getStatusColor = (status) => {
     const colors = {
@@ -210,10 +217,38 @@ export default function QuotationList({ onConvertToInvoice }) {
   };
 
 
-  const tableHeaders = [
-    "S.No.", "Quot Date", "Customer", "State", 
-    "Mobile", "Sales Person", "Amount", "Quot Status", "Actions"
-  ];
+  const isOrdersMode = mode === 'orders';
+
+  const tableHeaders = isOrdersMode
+    ? [
+        "Quot #", "Quot Date", "Customer", "State",
+        "Mobile", "Sales Person", "Amount", "Pending Qty", "Quot Status", "Actions"
+      ]
+    : [
+        "Quot #", "Quot Date", "Customer", "State",
+        "Mobile", "Sales Person", "Amount", "Quot Status", "Actions"
+      ];
+
+  // Pending is quoted qty minus invoiced qty. Orders saved before invoiced
+  // tracking existed have no summary, so show '-' instead of a misleading 0.
+  const renderPendingCell = (item) => (
+    <td key="pending" className="px-4 py-3 text-center whitespace-nowrap">
+      {item.hasProgress ? (
+        <>
+          <span className={`inline-block px-2.5 py-1 rounded text-[12px] font-black ${
+            item.pendingQty > 0 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+          }`}>
+            {item.pendingQty}
+          </span>
+          <div className="text-[10px] text-slate-400 font-bold mt-0.5">
+            {item.invoicedQty}/{item.orderedQty} inv
+          </div>
+        </>
+      ) : (
+        <span className="text-[13px] text-slate-400 font-bold">-</span>
+      )}
+    </td>
+  );
 
   const renderRow = (item, idx) => (
     <tr 
@@ -221,8 +256,8 @@ export default function QuotationList({ onConvertToInvoice }) {
       onClick={() => handleView(item)}
       className="hover:bg-sky-50/50 transition-colors border-b border-slate-100 cursor-pointer"
     >
-      <td className="px-4 py-3 text-center text-[15px] text-slate-700 font-bold whitespace-nowrap">
-        {((currentPage - 1) * itemsPerPage) + idx + 1}
+      <td className="px-4 py-3 text-center text-[14px] text-sky-700 font-bold whitespace-nowrap">
+        {item.quotationNo || '-'}
       </td>
       <td className="px-4 py-3 text-center text-[14px] text-slate-700 font-bold whitespace-nowrap">{item.date || '-'}</td>
       <td className="px-6 py-4 text-center text-[15px] font-black text-slate-900 whitespace-nowrap min-w-[250px]">{item.customerName || '-'}</td>
@@ -230,30 +265,41 @@ export default function QuotationList({ onConvertToInvoice }) {
       <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.mobileNumber || '-'}</td>
       <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.displaySalesPerson || '-'}</td>
       <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</td>
+      {isOrdersMode && renderPendingCell(item)}
       <td className="px-4 py-3 text-center whitespace-nowrap text-sm">
         <span className={`px-3 py-1 rounded text-[11px] uppercase font-black tracking-wider shadow-sm ${getStatusColor(item.status)}`}>
           {item.status === 'Final' ? 'Completed' : (item.status || 'Draft')}
         </span>
       </td>
       <td className="px-4 py-3 text-center whitespace-nowrap flex items-center justify-center gap-2">
-        <button 
-          onClick={(e) => { e.stopPropagation(); setSelectedQuotation(item); setIsPreviewMode(true); setShowFormModal(true); }}
-          className="px-3 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded text-[11px] font-bold transition shadow-sm"
-        >
-          Preview
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); setSelectedHistoryBaseNo(item._customerKey); }}
-          className="px-3 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded text-[11px] font-bold transition shadow-sm"
-        >
-          Versions
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); setSelectedQuotation(item); setIsPreviewMode(false); setShowFormModal(true); }}
-          className="px-3 py-1 bg-sky-600 text-white hover:bg-sky-700 rounded border border-sky-700 text-[11px] font-bold transition shadow-sm"
-        >
-          Revise
-        </button>
+        {openingId === item.id && (
+          <Loader2 size={14} className="animate-spin text-sky-600" />
+        )}
+        {activeTab === 'Active' && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); openQuotation(item, { preview: true }); }}
+              className="px-3 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded text-[11px] font-bold transition shadow-sm"
+            >
+              Preview
+            </button>
+            <button 
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                handleOpenHistory(item._baseNo); 
+              }}
+              className="px-3 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 rounded text-[11px] font-bold transition shadow-sm"
+            >
+              Versions
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); openQuotation(item, { revision: true }); }}
+              className="px-3 py-1 bg-sky-600 text-white hover:bg-sky-700 rounded border border-sky-700 text-[11px] font-bold transition shadow-sm"
+            >
+              Revise
+            </button>
+          </>
+        )}
         <button 
           onClick={(e) => {
             e.stopPropagation();
@@ -287,7 +333,7 @@ export default function QuotationList({ onConvertToInvoice }) {
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedHistoryBaseNo(item._baseNo);
+              handleOpenHistory(item._baseNo);
             }} 
             className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-sky-100 hover:text-sky-700 transition flex items-center gap-1"
           >
@@ -308,10 +354,34 @@ export default function QuotationList({ onConvertToInvoice }) {
         <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Customer</span> <span className="font-semibold text-slate-800">{item.customerName}</span></div>
         <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Sales Person</span> <span className="text-slate-600">{item.displaySalesPerson}</span></div>
         <div><span className="text-slate-400 block text-[10px] uppercase font-bold">Amount</span> <span className="font-bold text-emerald-600">₹{Number(item.totalAmount || 0).toLocaleString('en-IN')}</span></div>
-
+        {isOrdersMode && (
+          <div>
+            <span className="text-slate-400 block text-[10px] uppercase font-bold">Pending Qty</span>
+            {item.hasProgress ? (
+              <span className={`font-bold ${item.pendingQty > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                {item.pendingQty} <span className="text-slate-400 font-semibold">({item.invoicedQty}/{item.orderedQty} inv)</span>
+              </span>
+            ) : (
+              <span className="text-slate-400 font-bold">-</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
+
+  const handleOpenHistory = async (baseNo) => {
+    setSelectedHistoryBaseNo(baseNo);
+    setIsHistoryLoading(true);
+    try {
+      const history = await getQuotationHistory(baseNo);
+      setHistoryData(history);
+    } catch (err) {
+      toast.error('Failed to load history');
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  };
 
   return (
     <div className="p-0 sm:p-2 md:p-6 space-y-4 md:space-y-6 flex flex-col h-full min-h-0">
@@ -338,16 +408,18 @@ export default function QuotationList({ onConvertToInvoice }) {
             >
               <Filter size={15} />
             </button>
-            <button
-              onClick={() => {
-                setSelectedQuotation(null);
-                setShowFormModal(true);
-              }}
-              className="lg:hidden flex items-center justify-center bg-sky-600 text-white rounded-xl h-[38px] w-[38px] flex-shrink-0 shadow-md shadow-sky-100 active:scale-95"
-              title="Add Quotation"
-            >
-              <Plus size={18} />
-            </button>
+            {mode !== 'orders' && (
+              <button
+                onClick={() => {
+                  setSelectedQuotation(null);
+                  setShowFormModal(true);
+                }}
+                className="lg:hidden flex items-center justify-center bg-sky-600 text-white rounded-xl h-[38px] w-[38px] flex-shrink-0 shadow-md shadow-sky-100 active:scale-95"
+                title="Add Quotation"
+              >
+                <Plus size={18} />
+              </button>
+            )}
             <button
               onClick={handleClearFilters}
               className="lg:hidden flex items-center justify-center bg-slate-50 text-slate-500 border border-slate-200 rounded-xl h-[38px] w-[38px] flex-shrink-0 shadow-sm active:scale-95"
@@ -378,7 +450,7 @@ export default function QuotationList({ onConvertToInvoice }) {
                 ))}
               </select>
               <span className="text-[10px] text-slate-500 font-medium px-1 whitespace-nowrap hidden lg:inline">
-                {filteredQuotations.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredQuotations.length)} of {filteredQuotations.length}
+                {totalResults > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalResults)} of {totalResults}
               </span>
               <button
                 onClick={() => setCurrentPage(c => c - 1)}
@@ -421,30 +493,26 @@ export default function QuotationList({ onConvertToInvoice }) {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setSelectedQuotation(null);
-            setShowFormModal(true);
-          }}
-          className="hidden lg:flex bg-sky-600 hover:bg-sky-700 text-white rounded-xl items-center justify-center gap-1.5 transition shadow-md shadow-sky-100 h-[38px] px-4 flex-shrink-0 text-xs font-bold"
-          title="Add Quotation"
-        >
-          <Plus size={16} /> Quotation Form
-        </button>
+        {mode !== 'orders' && (
+          <button
+            onClick={() => {
+              setSelectedQuotation(null);
+              setShowFormModal(true);
+            }}
+            className="hidden lg:flex bg-sky-600 hover:bg-sky-700 text-white rounded-xl items-center justify-center gap-1.5 transition shadow-md shadow-sky-100 h-[38px] px-4 flex-shrink-0 text-xs font-bold"
+            title="Add Quotation"
+          >
+            <Plus size={16} /> Quotation Form
+          </button>
+        )}
       </div>
 
       {/* Tabs Switcher for Quotation Status */}
       <div className="px-2 sm:px-0">
         <TabSwitcher
           activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabs={[
-            { id: 'Active', label: 'Active', count: tabCounts.Active },
-            { id: 'Accepted', label: 'Accepted', count: tabCounts.Accepted },
-            { id: 'Rejected', label: 'Rejected', count: tabCounts.Rejected },
-            { id: 'In Progress', label: 'In Progress', count: tabCounts['In Progress'] },
-            { id: 'Completed', label: 'Completed', count: tabCounts.Completed }
-          ]}
+          onTabChange={(tab) => { setActiveTab(tab); setCurrentPage(1); }}
+          tabs={tabDefinitions.map(t => ({ ...t, count: tabCounts[t.id] || 0 }))}
         />
       </div>
 
@@ -453,8 +521,18 @@ export default function QuotationList({ onConvertToInvoice }) {
       {/* Main DataTable */}
       <div className="flex-1 min-h-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-slate-500">Loading quotations...</span>
+          <div className="flex-1 w-full p-6">
+            <div className="space-y-4 w-full">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-2/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <DataTable
@@ -468,7 +546,7 @@ export default function QuotationList({ onConvertToInvoice }) {
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
-            totalResults={filteredQuotations.length}
+            totalResults={totalResults}
             itemsPerPageOptions={[20, 50, 100]}
             hidePagination={true}
           />
@@ -481,6 +559,8 @@ export default function QuotationList({ onConvertToInvoice }) {
           isOpen={showFormModal}
           initialData={selectedQuotation}
           defaultToPrintPreview={isPreviewMode}
+          mode={mode}
+          hideAcceptReject={isOrdersMode}
           onAddNewQuotation={() => {
             setSelectedQuotation(null);
             setIsPreviewMode(false);
@@ -492,7 +572,15 @@ export default function QuotationList({ onConvertToInvoice }) {
           }}
           onSave={(savedQuotation, closeModal = true) => {
             if (selectedQuotation) {
-              setQuotations(prev => [...prev, savedQuotation]);
+              setQuotations(prev => {
+                const existingIndex = prev.findIndex(q => String(q.id) === String(savedQuotation.id));
+                if (existingIndex !== -1) {
+                  const newArr = [...prev];
+                  newArr[existingIndex] = savedQuotation;
+                  return newArr;
+                }
+                return [...prev, savedQuotation];
+              });
               // Do not show double toast for Accept since QuotationFormModal handles it
               if (closeModal) toast.success('Quotation updated successfully');
             } else {
@@ -509,6 +597,7 @@ export default function QuotationList({ onConvertToInvoice }) {
             }
           }}
           onConvertToInvoice={onConvertToInvoice}
+          onConvertToChallan={onConvertToChallan}
           onDelete={async (id) => {
             await handleDelete(id);
             setShowFormModal(false);
@@ -529,75 +618,76 @@ export default function QuotationList({ onConvertToInvoice }) {
 
       {/* History Modal */}
       {selectedHistoryBaseNo && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 md:py-12 md:px-8">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[80vh] my-auto">
             <div className="flex items-center justify-between p-5 md:px-6 border-b border-slate-200 bg-slate-50/50">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <RotateCcw className="text-sky-600" size={20} />
-                Quotations — {quotationGroups[selectedHistoryBaseNo]?.[0]?.customerName || selectedHistoryBaseNo}
+                Quotations — {selectedHistoryBaseNo}
               </h3>
               <button 
-                onClick={() => setSelectedHistoryBaseNo(null)}
+                onClick={() => {
+                  setSelectedHistoryBaseNo(null);
+                  setHistoryData([]);
+                }}
                 className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
               >
                 <X size={20} className="text-slate-500" />
               </button>
             </div>
             <div className="p-6 bg-slate-50/30 overflow-y-auto space-y-4">
-              {(quotationGroups[selectedHistoryBaseNo] || []).sort((a,b) => {
-                 const dateDiff = new Date(b.date) - new Date(a.date);
-                 if (dateDiff !== 0) return dateDiff;
-                 return String(b.id).localeCompare(String(a.id));
-              }).map((rev, index) => (
-                <div key={rev.id} className="border border-slate-200 bg-white rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-sm">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[16px] font-black text-sky-800">{rev.quotationNo}</span>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold tracking-wider ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {index === 0 ? 'LATEST' : 'PREVIOUS'}
-                      </span>
+              {isHistoryLoading ? (
+                <div className="text-center p-6 text-slate-500 font-medium animate-pulse">Loading history...</div>
+              ) : historyData.length === 0 ? (
+                <div className="text-center p-6 text-slate-500 font-medium">No history found.</div>
+              ) : (
+                historyData.map((rev, index) => (
+                  <div key={rev.id} className="border border-slate-200 bg-white rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-sm">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[16px] font-black text-sky-800">{rev.quotationNo}</span>
+                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold tracking-wider ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {index === 0 ? 'LATEST' : 'PREVIOUS'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 flex flex-col gap-1 mt-2">
+                        <div className="flex flex-wrap gap-x-3 gap-y-1">
+                          <span>Amount: <span className="font-bold text-slate-700 text-[13px]">₹{Number(rev.totalAmount || 0).toLocaleString('en-IN')}</span></span>
+                          <span className="text-slate-300">|</span>
+                          <span>Date: <span className="font-semibold text-slate-600">{rev.date}</span></span>
+                          <span className="text-slate-300">|</span>
+                          <span>Customer: <span className="font-semibold text-slate-600">{rev.customerName}</span></span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] items-center">
+                          <span>Quot. Person: <span className="font-semibold text-slate-600">{rev.quortPerson || rev.salesPerson || '-'}</span></span>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-[13px] text-slate-800 font-bold">Type: <span className="font-black text-sky-800">{rev.type_of_quotation || 'Standard'}</span></span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 flex flex-col gap-1 mt-2">
-                      <div className="flex flex-wrap gap-x-3 gap-y-1">
-                        <span>Amount: <span className="font-bold text-slate-700 text-[13px]">₹{Number(rev.totalAmount || 0).toLocaleString('en-IN')}</span></span>
-                        <span className="text-slate-300">|</span>
-                        <span>Date: <span className="font-semibold text-slate-600">{rev.date}</span></span>
-                        <span className="text-slate-300">|</span>
-                        <span>Customer: <span className="font-semibold text-slate-600">{rev.customerName}</span></span>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] items-center">
-                        <span>Quot. Person: <span className="font-semibold text-slate-600">{rev.details?.otherInfo?.quortPerson || rev.displaySalesPerson || '-'}</span></span>
-                        <span className="text-slate-300">|</span>
-                        <span className="text-[13px] text-slate-800 font-bold">Type: <span className="font-black text-sky-800">{rev.details?.basicInfo?.typeOfQuotation || rev.type_of_quotation || 'Standard'}</span></span>
-                      </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedHistoryBaseNo(null);
+                          openQuotation(rev);
+                        }}
+                        className="px-4 py-1.5 bg-white border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <FileText size={16} /> Open
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedHistoryBaseNo(null);
+                          openQuotation(rev, { preview: true });
+                        }}
+                        className="px-4 py-1.5 bg-white border border-slate-200 hover:border-sky-200 hover:bg-sky-50 text-slate-700 hover:text-sky-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <Eye size={16} /> Preview
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => {
-                        setSelectedHistoryBaseNo(null);
-                        setSelectedQuotation(rev);
-                        setIsPreviewMode(false);
-                        setShowFormModal(true);
-                      }}
-                      className="px-4 py-1.5 bg-white border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <FileText size={16} /> Open
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setSelectedHistoryBaseNo(null);
-                        setSelectedQuotation(rev);
-                        setIsPreviewMode(true);
-                        setShowFormModal(true);
-                      }}
-                      className="px-4 py-1.5 bg-white border border-slate-200 hover:border-sky-200 hover:bg-sky-50 text-slate-700 hover:text-sky-700 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <Eye size={16} /> Preview
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

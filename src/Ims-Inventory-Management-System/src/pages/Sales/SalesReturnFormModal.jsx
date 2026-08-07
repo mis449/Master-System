@@ -21,7 +21,7 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const [printOrientation, setPrintOrientation] = useState('Horizontal');
+  const [printOrientation, setPrintOrientation] = useState('Portrait');
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
@@ -267,6 +267,9 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
             });
             setIsEmailModalOpen(true);
           }}
+          onSaveForm={handleSubmit}
+          isSubmitting={isSubmitting}
+          saveText={isSubmitting ? (initialData?.SalesReturnNo ? 'Updating...' : 'Saving...') : (initialData?.SalesReturnNo ? 'Update Sales Return' : 'Save Sales Return')}
         />
 
         <div className="flex-1 space-y-6">
@@ -371,20 +374,6 @@ export default function SalesReturnFormModal({ isOpen, onClose, onSave, initialD
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Custom Footer */}
-        <div className="border-t border-slate-200 mt-auto flex justify-between items-center">
-          <div className="py-4 flex gap-3">
-             <button onClick={handleSubmit} disabled={isSubmitting} className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition">
-               {isSubmitting ? (initialData?.SalesReturnNo ? 'Updating...' : 'Saving...') : (initialData?.SalesReturnNo ? 'Update Sales Return' : 'Save Sales Return')}
-             </button>
-             {initialData?.SalesReturnNo && (
-               <button onClick={onClose} disabled={isSubmitting} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-sm transition">
-                 Cancel
-               </button>
-             )}
           </div>
         </div>
 

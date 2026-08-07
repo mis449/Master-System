@@ -8,7 +8,7 @@ import ModalForm from '../../components/ModalForm';
 import useDataStore from '../../store/dataStore';
 
 export default function ItemDetails() {
-  const { items, isLoading, error, fetchItems, addNewItem, updateItem, inventorySummary, fetchInventorySummary, brands, fetchBrands, addBrand } = useDataStore();
+  const { items, isLoading, error, fetchItems, addNewItem, updateItem, brands, fetchBrands, addBrand } = useDataStore();
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showBrandInput, setShowBrandInput] = useState(false);
@@ -21,15 +21,22 @@ export default function ItemDetails() {
     ItemName: '',
     BrandName: '',
     MRP: '',
-    ImageURL: ''
+    UOM: '',
+    ImageURL: '',
+    Remarks: []
   });
+  const [newRemarkTextAdd, setNewRemarkTextAdd] = useState('');
+  const [newRemarkText, setNewRemarkText] = useState('');
   const [editFormData, setEditFormData] = useState({
     id: '',
     ItemCode: '',
     ItemName: '',
     BrandName: '',
     MRP: '',
-    ImageURL: ''
+    StockQty: '',
+    UOM: '',
+    ImageURL: '',
+    Remarks: []
   });
 
   // Filters State
@@ -48,10 +55,11 @@ export default function ItemDetails() {
   }, [filters]);
 
   useEffect(() => {
+    // No fetchInventorySummary here: this page renders nothing from it, and it
+    // pulls every invoice/purchase/return then writes the summary back.
     fetchItems();
-    fetchInventorySummary();
     fetchBrands();
-  }, [fetchItems, fetchInventorySummary, fetchBrands]);
+  }, [fetchItems, fetchBrands]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -76,13 +84,23 @@ export default function ItemDetails() {
       await addBrand(newItemData.BrandName);
       setIsAddingBrand(false);
     }
-    const res = await addNewItem(newItemData);
+    
+    const payload = { ...newItemData };
+    if (newRemarkTextAdd.trim()) {
+       payload.Remarks = [
+         ...payload.Remarks,
+         { text: newRemarkTextAdd.trim(), date: new Date().toISOString() }
+       ];
+    }
+    
+    const res = await addNewItem(payload);
     setIsSubmitting(false);
     
     if (res.success) {
       toast.success('Product added successfully!');
       setIsAddModalOpen(false);
-      setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', ImageURL: '' });
+      setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', StockQty: '', UOM: '', ImageURL: '', Remarks: [] });
+      setNewRemarkTextAdd('');
     } else {
       toast.error(res.error || 'Failed to add product');
     }
@@ -96,8 +114,11 @@ export default function ItemDetails() {
       BrandName: item.BrandName || '',
       MRP: item.MRP || '',
       StockQty: item.StockQty || '',
-      ImageURL: item.Thumbnail || item.product_image_url || ''
+      UOM: item.UOM || item.uom || '',
+      ImageURL: item.Thumbnail || item.product_image_url || '',
+      Remarks: item.Remarks || []
     });
+    setNewRemarkText('');
     setIsEditModalOpen(true);
   };
 
@@ -114,7 +135,16 @@ export default function ItemDetails() {
       await addBrand(editFormData.BrandName);
       setIsAddingBrand(false);
     }
-    const res = await updateItem(editFormData.id, editFormData);
+    
+    const payload = { ...editFormData };
+    if (newRemarkText.trim()) {
+      payload.Remarks = [
+        ...payload.Remarks,
+        { text: newRemarkText.trim(), date: new Date().toISOString() }
+      ];
+    }
+    
+    const res = await updateItem(editFormData.id, payload);
     setIsSubmitting(false);
     
     if (res.success) {
@@ -167,7 +197,7 @@ export default function ItemDetails() {
   );
 
   const tableHeaders = [
-    "Serial No", "Image", "Item Code", "Item Name", "Brand", "Unit Price / MRP", "Stock", "Actions"
+    "Serial No", "Image", "Item Code", "Item Name", "Brand", "UOM", "Unit Price / MRP", "Stock", "Actions"
   ];
 
   const renderRow = ( item, idx) => {
@@ -190,6 +220,7 @@ export default function ItemDetails() {
         <td className="px-4 py-3 text-center text-[15px] text-slate-900 font-black whitespace-nowrap">{item.ItemCode}</td>
         <td className="px-4 py-3 text-justify text-[14px] font-bold text-slate-900 whitespace-normal uppercase min-w-[350px]">{item.ItemName}</td>
         <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.BrandName}</td>
+        <td className="px-4 py-3 text-center text-[14px] font-bold text-slate-800 whitespace-nowrap">{item.UOM || item.uom || ''}</td>
         <td className="px-4 py-3 text-center text-[16px] text-emerald-700 font-black whitespace-nowrap">₹{priceVal.toLocaleString('en-IN')}</td>
         <td className="px-4 py-3 text-center text-[18px] text-sky-700 font-black whitespace-nowrap">{liveStockQty}</td>
         <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -229,6 +260,10 @@ export default function ItemDetails() {
           <div>
             <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Brand</span>
             <span className="text-gray-800 font-semibold break-words whitespace-normal block leading-tight">{item.BrandName}</span>
+          </div>
+          <div>
+            <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">UOM</span>
+            <span className="text-gray-800 font-semibold break-words whitespace-normal block leading-tight">{item.UOM || item.uom || ''}</span>
           </div>
           <div>
             <span className="text-gray-400 block uppercase text-[10px] tracking-tight mb-0.5">Stock</span>
@@ -538,6 +573,17 @@ export default function ItemDetails() {
             </div>
 
             <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">UOM</label>
+              <input
+                type="text"
+                value={newItemData.UOM || ''}
+                onChange={(e) => setNewItemData({ ...newItemData, UOM: e.target.value.toUpperCase() })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                placeholder="e.g. PCS, BOX, SQFT"
+              />
+            </div>
+
+            <div>
               <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Product Image (Optional)</label>
               <div className="flex items-center gap-3">
                 <div className="w-20 h-20 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 flex-shrink-0 overflow-hidden">
@@ -556,6 +602,62 @@ export default function ItemDetails() {
                 />
               </div>
               <p className="text-[10px] text-slate-400 mt-1.5 ml-12">Currently supports image URLs. Storage bucket configuration required for direct file uploads.</p>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Remarks History</label>
+              
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-32 overflow-y-auto mb-3 space-y-2">
+                {(!newItemData.Remarks || newItemData.Remarks.length === 0) ? (
+                  <p className="text-xs text-slate-400 text-center py-4">No remarks yet</p>
+                ) : (
+                  newItemData.Remarks.map((rmk, idx) => (
+                    <div key={idx} className="bg-white p-2 rounded border border-slate-200 text-xs shadow-sm">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-slate-600">{new Date(rmk.date).toLocaleDateString()} {new Date(rmk.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      </div>
+                      <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">{rmk.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newRemarkTextAdd}
+                  onChange={(e) => setNewRemarkTextAdd(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  placeholder="Type a remark..."
+                  onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                       e.preventDefault();
+                       if (newRemarkTextAdd.trim()) {
+                         setNewItemData(prev => ({
+                           ...prev,
+                           Remarks: [...(prev.Remarks || []), { text: newRemarkTextAdd.trim(), date: new Date().toISOString() }]
+                         }));
+                         setNewRemarkTextAdd('');
+                       }
+                     }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                     if (newRemarkTextAdd.trim()) {
+                       setNewItemData(prev => ({
+                         ...prev,
+                         Remarks: [...(prev.Remarks || []), { text: newRemarkTextAdd.trim(), date: new Date().toISOString() }]
+                       }));
+                       setNewRemarkTextAdd('');
+                     }
+                  }}
+                  className="bg-sky-100 text-sky-700 hover:bg-sky-200 px-4 py-2 rounded-xl font-bold text-xs transition"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
           </div>
@@ -668,6 +770,17 @@ export default function ItemDetails() {
             </div>
 
             <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">UOM</label>
+              <input
+                type="text"
+                value={editFormData.UOM || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, UOM: e.target.value.toUpperCase() })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                placeholder="e.g. PCS, BOX, SQFT"
+              />
+            </div>
+
+            <div>
               <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Product Image (Optional)</label>
               <div className="flex items-center gap-3">
                 <div className="w-20 h-20 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 flex-shrink-0 overflow-hidden">
@@ -684,6 +797,62 @@ export default function ItemDetails() {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
                   placeholder="Paste Image URL or Base64 here..."
                 />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Remarks History</label>
+              
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-32 overflow-y-auto mb-3 space-y-2">
+                {(!editFormData.Remarks || editFormData.Remarks.length === 0) ? (
+                  <p className="text-xs text-slate-400 text-center py-4">No remarks yet</p>
+                ) : (
+                  editFormData.Remarks.map((rmk, idx) => (
+                    <div key={idx} className="bg-white p-2 rounded border border-slate-200 text-xs shadow-sm">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-slate-600">{new Date(rmk.date).toLocaleDateString()} {new Date(rmk.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      </div>
+                      <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">{rmk.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newRemarkText}
+                  onChange={(e) => setNewRemarkText(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  placeholder="Type a remark..."
+                  onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                       e.preventDefault();
+                       if (newRemarkText.trim()) {
+                         setEditFormData(prev => ({
+                           ...prev,
+                           Remarks: [...(prev.Remarks || []), { text: newRemarkText.trim(), date: new Date().toISOString() }]
+                         }));
+                         setNewRemarkText('');
+                       }
+                     }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                     if (newRemarkText.trim()) {
+                       setEditFormData(prev => ({
+                         ...prev,
+                         Remarks: [...(prev.Remarks || []), { text: newRemarkText.trim(), date: new Date().toISOString() }]
+                       }));
+                       setNewRemarkText('');
+                     }
+                  }}
+                  className="bg-sky-100 text-sky-700 hover:bg-sky-200 px-4 py-2 rounded-xl font-bold text-xs transition"
+                >
+                  Add
+                </button>
               </div>
             </div>
 

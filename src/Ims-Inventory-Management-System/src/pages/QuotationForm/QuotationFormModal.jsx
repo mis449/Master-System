@@ -17,7 +17,24 @@ import { ShoppingCart } from 'lucide-react';
 import PremiumQuotationPrint from '../../components/sales/PremiumQuotationPrint';
 import emailjs from '@emailjs/browser';
 import BrandDiscountModal from './BrandDiscountModal';
-export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onDelete, onCopy, defaultToPrintPreview, onAddNewQuotation }) {
+import { computeOrderProgress, deriveOrderStatus } from '../../utils/orderProgress';
+
+// Selecting an item code on the last row auto-appends a fresh blank line so the
+// user can keep typing (see handleItemCodeSelect). That trailing blank must not
+// be persisted as a real item line. Section / sub-section rows are titles and
+// are always kept. Mirrors the filter PremiumQuotationPrint already applies.
+const hasItemContent = (item) =>
+  item.type === 'section' ||
+  item.type === 'subsection' ||
+  Boolean((item.itemCode || '').trim()) ||
+  Boolean((item.description || '').trim());
+
+// Statuses whose order progress is re-derived on save. 'Challan Submitted' is a
+// legacy value that older records still carry.
+const ORDER_TRACKED_STATUSES = ['Confirmed', 'In Progress', 'Challan Submitted'];
+
+export default function QuotationFormModal({ isOpen, onClose, onSave, initialData, onConvertToInvoice, onConvertToChallan, onDelete, onCopy, defaultToPrintPreview, onAddNewQuotation, hideAcceptReject, mode = 'sales' }) {
+  console.log('QuotationFormModal rendering with mode:', mode, 'quotationStatus:', initialData?.status);
   const [activeTab, setActiveTab] = useState('ItemLines'); // 'ItemLines', 'OtherInfo', 'Notes'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -52,7 +69,23 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           typeOfQuotation: '',
           ...(initialData.details.basicInfo || {})
         });
-        setItems(initialData.details.items ? JSON.parse(JSON.stringify(initialData.details.items)) : [getEmptyItem()]);
+        // `?.length` not just truthiness: a saved quotation with no item lines
+        // yields [], which must still open with one blank row to edit.
+        const loadedItems = (initialData.details.items?.length ? JSON.parse(JSON.stringify(initialData.details.items)) : [getEmptyItem()]).map(item => {
+          if (item.type !== 'item') return item;
+          const qty = Number(item.quantity || 0);
+          const dispQty = item.dispatchQty !== undefined ? Number(item.dispatchQty) : qty;
+          const prevDisp = Number(item.dispatchedQty || 0);
+          return {
+            ...item,
+            stock: item.stock !== undefined ? Number(item.stock) : 0,
+            orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : qty,
+            dispatchQty: dispQty,
+            dispatchedQty: prevDisp,
+            thumbnail: item.thumbnail || ''
+          };
+        });
+        setItems(loadedItems);
         setOtherInfo(initialData.details.otherInfo || {
           salesPerson: '',
           salesNumber: '',
@@ -130,7 +163,22 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   });
 
   // Item Lines State
-  const getEmptyItem = (type = 'item') => ({ id: Date.now() + Math.random(), type, itemCode: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 18, netAmount: 0 });
+  const getEmptyItem = (type = 'item') => ({ 
+    id: Date.now() + Math.random(), 
+    type, 
+    itemCode: '', 
+    description: '', 
+    quantity: 1, 
+    unitPrice: 0, 
+    discountPercent: 0, 
+    taxPercent: 18, 
+    netAmount: 0,
+    stock: 0,
+    orderedQty: 1,
+    dispatchQty: 1,
+    dispatchedQty: 0,
+    thumbnail: ''
+  });
   const [items, setItems] = useState([getEmptyItem()]);
 
   // Other Info State
@@ -203,7 +251,15 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
   const handleItemChange = (id, field, value) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, [field]: value };
+        const updated = { ...item, [field]: value };
+        if (field === 'quantity') {
+          const numVal = Number(value) || 0;
+          updated.orderedQty = numVal;
+          if (updated.dispatchQty === undefined || Number(updated.dispatchQty) === Number(item.quantity)) {
+            updated.dispatchQty = numVal;
+          }
+        }
+        return updated;
       }
       return item;
     }));
@@ -218,7 +274,11 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           itemCode: code,
           description: item.ItemName || item.name || '',
           unitPrice: Number(item.MRP || item.price || 0),
-          thumbnail: item.Thumbnail || item.product_image_url || ''
+          thumbnail: item.Thumbnail || item.product_image_url || '',
+          stock: Number((item.StockQty || 0).toFixed(1)),
+          orderedQty: Number(p.quantity || 1),
+          dispatchQty: Number(p.dispatchQty !== undefined ? p.dispatchQty : (p.quantity || 1)),
+          dispatchedQty: Number(p.dispatchedQty || 0)
         } : p);
         
         // Auto-add new row if the modified row is the last one
@@ -247,7 +307,12 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
           unitPrice: Number(cartItem.MRP || cartItem.price || 0),
           discountPercent: 0,
           taxPercent: 18,
-          netAmount: 0
+          netAmount: 0,
+          stock: Number((cartItem.StockQty || 0).toFixed(1)),
+          orderedQty: Number(cartItem.selectedQty || 1),
+          dispatchQty: Number(cartItem.selectedQty || 1),
+          dispatchedQty: 0,
+          thumbnail: cartItem.Thumbnail || cartItem.product_image_url || ''
         };
 
         if (insertIndex !== -1) {
@@ -334,6 +399,36 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
 
     setIsSubmitting(true);
     try {
+      let finalStatus = quotationStatus;
+
+      // Ignore the trailing auto-added blank line everywhere below: it carries a
+      // default quantity of 1 with nothing invoiced, which would otherwise keep
+      // the order pending forever and block the Completed status.
+      const contentItems = items.filter(hasItemContent);
+
+      // Re-derive the order status from INVOICED quantity, so editing a quoted
+      // qty here (5 -> 4) immediately re-classifies the order. Challan and
+      // dispatch quantities deliberately have no effect.
+      if (mode === 'orders' && ORDER_TRACKED_STATUSES.includes(quotationStatus)) {
+        finalStatus = deriveOrderStatus(computeOrderProgress(contentItems));
+      }
+
+      const formattedItems = contentItems.map(item => {
+        if (item.type !== 'item') return item;
+        const qty = Number(item.quantity || 0);
+        const invItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+        const dispQty = item.dispatchQty !== undefined ? Number(item.dispatchQty) : qty;
+        const prevDisp = Number(item.dispatchedQty || 0);
+        return {
+          ...item,
+          stock: item.stock !== undefined ? Number(item.stock) : (invItem ? Number((invItem.StockQty || 0).toFixed(1)) : 0),
+          orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : qty,
+          dispatchQty: dispQty,
+          dispatchedQty: prevDisp,
+          thumbnail: item.thumbnail !== undefined ? item.thumbnail : (invItem ? (invItem.Thumbnail || invItem.product_image_url || '') : '')
+        };
+      });
+
       const quotationData = {
         quotationNo: initialData ? initialData.quotationNo : `QT-${Math.floor(1000 + Math.random() * 9000)}`,
         date: initialData ? initialData.date : new Date().toISOString().split('T')[0],
@@ -342,14 +437,14 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         state: basicInfo.cityState ? (basicInfo.cityState.includes('/') ? basicInfo.cityState.split('/')[1]?.trim() : basicInfo.cityState) : (otherInfo.state || '-'),
         salesPerson: otherInfo.salesPerson || 'Admin',
         totalAmount: summary.totalAmount,
-        status: quotationStatus,
+        status: finalStatus,
         supplyStatus: supplyStatus,
-        details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
+        details: { basicInfo, items: formattedItems, otherInfo, notes, summary, showAddDiscount }
       };
 
       let saved;
       if (initialData && initialData.id) {
-        saved = await updateQuotation(initialData.id, quotationData);
+        saved = await updateQuotation(initialData.id, quotationData, initialData.isRevisionMode);
       } else {
         saved = await createQuotation(quotationData);
       }
@@ -370,6 +465,22 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
     setQuotationStatus(newStatus);
     setIsSubmitting(true);
     try {
+      const formattedItems = items.filter(hasItemContent).map(item => {
+        if (item.type !== 'item') return item;
+        const qty = Number(item.quantity || 0);
+        const invItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+        const dispQty = item.dispatchQty !== undefined ? Number(item.dispatchQty) : qty;
+        const prevDisp = Number(item.dispatchedQty || 0);
+        return {
+          ...item,
+          stock: item.stock !== undefined ? Number(item.stock) : (invItem ? Number((invItem.StockQty || 0).toFixed(1)) : 0),
+          orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : qty,
+          dispatchQty: dispQty,
+          dispatchedQty: prevDisp,
+          thumbnail: item.thumbnail !== undefined ? item.thumbnail : (invItem ? (invItem.Thumbnail || invItem.product_image_url || '') : '')
+        };
+      });
+
       const quotationData = {
         quotationNo: initialData ? initialData.quotationNo : `QT-${Math.floor(1000 + Math.random() * 9000)}`,
         date: initialData ? initialData.date : new Date().toISOString().split('T')[0],
@@ -380,19 +491,19 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
         totalAmount: summary.totalAmount,
         status: newStatus,
         supplyStatus: supplyStatus,
-        details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
+        details: { basicInfo, items: formattedItems, otherInfo, notes, summary, showAddDiscount }
       };
 
       let saved;
       if (initialData && initialData.id) {
-        saved = await updateQuotation(initialData.id, quotationData);
+        saved = await updateQuotation(initialData.id, quotationData, initialData.isRevisionMode);
       } else {
         saved = await createQuotation(quotationData);
       }
       
       toast.success(`Quotation marked as ${newStatus}`);
       
-      if (newStatus === 'Accepted') {
+      if (newStatus === 'Accepted' || newStatus === 'Confirmed') {
         onSave(saved, false); // Pass false to prevent closing
       } else {
         onSave(saved, true);
@@ -409,6 +520,22 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       toast.error("Nothing to copy yet.");
       return;
     }
+    const formattedItems = items.filter(hasItemContent).map(item => {
+      if (item.type !== 'item') return item;
+      const qty = Number(item.quantity || 0);
+      const invItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+      const dispQty = item.dispatchQty !== undefined ? Number(item.dispatchQty) : qty;
+      const prevDisp = Number(item.dispatchedQty || 0);
+      return {
+        ...item,
+        stock: item.stock !== undefined ? Number(item.stock) : (invItem ? Number((invItem.StockQty || 0).toFixed(1)) : 0),
+        orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : qty,
+        dispatchQty: dispQty,
+        dispatchedQty: prevDisp,
+        thumbnail: item.thumbnail !== undefined ? item.thumbnail : (invItem ? (invItem.Thumbnail || invItem.product_image_url || '') : '')
+      };
+    });
+
     const copyData = {
       quotationNo: `QT-${Math.floor(1000 + Math.random() * 9000)}`,
       date: new Date().toISOString().split('T')[0],
@@ -419,7 +546,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       totalAmount: summary.totalAmount,
       status: 'Draft',
       supplyStatus: '-',
-      details: { basicInfo, items, otherInfo, notes, summary, showAddDiscount }
+      details: { basicInfo, items: formattedItems, otherInfo, notes, summary, showAddDiscount }
     };
     if (onCopy) onCopy(copyData);
   };
@@ -440,7 +567,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
       title={initialData ? (quotationStatus === 'Accepted' || quotationStatus === 'Completed' || quotationStatus === 'Final' ? "View / Edit Quotation" : "Edit Quotation") : "Quotation Form"}
       onSubmit={handleSubmit}
       submitText={isSubmitting ? 'Saving...' : (initialData ? 'Update Quotation' : 'Save Quotation')}
-      hideSubmit={false}
+      hideSubmit={hideAcceptReject}
       maxWidth="max-w-[98vw] w-[98vw]"
     >
       <div className="space-y-6">
@@ -480,7 +607,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
 
           </div>
           <div className="flex gap-3 items-center flex-wrap">
-            {(quotationStatus === 'Active') && (
+            {(quotationStatus === 'Active' && !hideAcceptReject) && (
               <>
                 <button type="button" className="text-[11px] font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1">
                    Accept Payment ₹
@@ -504,23 +631,58 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               </>
             )}
             
-            {(quotationStatus === 'Accepted' || quotationStatus === 'In Progress') && (
-              <div className="flex gap-1 items-center">
-                <button 
-                  type="button" 
-                  onClick={() => setIsDispatchModalOpen(true)}
-                  className="text-[11px] font-bold bg-white text-slate-700 border border-slate-200 px-3 py-1 rounded flex items-center gap-1 hover:bg-slate-50 shadow-sm transition-colors"
-                >
-                  Dispatch Material <ShoppingCart size={13} />
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => handleQuickStatusUpdate('Active')}
-                  className="text-[11px] font-bold bg-white text-amber-700 border border-amber-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-amber-50 shadow-sm transition-colors"
-                  title="Undo Accept - Revert to Active"
-                >
-                  <Undo2 size={13} /> Undo
-                </button>
+            {(quotationStatus === 'Accepted' || quotationStatus === 'Confirmed' || quotationStatus === 'In Progress' || (quotationStatus === 'Active' && hideAcceptReject)) && (
+              <div className="flex gap-1.5 items-center">
+                {quotationStatus === 'Accepted' && (
+                  <button 
+                    type="button" 
+                    onClick={() => handleQuickStatusUpdate('Confirmed')}
+                    className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded uppercase tracking-wider mr-2 shadow-sm transition-colors"
+                  >
+                    Confirm Order
+                  </button>
+                )}
+                {quotationStatus === 'Confirmed' && (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded uppercase tracking-wider mr-1 border border-emerald-200">
+                    Confirmed
+                  </span>
+                )}
+                {mode === 'orders' ? (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (onConvertToChallan) {
+                        onConvertToChallan(initialData || { details: { basicInfo, items, otherInfo, notes, summary } });
+                        onClose();
+                      } else {
+                        toast.error("Challan conversion not setup");
+                      }
+                    }}
+                    className="text-[11px] font-bold bg-white text-emerald-700 border border-emerald-200 px-3 py-1 rounded flex items-center gap-1 hover:bg-emerald-50 shadow-sm transition-colors"
+                  >
+                    Convert to Challan
+                  </button>
+                ) : (
+                  (quotationStatus !== 'Accepted' && quotationStatus !== 'Confirmed' || hideAcceptReject) && (
+                    <>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsDispatchModalOpen(true)}
+                        className="text-[11px] font-bold bg-white text-slate-700 border border-slate-200 px-3 py-1 rounded flex items-center gap-1 hover:bg-slate-50 shadow-sm transition-colors"
+                      >
+                        Dispatch Material <ShoppingCart size={13} />
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => handleQuickStatusUpdate('Active')}
+                        className="text-[11px] font-bold bg-white text-amber-700 border border-amber-200 px-2 py-1 rounded flex items-center gap-1 hover:bg-amber-50 shadow-sm transition-colors"
+                        title="Undo Accept - Revert to Active"
+                      >
+                        <Undo2 size={13} /> Undo
+                      </button>
+                    </>
+                  )
+                )}
               </div>
             )}
 
@@ -784,7 +946,7 @@ export default function QuotationFormModal({ isOpen, onClose, onSave, initialDat
               
               @page {
                 size: ${printOrientation === 'Horizontal' ? 'landscape' : 'portrait'};
-                margin: 10mm;
+                margin: 0;
               }
             }
           `}

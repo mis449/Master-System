@@ -86,21 +86,6 @@ CREATE TABLE public.departments (
   given_by text,
   CONSTRAINT departments_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.dropdown_options (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  machine_name text,
-  machine_area text,
-  part_name text,
-  priority text,
-  task_priority text,
-  project_type text,
-  task_status text,
-  sound_test text,
-  temperature text,
-  image_url text,
-  CONSTRAINT dropdown_options_pkey PRIMARY KEY (id)
-);
 CREATE TABLE public.holidays (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   holiday_date date NOT NULL UNIQUE,
@@ -242,6 +227,8 @@ CREATE TABLE public.invoice (
   item_discount_percent numeric DEFAULT 0,
   item_tax_percent numeric DEFAULT 0,
   item_net_amount numeric DEFAULT 0,
+  item_add_discount numeric DEFAULT 0,
+  challan_id text,
   CONSTRAINT invoice_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.scales_return (
@@ -278,6 +265,7 @@ CREATE TABLE public.scales_return (
   item_discount_percent numeric DEFAULT 0,
   item_tax_percent numeric DEFAULT 0,
   item_net_amount numeric DEFAULT 0,
+  item_add_discount numeric DEFAULT 0,
   CONSTRAINT scales_return_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.customer (
@@ -362,6 +350,7 @@ CREATE TABLE public.purchase_return (
   item_discount_percent numeric,
   item_tax_percent numeric,
   item_net_amount numeric,
+  item_add_discount numeric DEFAULT 0,
   CONSTRAINT purchase_return_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.purchase_order (
@@ -406,6 +395,7 @@ CREATE TABLE public.purchase_order_items (
   discount_percent numeric DEFAULT 0,
   tax_percent numeric DEFAULT 0,
   net_amount numeric DEFAULT 0,
+  add_discount numeric DEFAULT 0,
   CONSTRAINT purchase_order_items_pkey PRIMARY KEY (id),
   CONSTRAINT purchase_order_items_purchase_order_id_fkey FOREIGN KEY (purchase_order_id) REFERENCES public.purchase_order(id)
 );
@@ -452,6 +442,7 @@ CREATE TABLE public.purchase_items (
   discount_percent numeric DEFAULT 0,
   tax_percent numeric DEFAULT 0,
   net_amount numeric DEFAULT 0,
+  add_discount numeric DEFAULT 0,
   CONSTRAINT purchase_items_pkey PRIMARY KEY (id),
   CONSTRAINT purchase_items_purchase_id_fkey FOREIGN KEY (purchase_id) REFERENCES public.purchase(id)
 );
@@ -486,6 +477,8 @@ CREATE TABLE public.quotation (
   item_discount_percent numeric DEFAULT 0,
   item_tax_percent numeric DEFAULT 0,
   item_net_amount numeric DEFAULT 0,
+  item_add_discount numeric DEFAULT 0,
+  type_of_quotation text,
   CONSTRAINT quotation_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.item (
@@ -496,11 +489,8 @@ CREATE TABLE public.item (
   ItmQtyRate numeric,
   product_image_url text,
   stock numeric DEFAULT 0,
+  remarks jsonb DEFAULT '[]'::jsonb,
   CONSTRAINT item_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.stock_import (
-  ItemCode text,
-  stock numeric
 );
 CREATE TABLE public.sales_person_master (
   id integer NOT NULL DEFAULT nextval('sales_person_master_id_seq'::regclass),
@@ -511,23 +501,217 @@ CREATE TABLE public.sales_person_master (
 );
 CREATE TABLE public.stock_updater (
   ItemCode text NOT NULL,
+  stock numeric,
   CONSTRAINT stock_updater_pkey PRIMARY KEY (ItemCode)
 );
+CREATE TABLE public.challan (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  challan_no text,
+  challan_date date,
+  customer_name text,
+  address text,
+  order_no text,
+  order_date date,
+  through text,
+  items jsonb,
+  pipe text,
+  box text,
+  bag text,
+  bdls text,
+  total text,
+  status text DEFAULT 'Active'::text,
+  gstin text,
+  CONSTRAINT challan_pkey PRIMARY KEY (id)
+);
 
--- ALTER QUERIES FOR ADD DISCOUNT COLUMN
--- ALTER TABLE public.quotation DROP COLUMN IF EXISTS item_add_discount;
--- ALTER TABLE public.quotation ADD COLUMN item_add_discount numeric DEFAULT 0;
--- ALTER TABLE public.invoice DROP COLUMN IF EXISTS item_add_discount;
--- ALTER TABLE public.invoice ADD COLUMN item_add_discount numeric DEFAULT 0;
--- ALTER TABLE public.scales_return DROP COLUMN IF EXISTS item_add_discount;
--- ALTER TABLE public.scales_return ADD COLUMN item_add_discount numeric DEFAULT 0;
--- ALTER TABLE public.purchase_return DROP COLUMN IF EXISTS item_add_discount;
--- ALTER TABLE public.purchase_return ADD COLUMN item_add_discount numeric DEFAULT 0;
--- ALTER TABLE public.purchase_order_items DROP COLUMN IF EXISTS add_discount;
--- ALTER TABLE public.purchase_order_items ADD COLUMN add_discount numeric DEFAULT 0;
--- ALTER TABLE public.purchase_items DROP COLUMN IF EXISTS add_discount;
--- ALTER TABLE public.purchase_items ADD COLUMN add_discount numeric DEFAULT 0;
+-- ──────────────────────────────────────────────
+--  QUOTATION NORMALIZATION  (DB normalization)
+--  Replaces the flat details JSONB + item_* cols
+-- ──────────────────────────────────────────────
 
--- ALTER QUERIES FOR TYPE OF QUOTATION
-ALTER TABLE public.quotation DROP COLUMN IF EXISTS type_of_quotation;
-ALTER TABLE public.quotation ADD COLUMN type_of_quotation text;
+-- 1. Basic customer / quotation info
+CREATE TABLE public.quotation_basic_info (
+  id            bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  quotation_id  text NOT NULL,
+  customer      text,
+  address       text,
+  validity_date text,
+  price_list    text,
+  payment_terms text,
+  city_state    text,
+  email         text,
+  mobile        text,
+  area_pin_code text,
+  type_of_quotation text,
+  created_at    timestamp with time zone DEFAULT now(),
+  CONSTRAINT quotation_basic_info_pkey PRIMARY KEY (id),
+  CONSTRAINT quotation_basic_info_quotation_id_fkey
+    FOREIGN KEY (quotation_id) REFERENCES public.quotation(id) ON DELETE CASCADE
+);
+
+-- 2. Other / internal info
+CREATE TABLE public.quotation_other_info (
+  id                   bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  quotation_id         text NOT NULL,
+  sales_person         text,
+  sales_number         text,
+  quort_person         text,
+  quort_mobile         text,
+  reference_number     text,
+  customer_reference   text,
+  expected_delivery_date text,
+  internal_notes       text,
+  mobile               text,
+  state                text,
+  created_at           timestamp with time zone DEFAULT now(),
+  CONSTRAINT quotation_other_info_pkey PRIMARY KEY (id),
+  CONSTRAINT quotation_other_info_quotation_id_fkey
+    FOREIGN KEY (quotation_id) REFERENCES public.quotation(id) ON DELETE CASCADE
+);
+
+-- 3. Notes / remarks
+CREATE TABLE public.quotation_notes (
+  id                   bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  quotation_id         text NOT NULL,
+  remarks              text,
+  terms_and_conditions text,
+  additional_notes     text,
+  created_at           timestamp with time zone DEFAULT now(),
+  CONSTRAINT quotation_notes_pkey PRIMARY KEY (id),
+  CONSTRAINT quotation_notes_quotation_id_fkey
+    FOREIGN KEY (quotation_id) REFERENCES public.quotation(id) ON DELETE CASCADE
+);
+
+-- 4. Financial summary
+CREATE TABLE public.quotation_summary (
+  id               bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  quotation_id     text NOT NULL,
+  gross_amount     numeric DEFAULT 0,
+  discount_amount  numeric DEFAULT 0,
+  tax_amount       numeric DEFAULT 0,
+  round_off_amount numeric DEFAULT 0,
+  total_amount     numeric DEFAULT 0,
+  created_at       timestamp with time zone DEFAULT now(),
+  CONSTRAINT quotation_summary_pkey PRIMARY KEY (id),
+  CONSTRAINT quotation_summary_quotation_id_fkey
+    FOREIGN KEY (quotation_id) REFERENCES public.quotation(id) ON DELETE CASCADE
+);
+
+-- 5. Line items  (one row per item — replaces single item_* columns)
+CREATE TABLE public.quotation_items (
+  id               text NOT NULL,
+  quotation_id     text NOT NULL,
+  item_type        text DEFAULT 'item',
+  item_code        text,
+  description      text,
+  quantity         numeric DEFAULT 0,
+  unit_price       numeric DEFAULT 0,
+  discount_percent numeric DEFAULT 0,
+  add_discount     numeric DEFAULT 0,
+  tax_percent      numeric DEFAULT 0,
+  net_amount       numeric DEFAULT 0,
+  thumbnail        text,
+  sort_order       integer DEFAULT 0,
+  created_at       timestamp with time zone DEFAULT now(),
+  CONSTRAINT quotation_items_pkey PRIMARY KEY (id),
+  CONSTRAINT quotation_items_quotation_id_fkey
+    FOREIGN KEY (quotation_id) REFERENCES public.quotation(id) ON DELETE CASCADE
+);
+
+-- Appended Files --
+
+-- From fix_rls_quotation_items.sql --
+-- Option 1: Disable Row Level Security (if you don't use it for this table)
+ALTER TABLE public.quotation_items DISABLE ROW LEVEL SECURITY;
+
+-- Option 2: If you must have RLS enabled, run this to allow all operations
+CREATE POLICY "Enable all operations for all users" ON public.quotation_items
+FOR ALL
+USING (true)
+WITH CHECK (true);
+
+-- From fix_stuck_database.sql --
+-- Bas ye ek line run kijiye:
+CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation_id ON public.quotation_items(quotation_id);
+
+-- From fix_thumbnails.sql --
+ALTER TABLE public.quotation_items ADD COLUMN IF NOT EXISTS thumbnail text; UPDATE public.quotation_items qi SET thumbnail = item->>'thumbnail' FROM public.quotation q, jsonb_array_elements(q.details->'items') AS item WHERE qi.quotation_id = q.id AND qi.item_code = item->>'itemCode' AND item->>'thumbnail' IS NOT NULL;
+
+-- From fix_timeout.sql --
+CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation_id ON public.quotation_items(quotation_id);
+
+-- From migrate_quotation_items_table.sql --
+CREATE TABLE IF NOT EXISTS public.quotation_items (
+  id text not null,
+  quotation_id text null,
+  item_type text null default 'item',
+  item_code text null,
+  description text null,
+  quantity numeric null default 0,
+  unit_price numeric null default 0,
+  discount_percent numeric null default 0,
+  tax_percent numeric null default 0,
+  net_amount numeric null default 0,
+  add_discount numeric null default 0,
+  constraint quotation_items_pkey primary key (id),
+  constraint quotation_items_quotation_id_fkey foreign KEY (quotation_id) references quotation (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+-- Migrate existing items from the JSON details column into the new quotation_items table
+INSERT INTO public.quotation_items (
+  id, quotation_id, item_type, item_code, description, 
+  quantity, unit_price, discount_percent, tax_percent, net_amount, add_discount
+)
+SELECT 
+  COALESCE(NULLIF(item->>'id', ''), gen_random_uuid()::text),
+  q.id,
+  COALESCE(item->>'type', 'item'),
+  item->>'itemCode',
+  item->>'description',
+  COALESCE(NULLIF(item->>'quantity', ''), '0')::numeric,
+  COALESCE(NULLIF(item->>'unitPrice', ''), '0')::numeric,
+  COALESCE(NULLIF(item->>'discountPercent', ''), '0')::numeric,
+  COALESCE(NULLIF(item->>'taxPercent', ''), '0')::numeric,
+  COALESCE(NULLIF(item->>'netAmount', ''), '0')::numeric,
+  COALESCE(NULLIF(item->>'addDiscount', ''), '0')::numeric
+FROM public.quotation q,
+jsonb_array_elements(q.details->'items') AS item
+WHERE q.details IS NOT NULL AND q.details->'items' IS NOT NULL
+ON CONFLICT (id) DO NOTHING;
+
+-- From migrate_quotations.sql --
+ALTER TABLE public.quotation ADD COLUMN IF NOT EXISTS customer_address text, ADD COLUMN IF NOT EXISTS customer_area_pin_code text, ADD COLUMN IF NOT EXISTS customer_city_state text, ADD COLUMN IF NOT EXISTS customer_state text, ADD COLUMN IF NOT EXISTS customer_email text, ADD COLUMN IF NOT EXISTS customer_mobile text, ADD COLUMN IF NOT EXISTS validity_date text, ADD COLUMN IF NOT EXISTS price_list text, ADD COLUMN IF NOT EXISTS payment_terms text, ADD COLUMN IF NOT EXISTS gross_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS discount_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS tax_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS round_off_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS total_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_code text, ADD COLUMN IF NOT EXISTS item_description text, ADD COLUMN IF NOT EXISTS item_quantity numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_unit_price numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_discount_percent numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_tax_percent numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_net_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_add_discount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS type_of_quotation text;
+
+UPDATE public.quotation 
+SET 
+  customer_address = details->'basicInfo'->>'address', 
+  customer_area_pin_code = details->'basicInfo'->>'areaPinCode', 
+  customer_city_state = details->'basicInfo'->>'cityState', 
+  customer_state = COALESCE(details->'basicInfo'->>'state', details->'otherInfo'->>'state'), 
+  customer_email = details->'basicInfo'->>'email', 
+  customer_mobile = COALESCE(details->'basicInfo'->>'mobile', details->'otherInfo'->>'mobile'), 
+  validity_date = details->'basicInfo'->>'validityDate', 
+  price_list = details->'basicInfo'->>'priceList', 
+  payment_terms = details->'basicInfo'->>'paymentTerms', 
+  type_of_quotation = details->'basicInfo'->>'typeOfQuotation', 
+  gross_amount = COALESCE(NULLIF(details->'summary'->>'grossAmount', ''), '0')::numeric, 
+  discount_amount = COALESCE(NULLIF(details->'summary'->>'discountAmount', ''), '0')::numeric, 
+  tax_amount = COALESCE(NULLIF(details->'summary'->>'taxAmount', ''), '0')::numeric, 
+  round_off_amount = COALESCE(NULLIF(details->'summary'->>'roundOffAmount', ''), '0')::numeric, 
+  total_amount = COALESCE(NULLIF(details->'summary'->>'totalAmount', ''), '0')::numeric, 
+  item_code = details->'items'->0->>'itemCode', 
+  item_description = details->'items'->0->>'description', 
+  item_quantity = COALESCE(NULLIF(details->'items'->0->>'quantity', ''), '0')::numeric, 
+  item_unit_price = COALESCE(NULLIF(details->'items'->0->>'unitPrice', ''), '0')::numeric, 
+  item_discount_percent = COALESCE(NULLIF(details->'items'->0->>'discountPercent', ''), '0')::numeric, 
+  item_tax_percent = COALESCE(NULLIF(details->'items'->0->>'taxPercent', ''), '0')::numeric, 
+  item_net_amount = COALESCE(NULLIF(details->'items'->0->>'netAmount', ''), '0')::numeric, 
+  item_add_discount = COALESCE(NULLIF(details->'items'->0->>'addDiscount', ''), '0')::numeric
+WHERE details IS NOT NULL AND details != '{}'::jsonb;
+
+-- From alter_quotation.sql --
+ALTER TABLE public.quotation ADD COLUMN IF NOT EXISTS customer_address text, ADD COLUMN IF NOT EXISTS customer_area_pin_code text, ADD COLUMN IF NOT EXISTS customer_city_state text, ADD COLUMN IF NOT EXISTS customer_state text, ADD COLUMN IF NOT EXISTS customer_email text, ADD COLUMN IF NOT EXISTS customer_mobile text, ADD COLUMN IF NOT EXISTS validity_date text, ADD COLUMN IF NOT EXISTS price_list text, ADD COLUMN IF NOT EXISTS payment_terms text, ADD COLUMN IF NOT EXISTS gross_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS discount_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS tax_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS round_off_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS total_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_code text, ADD COLUMN IF NOT EXISTS item_description text, ADD COLUMN IF NOT EXISTS item_quantity numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_unit_price numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_discount_percent numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_tax_percent numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_net_amount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS item_add_discount numeric DEFAULT 0, ADD COLUMN IF NOT EXISTS type_of_quotation text;
+
+-- Add UOM column to item table --
+ALTER TABLE public.item ADD COLUMN IF NOT EXISTS uom text;

@@ -71,17 +71,18 @@ const ERPLayout = ({ children }) => {
       label: 'IMS Inventory Management System',
       icon: ShoppingCart,
       path: '/ims',
-      roles: ['admin', 'manager', 'hod'],
+      roles: ['admin', 'manager', 'hod', 'user'],
       section: 'IMS Inventory Management System',
       subItems: [
         { label: 'Dashboard', path: '/ims/dashboard', icon: TrendingUp, roles: ['admin'] },
-        // { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod'] },
+        // { label: 'Inventory', path: '/ims/create-indent', icon: Package, roles: ['admin', 'manager', 'hod', 'user'] },
         { label: 'Item Details', path: '/ims/master', icon: LayoutGrid, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Sales', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod'] },
-        { label: 'Stock Reports', path: '/ims/item-summary', icon: Activity, roles: ['admin', 'manager', 'hod'] }
+        { label: 'Purchase', path: '/ims/purchase', icon: ShoppingCart, roles: ['admin', 'manager', 'hod', 'user'] },
+        { label: 'Quotation', path: '/ims/sales', icon: FileText, roles: ['admin', 'manager', 'hod', 'user'] },
+        { label: 'Order', path: '/ims/order', icon: ShoppingCart, roles: ['admin', 'manager', 'hod', 'user'] },
+        { label: 'Order Summary', path: '/ims/order-summary', icon: ClipboardList, roles: ['admin', 'manager', 'hod', 'user'] },
+        { label: 'Item Tracker', path: '/ims/item-tracker', icon: PackageSearch, roles: ['admin', 'manager', 'hod', 'user'] },
+        { label: 'Dead Stock', path: '/ims/item-summary', icon: Activity, roles: ['admin', 'manager', 'hod', 'user'] }
       ]
     },
     {

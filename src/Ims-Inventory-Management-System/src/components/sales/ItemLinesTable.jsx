@@ -222,10 +222,11 @@ export default function ItemLinesTable({
         const rowTax = afterDiscount * ((Number(item.taxPercent) || 0) / 100);
         const net = afterDiscount + rowTax;
 
-        const isCompleted = Number(item.dispatchedQty || 0) >= Number(item.quantity || 0) && Number(item.quantity || 0) > 0;
+        const invoiced = Number(item.invoicedQty || 0);
+        const isCompleted = invoiced >= Number(item.quantity || 0) && Number(item.quantity || 0) > 0;
         const ordered = Number(item.quantity || 0);
         const dispatched = Number(item.dispatchedQty || 0);
-        const remaining = Math.max(0, ordered - dispatched);
+        const remaining = Math.max(0, ordered - invoiced);
 
         const matchedInventoryItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
         const defaultImageUrl = matchedInventoryItem ? (matchedInventoryItem.Thumbnail || matchedInventoryItem.product_image_url) : '';
@@ -410,11 +411,31 @@ export default function ItemLinesTable({
               <>
                 <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
                   <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Act Disp</div>
-                  <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1 rounded text-center text-sky-700 font-bold select-none">{dispatched}</div>
+                  <input 
+                    type="number" 
+                    min="0"
+                    step="any"
+                    value={item.invoicedQty !== undefined && item.invoicedQty !== null && item.invoicedQty !== '' ? item.invoicedQty : (item.dispatchedQty || '')}
+                    onFocus={(e) => e.target.addEventListener('wheel', preventScroll, { passive: false })}
+                    onBlur={(e) => e.target.removeEventListener('wheel', preventScroll)}
+                    onChange={(e) => {
+                      handleItemChange(item.id, 'invoicedQty', e.target.value);
+                      handleItemChange(item.id, 'dispatchedQty', e.target.value);
+                    }}
+                    className="w-full border border-sky-200 bg-sky-50/30 text-sm px-1 py-1 rounded outline-none text-center text-sky-700 font-bold focus:border-sky-500 transition-colors"
+                    placeholder="0"
+                  />
                 </div>
-                <div className="col-span-1 md:col-span-1 space-y-1 text-center md:text-center">
-                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase">Rem Qty</div>
-                  <div className="w-full bg-slate-50 border border-slate-200 text-sm px-1 py-1 rounded text-center text-amber-600 font-bold select-none">{remaining}</div>
+                <div className="col-span-1 md:col-span-1 flex flex-col items-center justify-center h-full pt-1 md:pt-0">
+                  <div className="md:hidden text-sm md:text-sm font-bold text-slate-500 uppercase mb-1">Rem Qty</div>
+                  <span className={`inline-block px-2 py-0.5 rounded text-[12px] font-black ${
+                    remaining > 0 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {remaining}
+                  </span>
+                  <div className="text-[9px] text-slate-400 font-bold leading-none whitespace-nowrap mt-1">
+                    {invoiced}/{ordered} inv
+                  </div>
                 </div>
               </>
             )}

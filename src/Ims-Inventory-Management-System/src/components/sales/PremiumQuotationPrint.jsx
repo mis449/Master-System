@@ -618,7 +618,7 @@ export default function PremiumQuotationPrint({
             <p>1. Delivery Time - Delivery will be made within the estimated timeline after order confirmation.</p>
             <p>2. Payment Terms - Payment must be made as 100 % per agreed terms and schedule.</p>
             <p>3. RTGS / Bank Information - Payments should be transferred only to the provided bank account details.</p>
-            <p>4. Order Confirmation - Orders will be confirmed only upon receipt of the purchase order and an advance payment of 70%.</p>
+            <p>4. Order Confirmation - Orders will be confirmed only upon receipt of the purchase order and an advance payment of 100%.</p>
             <p>5. Invoice Details - The invoice will be issued once the order dispatch has been verified.</p>
             <p>6. Delivery Address &amp; Delivery Terms - Goods will be delivered to the address provided by the customer.</p>
             <p>7. Delivery Restrictions - Any problem with the product must be reported within a maximum time span of 48 hours.</p>

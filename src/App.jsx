@@ -293,7 +293,7 @@ function App() {
                     <Route
                         path="/ims/*"
                         element={
-                            <ProtectedRoute allowedRoles={["admin", "manager", "hod"]}>
+                            <ProtectedRoute allowedRoles={["admin", "manager", "hod", "user"]}>
                                 <ERPLayout>
                                     <ImsApp />
                                 </ERPLayout>

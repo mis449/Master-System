@@ -21,6 +21,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
     BrandName: '',
     MRP: '',
     StockQty: '',
+    UOM: '',
     ImageURL: ''
   });
 
@@ -38,6 +39,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
           BrandName: initialBrand,
           MRP: initialData.MRP || initialData.price || '',
           StockQty: initialData.StockQty || initialData.stock || '',
+          UOM: initialData.UOM || initialData.uom || '',
           ImageURL: initialData.Thumbnail || initialData.product_image_url || ''
         });
         if (initialBrand && !uniqueBrands.includes(initialBrand)) {
@@ -46,7 +48,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
           setShowBrandInput(false);
         }
       } else {
-        setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', StockQty: '', ImageURL: '' });
+        setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', StockQty: '', UOM: '', ImageURL: '' });
         setShowBrandInput(false);
       }
     }
@@ -80,7 +82,7 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
     if (res && res.success) {
       toast.success(initialData ? 'Product updated successfully!' : 'Product added successfully!');
       onClose();
-      setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', StockQty: '', ImageURL: '' });
+      setNewItemData({ ItemCode: '', ItemName: '', BrandName: '', MRP: '', StockQty: '', UOM: '', ImageURL: '' });
     } else {
       toast.error(res?.error || 'Failed to save product');
     }
@@ -190,6 +192,17 @@ export default function AddProductModal({ isOpen, onClose, initialData }) {
             onChange={(e) => setNewItemData({ ...newItemData, StockQty: e.target.value })}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
             placeholder="0"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">UOM</label>
+          <input
+            type="text"
+            value={newItemData.UOM || ''}
+            onChange={(e) => setNewItemData({ ...newItemData, UOM: e.target.value.toUpperCase() })}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+            placeholder="e.g. PCS, BOX, SQFT"
           />
         </div>
 

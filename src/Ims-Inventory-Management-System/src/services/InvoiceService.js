@@ -64,12 +64,14 @@ const mapInvoiceRow = (item) => {
     item_discount_percent: item.item_discount_percent || 0,
     item_tax_percent: item.item_tax_percent || 0,
     item_net_amount: item.item_net_amount || 0,
+    challan_id: item.challan_id,
 
     details: details,
     state: state,
     mobileNumber: item.customer_mobile || basic.mobile || other.mobile || '-',
     salesPerson: other.salesPerson || 'Admin',
-    totalAmount: item.total_amount || sum.totalAmount || 0
+    totalAmount: item.total_amount || sum.totalAmount || 0,
+    createdAt: item.created_at
   };
 };
 
@@ -80,6 +82,19 @@ export const getInvoices = async () => {
     .order('created_at', { ascending: false });
   if (error) {
     console.error('Error fetching invoices:', error);
+    return [];
+  }
+  return data.map(mapInvoiceRow);
+};
+
+export const getInvoicesByChallanId = async (challanId) => {
+  if (!challanId) return [];
+  const { data, error } = await supabase
+    .from('invoice')
+    .select('*')
+    .eq('challan_id', challanId);
+  if (error) {
+    console.error('Error fetching invoices by challan:', error);
     return [];
   }
   return data.map(mapInvoiceRow);
@@ -132,9 +147,9 @@ export const createInvoice = async (data) => {
     customer_address: data.customer_address || basicInfo.address || '',
     customer_area_pin_code: data.customer_area_pin_code || basicInfo.areaPinCode || '',
     customer_city_state: data.customer_city_state || basicInfo.cityState || '',
-    customer_state: data.customer_state || basicInfo.state || '',
+    customer_state: data.customer_state || data.state || basicInfo.state || '',
     customer_email: data.customer_email || basicInfo.email || '',
-    customer_mobile: data.customer_mobile || basicInfo.mobile || '',
+    customer_mobile: data.customer_mobile || data.mobileNumber || basicInfo.mobile || '',
     validity_date: data.validity_date || basicInfo.validityDate || '',
     price_list: data.price_list || basicInfo.priceList || '',
     payment_terms: data.payment_terms || basicInfo.paymentTerms || '',
@@ -152,6 +167,7 @@ export const createInvoice = async (data) => {
     item_discount_percent: firstItem.discountPercent || 0,
     item_tax_percent: firstItem.taxPercent || 0,
     item_net_amount: firstItem.netAmount || 0,
+    challan_id: data.challan_id,
 
     details: data.details || {}
   };
@@ -183,6 +199,7 @@ export const updateInvoice = async (id, updates) => {
   if (updates.customerName || updates.customer)
     updateData.customer_name = updates.customerName || updates.customer;
   if (updates.details) updateData.details = updates.details;
+  if (updates.challan_id) updateData.challan_id = updates.challan_id;
 
   if (Object.keys(updateData).length === 0) updateData.details = updates.details || updates;
 

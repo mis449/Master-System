@@ -21,17 +21,20 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const [printOrientation, setPrintOrientation] = useState('Horizontal');
+  const [printOrientation, setPrintOrientation] = useState('Portrait');
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isBrandDiscountOpen, setIsBrandDiscountOpen] = useState(false);
   const [emailForm, setEmailForm] = useState({ to: '', subject: '', body: '' });
   
-  const { items: inventoryItems, fetchItems, addCustomer } = useDataStore();
+  const { items: inventoryItems, fetchItems, addCustomer, customers, fetchCustomers } = useDataStore();
 
   useEffect(() => {
-    if (isOpen) fetchItems(true);
-  }, [isOpen, fetchItems]);
+    if (isOpen) {
+      fetchItems(true);
+      fetchCustomers();
+    }
+  }, [isOpen, fetchItems, fetchCustomers]);
 
   const [basicInfo, setBasicInfo] = useState({
     customer: '', address: '', validityDate: '', priceList: '>->MRP:01-Apr-2025', paymentTerms: 'Net 30', areaPinCode: '', cityState: '', email: '', mobile: ''
@@ -68,7 +71,11 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
           mobile: '',
           ...(initialData.details.basicInfo || {})
         });
-        setItems(initialData.details.items || [getEmptyItem()]);
+        const loadedItems = (initialData.details.items || [getEmptyItem()]).map(item => ({
+          ...item,
+          orderedQty: item.orderedQty !== undefined ? item.orderedQty : (item.quantity || 0)
+        }));
+        setItems(loadedItems);
         setOtherInfo({
           ...initialData.details.otherInfo,
           referenceNumber: initialData.quotationNo || ''
@@ -77,6 +84,36 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
       }
     }
   }, [isOpen, initialData]);
+
+  // Auto-fill customer details if a customer name is pre-filled but details are missing
+  useEffect(() => {
+    if (isOpen && basicInfo.customer && customers && customers.length > 0) {
+      // Check if mobile or email is missing, indicating we need to fetch details
+      if (!basicInfo.mobile && !basicInfo.email && !basicInfo.areaPinCode) {
+        const matched = customers.find(c => c.name === basicInfo.customer);
+        if (matched) {
+          setBasicInfo(prev => ({
+            ...prev,
+            address: prev.address || matched.address || '',
+            priceList: prev.priceList || matched.priceList || 'Standard',
+            areaPinCode: prev.areaPinCode || matched.areaPinCode || '',
+            cityState: prev.cityState || matched.cityState || '',
+            email: prev.email || matched.email || '',
+            mobile: prev.mobile || matched.mobile || ''
+          }));
+          setOtherInfo(prev => ({
+            ...prev,
+            salesPerson: prev.salesPerson || matched.salesPerson || 'Admin',
+            salesNumber: prev.salesNumber || matched.salesNo || '',
+            quortPerson: prev.quortPerson || matched.quortPerson || '',
+            quortMobile: prev.quortMobile || matched.quortMobileNumber || '',
+            mobile: prev.mobile || matched.mobile || '',
+            state: prev.state || (matched.cityState ? matched.cityState.split('/')[1]?.trim() : '')
+          }));
+        }
+      }
+    }
+  }, [isOpen, basicInfo.customer, customers, basicInfo.mobile, basicInfo.email, basicInfo.areaPinCode]);
 
   useEffect(() => {
     let gross = 0;
@@ -216,6 +253,22 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
     setIsSubmitting(true);
     try {
       const isExistingInvoice = initialData && initialData.id;
+      const formattedItems = items.map(item => {
+        if (item.type !== 'item') return item;
+        const qty = Number(item.quantity || 0);
+        const invItem = inventoryItems?.find(i => (i.ItemCode || i.code) === item.itemCode);
+        const dispQty = item.dispatchQty !== undefined ? Number(item.dispatchQty) : qty;
+        const prevDisp = Number(item.dispatchedQty || 0);
+        return {
+          ...item,
+          stock: item.stock !== undefined ? Number(item.stock) : (invItem ? Number((invItem.StockQty || 0).toFixed(1)) : 0),
+          orderedQty: item.orderedQty !== undefined ? Number(item.orderedQty) : qty,
+          dispatchQty: dispQty,
+          dispatchedQty: prevDisp > 0 ? prevDisp : dispQty,
+          thumbnail: item.thumbnail !== undefined ? item.thumbnail : (invItem ? (invItem.Thumbnail || invItem.product_image_url || '') : '')
+        };
+      });
+
       const invoiceData = {
         // Pass id so InvoiceList knows this is an update
         ...(isExistingInvoice ? { id: initialData.id } : {}),
@@ -231,7 +284,8 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
         totalAmount: summary.totalAmount,
         status: initialData?.status || 'Active',
         paymentStatus: initialData?.paymentStatus || '-',
-        details: { basicInfo, items, otherInfo, notes, summary }
+        challan_id: initialData?.challan_no ? initialData.id : initialData?.challan_id,
+        details: { basicInfo, items: formattedItems, otherInfo, notes, summary }
       };
 
       onSave(invoiceData);
@@ -287,6 +341,9 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
             });
             setIsEmailModalOpen(true);
           }}
+          onSaveForm={handleSubmit}
+          isSubmitting={isSubmitting}
+          saveText={isSubmitting ? (initialData?.invoiceNo ? 'Updating...' : 'Saving...') : (initialData?.invoiceNo ? 'Update Invoice' : 'Save Invoice')}
         />
 
         <div className="flex-1 space-y-6">
@@ -301,10 +358,10 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
                 customer: custObj.name,
                 address: custObj.address || prev.address,
                 priceList: custObj.priceList || prev.priceList,
-                areaPinCode: custObj.areaPinCode || '',
-                cityState: custObj.cityState || '',
-                email: custObj.email || '',
-                mobile: custObj.mobile || ''
+                areaPinCode: custObj.areaPinCode || prev.areaPinCode,
+                cityState: custObj.cityState || prev.cityState,
+                email: custObj.email || prev.email,
+                mobile: custObj.mobile || prev.mobile
               }));
               setOtherInfo(prev => ({
                 ...prev,
@@ -343,7 +400,7 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
                       return newItems;
                     });
                   }}
-                  showStatus={initialData && initialData.status === 'In Progress'}
+                  showStatus={false}
                   openBrandDiscount={() => setIsBrandDiscountOpen(true)}
                 />
                 <SummaryCard 
@@ -391,20 +448,6 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Custom Footer */}
-        <div className="border-t border-slate-200 mt-auto flex justify-between items-center">
-          <div className="py-4 flex gap-3">
-             <button onClick={handleSubmit} disabled={isSubmitting} className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition">
-               {isSubmitting ? (initialData?.invoiceNo ? 'Updating...' : 'Saving...') : (initialData?.invoiceNo ? 'Update Invoice' : 'Save Invoice')}
-             </button>
-             {initialData?.invoiceNo && (
-               <button onClick={onClose} disabled={isSubmitting} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-sm transition">
-                 Cancel
-               </button>
-             )}
           </div>
         </div>
 
@@ -534,10 +577,49 @@ export default function InvoiceFormModal({ isOpen, onClose, onSave, initialData,
             <div className="flex gap-2">
               <button
                 type="button"
+                onClick={async () => {
+                  const scrollArea = document.getElementById('invoice-print-area');
+                  const targetElement = scrollArea ? scrollArea.firstElementChild : null;
+                  if (!targetElement) return;
+                  const loadingToast = toast.loading('Generating PDF...');
+                  try {
+                    const htmlToImage = await import('html-to-image');
+                    const jspdfModule = await import('jspdf');
+                    const jsPDF = jspdfModule.jsPDF || jspdfModule.default?.jsPDF || jspdfModule.default;
+                    
+                    // We use html-to-image because html2canvas does not support oklch() colors used in Tailwind v4
+                    const imgData = await htmlToImage.toPng(targetElement, { 
+                      pixelRatio: 1.5, // Reduced for speed
+                      backgroundColor: '#ffffff',
+                      style: { transform: 'none' },
+                      cacheBust: true,
+                      skipFonts: true // Skips embedding remote fonts which often causes hanging/slowdowns
+                    });
+                    
+                    const pdf = new jsPDF(printOrientation === 'Horizontal' ? 'l' : 'p', 'mm', 'a4');
+                    // Image proportions
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`Invoice_${initialData?.invoiceNo || 'Draft'}.pdf`);
+                    toast.success('PDF Downloaded!', { id: loadingToast });
+                  } catch (error) {
+                    console.error('Error generating PDF:', error);
+                    toast.error('Failed: ' + (error.message || 'Unknown error'), { id: loadingToast });
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-4 rounded-xl text-xs transition shadow-sm"
+              >
+                Download PDF
+              </button>
+              <button
+                type="button"
                 onClick={() => window.print()}
                 className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-1.5 px-4 rounded-xl text-xs transition shadow-sm"
               >
-                Print / Save PDF
+                Print
               </button>
               <button
                 type="button"

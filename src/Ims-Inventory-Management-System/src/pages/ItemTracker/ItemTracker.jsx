@@ -12,7 +12,8 @@ import {
   Clock,
   User,
   Hash,
-  RefreshCw
+  RefreshCw,
+  Layers
 } from 'lucide-react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -21,7 +22,7 @@ import useDataStore from '../../store/dataStore';
 import SearchableDropdown from '../../components/SearchableDropdown';
 
 // Local storage services
-import { getQuotations } from '../../services/quotationService';
+import { getAllQuotations } from '../../services/quotationService';
 import { getInvoices } from '../../services/InvoiceService';
 import { getSalesReturns } from '../../services/SalesReturnService';
 import { getPurchases } from '../../services/PurchaseService';
@@ -63,7 +64,7 @@ export default function ItemTracker() {
           quotations, invoices, salesReturns, 
           purchases, purchaseOrders, purchaseReturns
         ] = await Promise.all([
-          getQuotations(), getInvoices(), getSalesReturns(),
+          getAllQuotations(), getInvoices(), getSalesReturns(),
           getPurchases(), getPurchaseOrders(), getPurchaseReturns()
         ]);
 
@@ -320,24 +321,37 @@ export default function ItemTracker() {
       s.item_code?.toString().trim().toLowerCase() === itemCodeLower
     ) || {};
 
-    const currentStockVal = itemDetails 
-      ? Number((itemDetails.StockQty || 0).toFixed(1))
-      : balance;
+    const openingStockVal = itemDetails 
+      ? Number(itemDetails.OpeningQty || itemDetails.openingQty || itemDetails.opening_qty || 0)
+      : 0;
 
-    const totalPurchasedVal = dbSummary.purchase_qty !== undefined
+    const purchaseQtyVal = dbSummary.purchase_qty !== undefined
       ? Number((dbSummary.purchase_qty || 0).toFixed(1))
       : totalPurchased;
 
-    const totalSoldVal = dbSummary.sales_qty !== undefined
+    const salesQtyVal = dbSummary.sales_qty !== undefined
       ? Number((dbSummary.sales_qty || 0).toFixed(1))
       : totalSold;
+
+    const purchaseReturnQtyVal = dbSummary.purchase_return_qty !== undefined
+      ? Number((dbSummary.purchase_return_qty || 0).toFixed(1))
+      : 0;
+
+    const salesReturnQtyVal = dbSummary.sales_return_qty !== undefined
+      ? Number((dbSummary.sales_return_qty || 0).toFixed(1))
+      : 0;
+
+    const currentStockVal = Number((openingStockVal + purchaseQtyVal + salesReturnQtyVal - salesQtyVal - purchaseReturnQtyVal).toFixed(1));
 
     return {
       history: filtered,
       summary: {
+        openingStock: openingStockVal,
+        totalPurchased: purchaseQtyVal,
+        totalSold: salesQtyVal,
+        totalPurchaseReturn: purchaseReturnQtyVal,
+        totalSalesReturn: salesReturnQtyVal,
         currentStock: currentStockVal,
-        totalPurchased: totalPurchasedVal,
-        totalSold: totalSoldVal,
         totalPendingOrders,
         lastTransactionDate: lastActualTx ? lastActualTx.date : (lastTx ? lastTx.date : null)
       }
@@ -581,35 +595,7 @@ export default function ItemTracker() {
             </select>
           </div>
 
-          {/* Analytics Toggle Buttons */}
-          <div className="flex flex-[2] min-w-[280px] gap-2">
-            <div className="flex-1">
-              <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
-              <button 
-                onClick={() => { setActiveAnalyticsView(prev => prev === 'top' ? 'none' : 'top'); setSelectedItemCode(''); setSearchTerm(''); }}
-                className={`w-full flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm ${
-                  activeAnalyticsView === 'top' 
-                  ? 'bg-sky-600 text-white shadow-sky-200 border border-sky-600' 
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <TrendingUp size={16} /> Most Sold
-              </button>
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-bold uppercase tracking-wider text-transparent mb-2 hidden md:block">&nbsp;</label>
-              <button 
-                onClick={() => { setActiveAnalyticsView(prev => prev === 'slow' ? 'none' : 'slow'); setSelectedItemCode(''); setSearchTerm(''); }}
-                className={`w-full flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm ${
-                  activeAnalyticsView === 'slow' 
-                  ? 'bg-rose-600 text-white shadow-rose-200 border border-rose-600' 
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <TrendingDown size={16} /> Most Unsold
-              </button>
-            </div>
-          </div>
+
 
           {/* Clear Filters Button */}
           <div className="flex items-end">
@@ -644,49 +630,60 @@ export default function ItemTracker() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Current Stock */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4 mb-6">
+            {/* Opening Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-slate-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Current Stock</span>
-                <Box size={18} className="text-sky-500" />
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Opening Qty</span>
+                <Layers size={16} className="text-slate-500" />
               </div>
-              <p className={`text-2xl font-black ${summary.currentStock < 0 ? 'text-rose-600' : summary.currentStock === 0 ? 'text-slate-400' : 'text-slate-800'}`}>
-                {summary.currentStock ?? 0}
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1">Purchased − Sold</p>
+              <p className="text-xl md:text-2xl font-black text-slate-800">{summary.openingStock ?? 0}</p>
             </div>
             
-            {/* Total Purchased */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+            {/* Purchase Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Total Purchased</span>
-                <TrendingUp size={18} className="text-emerald-500" />
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Purchase Qty</span>
+                <TrendingUp size={16} className="text-emerald-500" />
               </div>
-              <p className="text-2xl font-black text-emerald-600">{summary.totalPurchased ?? 0}</p>
-              <p className="text-[10px] text-slate-400 mt-1">From purchase records</p>
+              <p className="text-xl md:text-2xl font-black text-emerald-600">{summary.totalPurchased ?? 0}</p>
             </div>
             
-            {/* Total Sold */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
+            {/* Sales Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Total Sold</span>
-                <TrendingDown size={18} className="text-rose-500" />
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Sales Qty</span>
+                <TrendingDown size={16} className="text-rose-500" />
               </div>
-              <p className="text-2xl font-black text-rose-600">{summary.totalSold ?? 0}</p>
-              {summary.totalPendingOrders > 0 && (
-                <p className="text-[10px] text-amber-500 mt-1 font-semibold">+ {summary.totalPendingOrders} pending orders</p>
-              )}
+              <p className="text-xl md:text-2xl font-black text-rose-600">{summary.totalSold ?? 0}</p>
             </div>
 
-            {/* Last Transaction */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+            {/* Purchase Return Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500 uppercase">Last Transaction</span>
-                <Clock size={18} className="text-amber-500" />
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Pur Return Qty</span>
+                <TrendingDown size={16} className="text-amber-500" />
               </div>
-              <p className="text-lg font-black text-slate-800 mt-1">
-                {summary.lastTransactionDate ? format(new Date(summary.lastTransactionDate), 'dd MMM yyyy') : '-'}
+              <p className="text-xl md:text-2xl font-black text-amber-600">{summary.totalPurchaseReturn ?? 0}</p>
+            </div>
+
+            {/* Sales Return Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-teal-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Sal Return Qty</span>
+                <TrendingUp size={16} className="text-teal-500" />
+              </div>
+              <p className="text-xl md:text-2xl font-black text-teal-600">{summary.totalSalesReturn ?? 0}</p>
+            </div>
+
+            {/* Current Qty */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Current Qty</span>
+                <Box size={16} className="text-sky-500" />
+              </div>
+              <p className={`text-xl md:text-2xl font-black ${summary.currentStock < 0 ? 'text-rose-600' : summary.currentStock === 0 ? 'text-slate-400' : 'text-sky-600'}`}>
+                {summary.currentStock ?? 0}
               </p>
             </div>
           </div>

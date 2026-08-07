@@ -28,7 +28,7 @@ export default function ItemSummary() {
         // Extract items from invoices to find the latest sale date for each item
         (invoices || []).forEach(inv => {
           if (inv.status !== 'Cancelled') {
-            const invoiceDate = inv.date || inv.invoiceDate;
+            const invoiceDate = inv.createdAt || inv.date || inv.invoiceDate;
             const itemsList = inv.items || inv.details?.items || [];
             
             itemsList.forEach(item => {
@@ -75,6 +75,7 @@ export default function ItemSummary() {
 
       let status = 'Dead Stock';
       let statusColor = 'bg-rose-100 text-rose-700';
+      let rowColor = 'bg-red-50 hover:bg-red-100/80';
       let daysSinceLastSale = -1;
       let lastSaleDateStr = '-';
 
@@ -85,12 +86,15 @@ export default function ItemSummary() {
         if (daysSinceLastSale <= 90) {
           status = 'Fast Moving';
           statusColor = 'bg-emerald-100 text-emerald-700';
+          rowColor = 'bg-green-50 hover:bg-green-100/80';
         } else if (daysSinceLastSale <= 120) {
           status = 'Slow Moving';
           statusColor = 'bg-amber-100 text-amber-700';
+          rowColor = 'bg-orange-50 hover:bg-orange-100/80';
         } else {
           status = 'Dead Stock';
           statusColor = 'bg-rose-100 text-rose-700';
+          rowColor = 'bg-red-50 hover:bg-red-100/80';
         }
       }
 
@@ -100,7 +104,8 @@ export default function ItemSummary() {
         lastSaleDateStr,
         daysSinceLastSale,
         status,
-        statusColor
+        statusColor,
+        rowColor
       };
     });
   }, [items, salesData, inventorySummary]);
@@ -139,7 +144,7 @@ export default function ItemSummary() {
   const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const renderRow = (item, idx) => (
-    <tr key={idx} className="hover:bg-sky-50/50 transition-colors border-b border-slate-100">
+    <tr key={idx} className={`${item.rowColor || 'hover:bg-sky-50/50'} transition-colors border-b border-white border-opacity-50`}>
       <td className="px-4 py-2 text-center">
         {item.Thumbnail ? (
           <img src={item.Thumbnail} alt="product" className="h-10 w-10 object-contain mx-auto rounded" />
@@ -206,9 +211,9 @@ export default function ItemSummary() {
     <div className="p-4 sm:p-6 lg:p-8 w-full h-full overflow-hidden flex flex-col bg-slate-50/50">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-          <Activity className="text-sky-600" size={28} />
-          Stock Reports
+        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+          <Activity size={24} className="text-sky-600" />
+          Dead Stock
         </h1>
         <p className="text-sm text-slate-500 font-medium mt-1">Track fast moving, slow moving, and dead stock items</p>
       </div>
@@ -221,7 +226,7 @@ export default function ItemSummary() {
             <TrendingUp size={18} className="text-emerald-500" />
           </div>
           <p className="text-2xl font-black text-emerald-600">{summaryCounts.fast}</p>
-          <p className="text-[10px] text-slate-400 mt-1 font-semibold">&le; 90 days</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-semibold">0 - 90 days</p>
         </div>
         <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
           <div className="flex justify-between items-center mb-2">
@@ -326,8 +331,18 @@ export default function ItemSummary() {
       {/* Main DataTable */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
+          <div className="flex-1 w-full p-6">
+            <div className="space-y-4 w-full">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-2/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                  <div className="h-10 bg-slate-100 rounded-lg w-1/6 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <DataTable

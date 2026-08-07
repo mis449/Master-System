@@ -110,7 +110,7 @@ export const fetchAndMergeInventory = async (p1 = 158000, p2 = 165000) => {
         StockQty: Number(detail.ItmStdStkQty || 0),
         DisplayQty: Number(detail.ItmDispQty || 0),
         ReservedQty: Number(detail.ItmRsrvStkQty || 0),
-        OpeningQty: 0 // Opening Qty must ALWAYS default to 0
+        OpeningQty: Number(detail.ItmStdStkQty || 0)
       };
     });
   } catch (error) {
